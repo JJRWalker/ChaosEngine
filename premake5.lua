@@ -25,13 +25,19 @@ project "ChaosEngine"
 
     targetdir ("bin/".. outputdir .. "/%{prj.name}")
     objdir ("int/".. outputdir .. "/%{prj.name}")
+    
+    pchheader "chaospch.h"
+    pchsource "ChaosEngine/src/chaospch.cpp"
 
     files 
     {
         "%{prj.name}/src/**.h",
         "%{prj.name}/src/**.cpp"
     }
-
+    defines
+    {
+        "_CRT_SECURE_NO_WARNINGS"
+    }
     includedirs
     {
         "%{IncludeDir.spdlog}"

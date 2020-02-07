@@ -7,7 +7,7 @@ class GameApp : public Chaos::Application
 public:
 	GameApp()
 	{
-
+		
 	}
 
 	~GameApp()
