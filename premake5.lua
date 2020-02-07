@@ -14,7 +14,9 @@ workspace "ChaosEngine"
 
     IncludeDir = {}
     IncludeDir["spdlog"] = "%{prj.name}/vendor/spdlog/include"
+    IncludeDir["GLFW"] = "%{prj.name}/vendor/GLFW/glfw/include"
 
+    include "ChaosEngine/vendor/GLFW/glfw"
 
 project "ChaosEngine"
     location "ChaosEngine"
@@ -36,11 +38,21 @@ project "ChaosEngine"
     }
     defines
     {
-        "_CRT_SECURE_NO_WARNINGS"
+        "_CRT_SECURE_NO_WARNINGS",
+        "GLFW_INCLUDE_NONE",
+        "CHAOS_PLATFORM_WINDOWS"
     }
     includedirs
     {
-        "%{IncludeDir.spdlog}"
+        "%{prj.name}/src",
+        "%{prj.name}/vendor",
+        "%{IncludeDir.spdlog}",
+        "%{IncludeDir.GLFW}"
+    }
+
+    links
+    {
+        "GLFW"
     }
 
     filter "system:windows"
@@ -79,15 +91,14 @@ project "Game"
     files
     {
         "%{prj.name}/src/**.h",
-        "%{prj.name}/src/**.cpp",
+        "%{prj.name}/src/**.cpp"
     }
 
     includedirs
     {
         "ChaosEngine/src",
         "ChaosEngine/vendor",
-        "ChaosEngine/vendor/spdlog/include",
-        "%{IncludeDir.spdlog}"
+        "ChaosEngine/vendor/spdlog/include"
     }
 
     links

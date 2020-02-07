@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Core">
-      <UniqueIdentifier>{2EB4837C-1AEB-840D-C3D7-6A10AFED000F}</UniqueIdentifier>
+    <Filter Include="Chaos">
+      <UniqueIdentifier>{B31CF60C-1F31-1EBE-E8B2-C11D54861AEF}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Events">
-      <UniqueIdentifier>{3A8963B1-262B-8E87-0FE6-A1DBFB2615D8}</UniqueIdentifier>
+    <Filter Include="Chaos\Core">
+      <UniqueIdentifier>{EB282C8C-D7E0-6DD9-40E8-46352CBF08CA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Chaos\Events">
+      <UniqueIdentifier>{3721FC4C-2384-8BF1-CC09-C4A7B84B5774}</UniqueIdentifier>
     </Filter>
     <Filter Include="Platform">
       <UniqueIdentifier>{2AC788B4-1694-E3BF-3FAD-D1672BD9184E}</UniqueIdentifier>
@@ -15,35 +18,33 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Core\Application.h">
-      <Filter>Core</Filter>
+    <ClInclude Include="src\Chaos.h" />
+    <ClInclude Include="src\Chaos\Core\Application.h">
+      <Filter>Chaos\Core</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\Chaos.h">
-      <Filter>Core</Filter>
+    <ClInclude Include="src\Chaos\Core\Core.h">
+      <Filter>Chaos\Core</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\Core.h">
-      <Filter>Core</Filter>
+    <ClInclude Include="src\Chaos\Core\EntryPoint.h">
+      <Filter>Chaos\Core</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\EntryPoint.h">
-      <Filter>Core</Filter>
+    <ClInclude Include="src\Chaos\Core\Log.h">
+      <Filter>Chaos\Core</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\Log.h">
-      <Filter>Core</Filter>
+    <ClInclude Include="src\Chaos\Core\Window.h">
+      <Filter>Chaos\Core</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\Window.h">
-      <Filter>Core</Filter>
+    <ClInclude Include="src\Chaos\Events\ApplicationEvent.h">
+      <Filter>Chaos\Events</Filter>
     </ClInclude>
-    <ClInclude Include="src\Events\ApplicationEvent.h">
-      <Filter>Events</Filter>
+    <ClInclude Include="src\Chaos\Events\Event.h">
+      <Filter>Chaos\Events</Filter>
     </ClInclude>
-    <ClInclude Include="src\Events\Event.h">
-      <Filter>Events</Filter>
+    <ClInclude Include="src\Chaos\Events\KeyEvent.h">
+      <Filter>Chaos\Events</Filter>
     </ClInclude>
-    <ClInclude Include="src\Events\KeyEvent.h">
-      <Filter>Events</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Events\MouseEvent.h">
-      <Filter>Events</Filter>
+    <ClInclude Include="src\Chaos\Events\MouseEvent.h">
+      <Filter>Chaos\Events</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h">
       <Filter>Platform\Windows</Filter>
@@ -51,11 +52,11 @@
     <ClInclude Include="src\chaospch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Core\Application.cpp">
-      <Filter>Core</Filter>
+    <ClCompile Include="src\Chaos\Core\Application.cpp">
+      <Filter>Chaos\Core</Filter>
     </ClCompile>
-    <ClCompile Include="src\Core\Log.cpp">
-      <Filter>Core</Filter>
+    <ClCompile Include="src\Chaos\Core\Log.cpp">
+      <Filter>Chaos\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp">
       <Filter>Platform\Windows</Filter>

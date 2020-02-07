@@ -1,5 +1,5 @@
 
-#include "Core/Chaos.h"
+#include <Chaos.h>
 
 
 class GameApp : public Chaos::Application

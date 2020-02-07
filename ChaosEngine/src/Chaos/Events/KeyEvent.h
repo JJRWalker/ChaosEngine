@@ -1,5 +1,4 @@
 #pragma once
-#include "chaospch.h"
 #include "Event.h"
 
 namespace Chaos
@@ -9,6 +8,7 @@ namespace Chaos
 	public:
 		inline int GetKeyCode() const { return mKeyCode; }
 
+		EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)
 	protected:
 		KeyEvent(int keycode)
 			: mKeyCode(keycode) {}

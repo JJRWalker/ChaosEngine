@@ -5,6 +5,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Game", "Game\Game.vcxproj",
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ChaosEngine", "ChaosEngine\ChaosEngine.vcxproj", "{095A0848-750F-813D-FE03-7B146AB87741}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GLFW", "ChaosEngine\vendor\GLFW\glfw\GLFW.vcxproj", "{154B857C-0182-860D-AA6E-6C109684020F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -24,6 +26,12 @@ Global
 		{095A0848-750F-813D-FE03-7B146AB87741}.Distribution|x64.Build.0 = Distribution|x64
 		{095A0848-750F-813D-FE03-7B146AB87741}.Release|x64.ActiveCfg = Release|x64
 		{095A0848-750F-813D-FE03-7B146AB87741}.Release|x64.Build.0 = Release|x64
+		{154B857C-0182-860D-AA6E-6C109684020F}.Debug|x64.ActiveCfg = Debug|x64
+		{154B857C-0182-860D-AA6E-6C109684020F}.Debug|x64.Build.0 = Debug|x64
+		{154B857C-0182-860D-AA6E-6C109684020F}.Distribution|x64.ActiveCfg = Distribution|x64
+		{154B857C-0182-860D-AA6E-6C109684020F}.Distribution|x64.Build.0 = Distribution|x64
+		{154B857C-0182-860D-AA6E-6C109684020F}.Release|x64.ActiveCfg = Release|x64
+		{154B857C-0182-860D-AA6E-6C109684020F}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

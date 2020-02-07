@@ -2,7 +2,7 @@
 #include "chaospch.h"
 
 #include "Core.h"
-#include "Events/Event.h"
+#include "Chaos/Events/Event.h"
 
 
 namespace Chaos
@@ -20,6 +20,7 @@ namespace Chaos
 
 	class Window
 	{
+	public:
 		using EventCallbackFn = std::function<void(Event&)>;
 
 		virtual ~Window();
