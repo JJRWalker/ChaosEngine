@@ -147,7 +147,6 @@
   <ItemGroup>
     <ClCompile Include="src\Core\Application.cpp" />
     <ClCompile Include="src\Core\Log.cpp" />
-    <ClCompile Include="src\Core\Window.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />
     <ClCompile Include="src\chaospch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>

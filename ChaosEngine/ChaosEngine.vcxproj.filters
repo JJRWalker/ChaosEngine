@@ -57,9 +57,6 @@
     <ClCompile Include="src\Core\Log.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="src\Core\Window.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp">
       <Filter>Platform\Windows</Filter>
     </ClCompile>

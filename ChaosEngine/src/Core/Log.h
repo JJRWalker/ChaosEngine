@@ -19,7 +19,7 @@ namespace Chaos
 		inline static std::shared_ptr<spdlog::logger>& GetCoreLogger() { return sCoreLogger; }
 		inline static std::shared_ptr<spdlog::logger>& GetClientLogger() { return sClientLogger; }
 	};
-
+	
 	//CORE MACROS
 #define LOGCORE_TRACE(...)	::Chaos::Log::GetCoreLogger()->trace(__VA_ARGS__)
 #define LOGCORE_INFO(...)	::Chaos::Log::GetCoreLogger()->info(__VA_ARGS__)

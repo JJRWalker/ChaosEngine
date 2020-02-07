@@ -1,9 +1,9 @@
 #pragma once
-
+#include "Event.h"
 
 namespace Chaos
 {
-	class Event
+	class MouseEvent : public Event
 	{
 	public:
 
