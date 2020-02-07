@@ -1,0 +1,5 @@
+.vs/**
+bin/**
+int/**
+ChaosEngine/vendor/*/int
+ChaosEngine/vendor/*/bin
