@@ -2,7 +2,9 @@
 #include "Application.h"
 
 //TEMP INCLUDES
-#include <GLFW/glfw/include/GLFW/glfw3.h>
+#include <GLFW/glfw3.h>
+#include <GLFW/glfw3native.h>
+
 namespace Chaos
 {
 	Application::Application()
@@ -25,7 +27,6 @@ namespace Chaos
 	{
 		while (mRunning)
 		{
-			
 			mWindow->OnUpdate();
 		}
 	}

@@ -14,9 +14,9 @@ workspace "ChaosEngine"
 
     IncludeDir = {}
     IncludeDir["spdlog"] = "%{prj.name}/vendor/spdlog/include"
-    IncludeDir["GLFW"] = "%{prj.name}/vendor/GLFW/glfw/include"
+    IncludeDir["GLFW"] = "%{prj.name}/vendor/GLFW/include"
 
-    include "ChaosEngine/vendor/GLFW/glfw"
+    include "ChaosEngine/vendor/GLFW"
 
 project "ChaosEngine"
     location "ChaosEngine"

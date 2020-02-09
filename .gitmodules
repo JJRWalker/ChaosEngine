@@ -1,0 +1,3 @@
+[submodule "ChaosEngine/vendor/GLFW"]
+	path = ChaosEngine/vendor/GLFW
+	url = https://github.com/JJRWalker/glfw.git
