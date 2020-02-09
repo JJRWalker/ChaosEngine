@@ -1,6 +1,8 @@
 #include "chaospch.h"
 #include "Application.h"
 
+//TEMP INCLUDES
+#include <GLFW/glfw/include/GLFW/glfw3.h>
 namespace Chaos
 {
 	Application::Application()
@@ -21,9 +23,10 @@ namespace Chaos
 
 	void Application::Run()
 	{
-		while (true)
+		while (mRunning)
 		{
-
+			
+			mWindow->OnUpdate();
 		}
 	}
 

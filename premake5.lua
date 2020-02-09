@@ -52,7 +52,8 @@ project "ChaosEngine"
 
     links
     {
-        "GLFW"
+        "GLFW",
+        "opengl32.lib"
     }
 
     filter "system:windows"

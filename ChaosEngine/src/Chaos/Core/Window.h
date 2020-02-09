@@ -23,7 +23,7 @@ namespace Chaos
 	public:
 		using EventCallbackFn = std::function<void(Event&)>;
 
-		virtual ~Window();
+		virtual ~Window() {};
 
 		virtual void OnUpdate() = 0;
 
