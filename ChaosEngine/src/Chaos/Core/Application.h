@@ -3,6 +3,8 @@
 #include "Core.h"
 #include "Chaos/Core/Window.h"
 #include "Chaos/Events/Event.h"
+#include "Chaos/Events/ApplicationEvent.h"
+#include "Chaos/Core/LayerStack.h"
 
 
 namespace Chaos
@@ -14,15 +16,26 @@ namespace Chaos
 		Application();
 		virtual ~Application();
 
-		void OnEvent(Event& e);
 		void Run();
+		void OnEvent(Event& e);	
 
+		void PushLayer(Layer* layer);
+		void PushOverlay(Layer* overlay);
+	
+
+		inline static Application& Get() { return *sInstance; }
 		inline Window& GetWindow() { return *mWindow; }
 
 	private:
+		bool OnWindowClose(WindowCloseEvent& e);
+
 		bool mRunning = true;
 		std::unique_ptr<Window> mWindow;
 
+		LayerStack mLayerStack;
+
+
+		static Application* sInstance;
 	};
 
 	//defined in client

@@ -144,6 +144,8 @@
     <ClInclude Include="src\Chaos\Core\Application.h" />
     <ClInclude Include="src\Chaos\Core\Core.h" />
     <ClInclude Include="src\Chaos\Core\EntryPoint.h" />
+    <ClInclude Include="src\Chaos\Core\Layer.h" />
+    <ClInclude Include="src\Chaos\Core\LayerStack.h" />
     <ClInclude Include="src\Chaos\Core\Log.h" />
     <ClInclude Include="src\Chaos\Core\Window.h" />
     <ClInclude Include="src\Chaos\Events\ApplicationEvent.h" />
@@ -155,6 +157,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chaos\Core\Application.cpp" />
+    <ClCompile Include="src\Chaos\Core\Layer.cpp" />
+    <ClCompile Include="src\Chaos\Core\LayerStack.cpp" />
     <ClCompile Include="src\Chaos\Core\Log.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />
     <ClCompile Include="src\chaospch.cpp">

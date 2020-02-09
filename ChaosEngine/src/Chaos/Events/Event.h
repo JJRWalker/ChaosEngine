@@ -36,7 +36,7 @@ namespace Chaos
 		virtual const char* GetName() const = 0;
 		virtual int GetCategoryFlags() const = 0;
 		virtual std::string ToString() const { return GetName(); }
-		bool handled = false;
+		bool Handled = false;
 
 		inline bool IsInCategory(EventCategory category)
 		{
@@ -46,6 +46,25 @@ namespace Chaos
 
 	class EventDispatcher
 	{
+		template<typename T>
+		using EventFn = std::function<bool(T&)>;
+
+	public:
+		EventDispatcher(Event& event)
+			: mEvent(event) {}
+
+		template<typename T>
+		bool Dispatch(EventFn<T> func)
+		{
+			if (mEvent.GetEventType() == T::GetStaticType())
+			{
+				mEvent.Handled = func(*(T*)&mEvent);
+				return true;
+			}
+		}
+
+	private:
+		Event& mEvent;
 
 	};
 }

@@ -50,6 +50,8 @@
       <Filter>Platform\Windows</Filter>
     </ClInclude>
     <ClInclude Include="src\chaospch.h" />
+    <ClInclude Include="src\Chaos\Core\Layer.h" />
+    <ClInclude Include="src\Chaos\Core\LayerStack.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chaos\Core\Application.cpp">
@@ -62,5 +64,7 @@
       <Filter>Platform\Windows</Filter>
     </ClCompile>
     <ClCompile Include="src\chaospch.cpp" />
+    <ClCompile Include="src\Chaos\Core\Layer.cpp" />
+    <ClCompile Include="src\Chaos\Core\LayerStack.cpp" />
   </ItemGroup>
 </Project>

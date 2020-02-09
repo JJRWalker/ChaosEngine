@@ -1,0 +1,2 @@
+﻿  cube.c
+LINK : fatal error LNK1104: cannot open file '..\Lib32\vulkan-1.lib'
