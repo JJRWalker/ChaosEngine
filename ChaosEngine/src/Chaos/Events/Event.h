@@ -61,6 +61,10 @@ namespace Chaos
 				mEvent.Handled = func(*(T*)&mEvent);
 				return true;
 			}
+			else
+			{
+				return false;
+			}
 		}
 
 	private:

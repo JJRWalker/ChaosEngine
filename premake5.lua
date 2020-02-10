@@ -19,6 +19,7 @@ workspace "ChaosEngine"
     IncludeDir["Vulkan"] = "%{prj.name}/vendor/Vulkan/include"
 
     include "ChaosEngine/vendor/GLFW"
+    include "ChaosEngine/vendor/Vulkan"
 
 project "ChaosEngine"
     location "ChaosEngine"
@@ -36,7 +37,11 @@ project "ChaosEngine"
     files 
     {
         "%{prj.name}/src/**.h",
-        "%{prj.name}/src/**.cpp"
+        "%{prj.name}/src/**.cpp",
+        "%{prj.name}/vendor/glm/glm/**.hpp",
+        "%{prj.name}/vendor/glm/glm/**.inl",
+        "%{prj.name}/vendor/Vulkan/include/**.hpp",
+        "%{prj.name}/vendor/Vulkan/include/**.h"
     }
     defines
     {
@@ -57,6 +62,7 @@ project "ChaosEngine"
     links
     {
         "GLFW",
+        "ChaosEngine/vendor/Vulkan/lib/vulkan-1.lib",
         "opengl32.lib"
     }
 
@@ -97,6 +103,7 @@ project "Game"
     {
         "%{prj.name}/src/**.h",
         "%{prj.name}/src/**.cpp"
+
     }
 
     includedirs
