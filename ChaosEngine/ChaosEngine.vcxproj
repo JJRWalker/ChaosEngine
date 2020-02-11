@@ -160,9 +160,6 @@
     <ClInclude Include="vendor\Vulkan\include\shaderc\shaderc.hpp" />
     <ClInclude Include="vendor\Vulkan\include\shaderc\status.h" />
     <ClInclude Include="vendor\Vulkan\include\shaderc\visibility.h" />
-    <ClInclude Include="vendor\Vulkan\include\vulkan\GLSL.std.450.h" />
-    <ClInclude Include="vendor\Vulkan\include\vulkan\spirv.h" />
-    <ClInclude Include="vendor\Vulkan\include\vulkan\spirv.hpp" />
     <ClInclude Include="vendor\Vulkan\include\vulkan\vk_icd.h" />
     <ClInclude Include="vendor\Vulkan\include\vulkan\vk_layer.h" />
     <ClInclude Include="vendor\Vulkan\include\vulkan\vk_platform.h" />

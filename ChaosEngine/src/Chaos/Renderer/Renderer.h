@@ -41,7 +41,10 @@ namespace Chaos
 
 		const std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation"};
 
+		VkDevice vkDevice;
 		VkInstance vkInstance;
+		VkQueue vkGraphicsQueue;
+		VkSurfaceKHR surface;
 		VkDebugUtilsMessengerEXT debugMessenger;
 		VkPhysicalDevice physicalDevice; //implicitly destroyed when instance is destroyed
 	};

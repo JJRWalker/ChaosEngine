@@ -4,6 +4,9 @@
 #include <map>
 #include <optional>
 
+#include <Vulkan/vulkan_win32.h>
+#include <GLFW/glfw3native.h>
+
 /*
 #ifndef CHAOS_DEBUG
 const bool enableValidationLayers = false;
@@ -23,7 +26,18 @@ namespace Chaos
 	Renderer::~Renderer()
 	{
 		vkDestroyInstance(vkInstance, nullptr);
+		vkDestroyDevice(vkDevice, nullptr);
 	}
+
+	struct QueueFamilyIndices {
+
+		std::optional<uint32_t> graphicsFamily;
+
+		bool isComplete()
+		{
+			return graphicsFamily.has_value();
+		}
+	};
 
 	void Renderer::VulkanInit()
 	{
@@ -107,6 +121,50 @@ namespace Chaos
 
 		//PICKING LOGICAL DEVICE//////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////////////////////////////////////////
+		QueueFamilyIndices indices; 
+		uint32_t queueFamilyCount = 0;
+		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
+
+		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilies.data());
+
+		VkDeviceQueueCreateInfo queueCreateInfo = {};
+		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		queueCreateInfo.queueFamilyIndex = indices.graphicsFamily.value();
+		queueCreateInfo.queueCount = 1;
+
+		float queuePriotity = 1.0f;
+		queueCreateInfo.pQueuePriorities = &queuePriotity;
+
+		VkPhysicalDeviceFeatures deviceFeatures = {};
+
+		VkDeviceCreateInfo createDeviceInfo = {};
+		createDeviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+
+		createDeviceInfo.pQueueCreateInfos = &queueCreateInfo;
+		createDeviceInfo.queueCreateInfoCount = 1;
+
+		createDeviceInfo.pEnabledFeatures = &deviceFeatures;
+
+		createDeviceInfo.enabledExtensionCount = 0;
+
+		if (enableValidationLayers) {
+			createDeviceInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+			createDeviceInfo.ppEnabledLayerNames = validationLayers.data();
+		}
+		else {
+			createDeviceInfo.enabledLayerCount = 0;
+		}
+
+		if (vkCreateDevice(physicalDevice, &createDeviceInfo, nullptr, &vkDevice) != VK_SUCCESS)
+		{
+			LOGCORE_ERROR("VULKAN: FAILED TO CREATE LOGICAL DEVICE!");
+		}
+
+		vkGetDeviceQueue(vkDevice, indices.graphicsFamily.value(), 0, &vkGraphicsQueue);
+
+		VkWin32SurfaceCreateInfoKHR createSurfaceInfo = {};
+		createSurfaceInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
 	}
 
 	bool Renderer::checkValidationLayerSupport()
@@ -177,16 +235,6 @@ namespace Chaos
 		}
 		return extensions;
 	}
-
-	struct QueueFamilyIndices {
-
-		std::optional<uint32_t> graphicsFamily;
-
-		bool isComplete()
-		{
-			return graphicsFamily.has_value();
-		}
-	};
 
 	bool Renderer::IsDeviceSuitable(VkPhysicalDevice device)
 	{

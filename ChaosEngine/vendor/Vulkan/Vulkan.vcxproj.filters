@@ -24,15 +24,6 @@
     <ClInclude Include="include\shaderc\visibility.h">
       <Filter>shaderc</Filter>
     </ClInclude>
-    <ClInclude Include="include\vulkan\GLSL.std.450.h">
-      <Filter>vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="include\vulkan\spirv.h">
-      <Filter>vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="include\vulkan\spirv.hpp">
-      <Filter>vulkan</Filter>
-    </ClInclude>
     <ClInclude Include="include\vulkan\vk_icd.h">
       <Filter>vulkan</Filter>
     </ClInclude>
@@ -90,19 +81,5 @@
     <ClInclude Include="include\vulkan\vulkan_xlib_xrandr.h">
       <Filter>vulkan</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="include\vulkan\spirv.hpp11">
-      <Filter>vulkan</Filter>
-    </None>
-    <None Include="include\vulkan\spirv.json">
-      <Filter>vulkan</Filter>
-    </None>
-    <None Include="include\vulkan\spirv.lua">
-      <Filter>vulkan</Filter>
-    </None>
-    <None Include="include\vulkan\spirv.py">
-      <Filter>vulkan</Filter>
-    </None>
   </ItemGroup>
 </Project>

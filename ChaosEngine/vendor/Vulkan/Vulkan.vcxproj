@@ -118,9 +118,6 @@
     <ClInclude Include="include\shaderc\shaderc.hpp" />
     <ClInclude Include="include\shaderc\status.h" />
     <ClInclude Include="include\shaderc\visibility.h" />
-    <ClInclude Include="include\vulkan\GLSL.std.450.h" />
-    <ClInclude Include="include\vulkan\spirv.h" />
-    <ClInclude Include="include\vulkan\spirv.hpp" />
     <ClInclude Include="include\vulkan\vk_icd.h" />
     <ClInclude Include="include\vulkan\vk_layer.h" />
     <ClInclude Include="include\vulkan\vk_platform.h" />
@@ -140,12 +137,6 @@
     <ClInclude Include="include\vulkan\vulkan_xcb.h" />
     <ClInclude Include="include\vulkan\vulkan_xlib.h" />
     <ClInclude Include="include\vulkan\vulkan_xlib_xrandr.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="include\vulkan\spirv.hpp11" />
-    <None Include="include\vulkan\spirv.json" />
-    <None Include="include\vulkan\spirv.lua" />
-    <None Include="include\vulkan\spirv.py" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

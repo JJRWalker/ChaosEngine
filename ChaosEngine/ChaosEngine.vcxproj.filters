@@ -117,15 +117,6 @@
     <ClInclude Include="vendor\Vulkan\include\shaderc\visibility.h">
       <Filter>vendor\Vulkan\include\shaderc</Filter>
     </ClInclude>
-    <ClInclude Include="vendor\Vulkan\include\vulkan\GLSL.std.450.h">
-      <Filter>vendor\Vulkan\include\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Vulkan\include\vulkan\spirv.h">
-      <Filter>vendor\Vulkan\include\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Vulkan\include\vulkan\spirv.hpp">
-      <Filter>vendor\Vulkan\include\vulkan</Filter>
-    </ClInclude>
     <ClInclude Include="vendor\Vulkan\include\vulkan\vk_icd.h">
       <Filter>vendor\Vulkan\include\vulkan</Filter>
     </ClInclude>
