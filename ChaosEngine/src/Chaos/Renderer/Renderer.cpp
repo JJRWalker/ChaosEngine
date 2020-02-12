@@ -3,9 +3,19 @@
 #include "Renderer.h"
 #include <map>
 #include <optional>
+#include <set>
+
+
+#ifdef CHAOS_PLATFORM_WINDOWS
+
+#define GLFW_EXPOSE_NATIVE_WIN32
 
 #include <Vulkan/vulkan_win32.h>
 #include <GLFW/glfw3native.h>
+
+#endif
+//Surface
+#include "Chaos/Core/Application.h"
 
 /*
 #ifndef CHAOS_DEBUG
@@ -25,19 +35,10 @@ namespace Chaos
 
 	Renderer::~Renderer()
 	{
+		vkDestroySurfaceKHR(vkInstance, vkSurface, nullptr);
 		vkDestroyInstance(vkInstance, nullptr);
 		vkDestroyDevice(vkDevice, nullptr);
 	}
-
-	struct QueueFamilyIndices {
-
-		std::optional<uint32_t> graphicsFamily;
-
-		bool isComplete()
-		{
-			return graphicsFamily.has_value();
-		}
-	};
 
 	void Renderer::VulkanInit()
 	{
@@ -67,7 +68,7 @@ namespace Chaos
 			createInfo.ppEnabledLayerNames = validationLayers.data();
 
 			populateDebugMessengerCreateInfo(debugCreateInfo);
-			createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
+			createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)& debugCreateInfo;
 		}
 		else {
 			createInfo.enabledLayerCount = 0;
@@ -88,6 +89,23 @@ namespace Chaos
 		{
 			LOGCORE_INFO("VULKAN: INSTANCE CREATED");
 		}
+
+		//SURFACE
+
+		VkResult result;
+
+#ifdef CHAOS_PLATFORM_WINDOWS
+		VkWin32SurfaceCreateInfoKHR createSurfaceInfo = {};
+		createSurfaceInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+		createSurfaceInfo.pNext = nullptr;
+		createSurfaceInfo.hinstance = GetModuleHandle(nullptr);
+		createSurfaceInfo.hwnd = glfwGetWin32Window((GLFWwindow*)Application::Get().GetWindow().GetNativeWindow());
+		result = vkCreateWin32SurfaceKHR(vkInstance, &createSurfaceInfo, nullptr, &vkSurface);
+#endif // CHAOS_PLATFORM_WINDOWS
+
+		if (result != VK_SUCCESS)
+			LOGCORE_ERROR("VULKAN: FAILED TO CREATE WINDOW SURFACE!");
+		LOGCORE_INFO("VULKAN: SURFACE CREATED");
 
 		//PICKING PHYSICAL DEVICE//////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////
@@ -112,7 +130,10 @@ namespace Chaos
 
 		if (candidates.rbegin()->first > 0)
 		{
-			physicalDevice = candidates.rbegin()->second;
+			vkPhysicalDevice = candidates.rbegin()->second;
+			VkPhysicalDeviceProperties deviceProperties;
+			vkGetPhysicalDeviceProperties(vkPhysicalDevice, &deviceProperties);
+			LOGCORE_INFO("VULKAN: SUITIBLE GPU FOUND: {0} version {1} driver {2}", deviceProperties.deviceName, deviceProperties.apiVersion, deviceProperties.driverVersion);
 		}
 		else
 		{
@@ -121,50 +142,48 @@ namespace Chaos
 
 		//PICKING LOGICAL DEVICE//////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////////////////////////////////////////
-		QueueFamilyIndices indices; 
-		uint32_t queueFamilyCount = 0;
-		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
+		QueueFamilyIndices indices = FindQueueFamilies(vkPhysicalDevice);
 
-		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilies.data());
+		std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+		std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.presentFamily.value() };
 
-		VkDeviceQueueCreateInfo queueCreateInfo = {};
-		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-		queueCreateInfo.queueFamilyIndex = indices.graphicsFamily.value();
-		queueCreateInfo.queueCount = 1;
-
-		float queuePriotity = 1.0f;
-		queueCreateInfo.pQueuePriorities = &queuePriotity;
+		float queuePriority = 1.0f;
+		for (uint32_t queueFamily : uniqueQueueFamilies) {
+			VkDeviceQueueCreateInfo queueCreateInfo = {};
+			queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+			queueCreateInfo.queueFamilyIndex = queueFamily;
+			queueCreateInfo.queueCount = 1;
+			queueCreateInfo.pQueuePriorities = &queuePriority;
+			queueCreateInfos.push_back(queueCreateInfo);
+		}
 
 		VkPhysicalDeviceFeatures deviceFeatures = {};
 
-		VkDeviceCreateInfo createDeviceInfo = {};
-		createDeviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+		VkDeviceCreateInfo deviceCreateInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 
-		createDeviceInfo.pQueueCreateInfos = &queueCreateInfo;
-		createDeviceInfo.queueCreateInfoCount = 1;
+		deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+		deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
 
-		createDeviceInfo.pEnabledFeatures = &deviceFeatures;
+		deviceCreateInfo.pEnabledFeatures = &deviceFeatures;
 
-		createDeviceInfo.enabledExtensionCount = 0;
+		deviceCreateInfo.enabledExtensionCount = 0;
 
 		if (enableValidationLayers) {
-			createDeviceInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-			createDeviceInfo.ppEnabledLayerNames = validationLayers.data();
+			createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+			createInfo.ppEnabledLayerNames = validationLayers.data();
 		}
 		else {
-			createDeviceInfo.enabledLayerCount = 0;
+			createInfo.enabledLayerCount = 0;
 		}
 
-		if (vkCreateDevice(physicalDevice, &createDeviceInfo, nullptr, &vkDevice) != VK_SUCCESS)
-		{
-			LOGCORE_ERROR("VULKAN: FAILED TO CREATE LOGICAL DEVICE!");
+		if (vkCreateDevice(vkPhysicalDevice, &deviceCreateInfo, nullptr, &vkDevice) != VK_SUCCESS) {
+			LOGCORE_ERROR("VULKAN: FAILED TO GET A LOGICAL DEVICE");
 		}
 
 		vkGetDeviceQueue(vkDevice, indices.graphicsFamily.value(), 0, &vkGraphicsQueue);
+		vkGetDeviceQueue(vkDevice, indices.presentFamily.value(), 0, &vkPresentQueue);
 
-		VkWin32SurfaceCreateInfoKHR createSurfaceInfo = {};
-		createSurfaceInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
 	}
 
 	bool Renderer::checkValidationLayerSupport()
@@ -238,28 +257,30 @@ namespace Chaos
 
 	bool Renderer::IsDeviceSuitable(VkPhysicalDevice device)
 	{
-		QueueFamilyIndices indices;
-		uint32_t queueFamilyCount = 0;
-		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+		QueueFamilyIndices indices = FindQueueFamilies(device);
+		bool extensionSupported = CheckDeviceExtensionSupport(device);
 
-		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
-
-		int i = 0;
-		for (const auto& queueFamily : queueFamilies)
-		{
-			if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
-			{
-				indices.graphicsFamily = i;
-			}
-			if (indices.isComplete())
-			{
-				break;
-			}
-			i++;
-		}
 		return indices.isComplete();
 	}
+
+	bool Renderer::CheckDeviceExtensionSupport(VkPhysicalDevice device)
+	{
+		uint32_t extensionCount;
+		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+
+		std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+
+		std::set<std::string> requiredExtensions(deviceExtentions.begin(), deviceExtentions.end());
+
+		for (const auto& extension : availableExtensions)
+			requiredExtensions.erase(extension.extensionName);
+		
+		COREASSERT(!requiredExtensions.empty(), "NO EXTENSION SUPPORT");
+
+		return requiredExtensions.empty();
+	}
+
 	int Renderer::RateDeviceSuitability(VkPhysicalDevice device)
 	{
 		VkPhysicalDeviceFeatures deviceFeatures;
@@ -283,5 +304,52 @@ namespace Chaos
 		}
 
 		return score;
+	}
+
+	QueueFamilyIndices Renderer::FindQueueFamilies(VkPhysicalDevice device)
+	{
+		QueueFamilyIndices indices;
+
+		uint32_t queueFamilyCount = 0;
+		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+
+		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+
+		int i = 0;
+		for (const auto& queueFamily : queueFamilies) {
+			if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+				indices.graphicsFamily = i;
+			}
+
+			VkBool32 presentSupport = false;
+			vkGetPhysicalDeviceSurfaceSupportKHR(device, i, vkSurface, &presentSupport);
+
+			if (presentSupport) {
+				indices.presentFamily = i;
+			}
+
+			if (indices.isComplete()) {
+				break;
+			}
+
+			i++;
+		}
+
+		return indices;
+	}
+
+	std::vector<const char*> getRequiredExtensions() {
+		uint32_t glfwExtensionCount = 0;
+		const char** glfwExtensions;
+		glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+		std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+
+		if (enableValidationLayers) {
+			extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+		}
+
+		return extensions;
 	}
 }

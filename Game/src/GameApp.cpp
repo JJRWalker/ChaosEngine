@@ -11,15 +11,24 @@ public:
 
 	void OnUpdate() override
 	{
+		if (Chaos::Input::IsKeyPressed(KEY_W))
+		{
+			LOGINFO("W key pressed");
+		}
 
+		if (Chaos::Input::IsKeyPressed(KEY_A))
+		{
+			LOGINFO("A key pressed");
+		}
 	}
 
 	void OnEvent(Chaos::Event& event) override
 	{
 		if (event.GetEventType() == Chaos::EventType::KeyPressed)
 		{
-			Chaos::KeyPressedEvent& e = (Chaos::KeyPressedEvent&)event;
-			LOGINFO("{0}", (char)e.GetKeyCode());
+
+			//Chaos::KeyPressedEvent& e = (Chaos::KeyPressedEvent&)event;
+			//LOGINFO("{0}", (char)e.GetKeyCode());
 		}
 	}
 };

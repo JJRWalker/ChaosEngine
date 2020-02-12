@@ -5,11 +5,24 @@
 #include <GLFW/glfw3.h>
 #include <GLM/glm/glm.hpp>
 
+#include <optional>
+
 namespace Chaos
 {
 	enum class RendererAPI
 	{
 		None = 0, Vulkan = 1
+	};
+
+	struct QueueFamilyIndices {
+
+		std::optional<uint32_t> graphicsFamily;
+		std::optional<uint32_t> presentFamily;
+
+		bool isComplete()
+		{
+			return graphicsFamily.has_value() && presentFamily.has_value();
+		}
 	};
 
 	class Renderer
@@ -36,16 +49,21 @@ namespace Chaos
 			void* pUserData);
 		std::vector<const char*> getRequiredExtensions();
 		bool IsDeviceSuitable(VkPhysicalDevice device);
+		bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
 		int RateDeviceSuitability(VkPhysicalDevice device);
+		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
 
 
 		const std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation"};
+		const std::vector<const char*> deviceExtentions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
 		VkDevice vkDevice;
 		VkInstance vkInstance;
 		VkQueue vkGraphicsQueue;
-		VkSurfaceKHR surface;
+		VkQueue vkPresentQueue;
+		VkSurfaceKHR vkSurface;
+		uint32_t queueFamilyCount = 0;
 		VkDebugUtilsMessengerEXT debugMessenger;
-		VkPhysicalDevice physicalDevice; //implicitly destroyed when instance is destroyed
+		VkPhysicalDevice vkPhysicalDevice; //implicitly destroyed when instance is destroyed
 	};
 }
