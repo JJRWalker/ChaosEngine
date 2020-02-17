@@ -13,6 +13,9 @@
     <Filter Include="src\Chaos\Events">
       <UniqueIdentifier>{AEC71C60-9AC0-3BB2-C3F2-2037AF4A1BBE}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Chaos\Input">
+      <UniqueIdentifier>{897AF729-F505-65EE-FE16-E8E26A21C1EE}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\Chaos\Renderer">
       <UniqueIdentifier>{F07968D1-DC5D-2927-45BE-237A31C113A9}</UniqueIdentifier>
     </Filter>
@@ -93,8 +96,20 @@
     <ClInclude Include="src\Chaos\Events\MouseEvent.h">
       <Filter>src\Chaos\Events</Filter>
     </ClInclude>
+    <ClInclude Include="src\Chaos\Input\Input.h">
+      <Filter>src\Chaos\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Input\KeyCodes.h">
+      <Filter>src\Chaos\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Input\MouseCodes.h">
+      <Filter>src\Chaos\Input</Filter>
+    </ClInclude>
     <ClInclude Include="src\Chaos\Renderer\Renderer.h">
       <Filter>src\Chaos\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\Windows\WindowsInput.h">
+      <Filter>src\Platform\Windows</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h">
       <Filter>src\Platform\Windows</Filter>
@@ -1314,10 +1329,6 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp">
       <Filter>vendor\glm\glm</Filter>
     </ClInclude>
-    <ClInclude Include="src\Chaos\Input\Input.h" />
-    <ClInclude Include="src\Platform\Windows\WindowsInput.h" />
-    <ClInclude Include="src\Chaos\Input\KeyCodes.h" />
-    <ClInclude Include="src\Chaos\Input\MouseCodes.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chaos\Core\Application.cpp">
@@ -1335,12 +1346,14 @@
     <ClCompile Include="src\Chaos\Renderer\Renderer.cpp">
       <Filter>src\Chaos\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
+      <Filter>src\Platform\Windows</Filter>
+    </ClCompile>
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp">
       <Filter>src\Platform\Windows</Filter>
     </ClCompile>
     <ClCompile Include="src\chaospch.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
   </ItemGroup>
 </Project>

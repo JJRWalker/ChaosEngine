@@ -24,6 +24,13 @@ namespace Chaos
 			return graphicsFamily.has_value() && presentFamily.has_value();
 		}
 	};
+	
+	struct SwapChainSupportDetails
+	{
+		VkSurfaceCapabilitiesKHR Capabilities;
+		std::vector<VkSurfaceFormatKHR> Formats;
+		std::vector<VkPresentModeKHR> PresentModes;
+	};
 
 	class Renderer
 	{
@@ -53,9 +60,19 @@ namespace Chaos
 		int RateDeviceSuitability(VkPhysicalDevice device);
 		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
 
+		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
+		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+
 
 		const std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation"};
 		const std::vector<const char*> deviceExtentions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+
+		VkSwapchainKHR vkSwapChain;
+		std::vector<VkImage> swapChainImages;
+		VkFormat swapChainImageFormat;
+		VkExtent2D swapChainExtent;
 
 		VkDevice vkDevice;
 		VkInstance vkInstance;
@@ -65,5 +82,6 @@ namespace Chaos
 		uint32_t queueFamilyCount = 0;
 		VkDebugUtilsMessengerEXT debugMessenger;
 		VkPhysicalDevice vkPhysicalDevice; //implicitly destroyed when instance is destroyed
+		
 	};
 }
