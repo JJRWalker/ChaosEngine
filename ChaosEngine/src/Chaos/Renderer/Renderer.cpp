@@ -45,7 +45,11 @@ namespace Chaos
 	{
 		//CREATING CONTEXT///////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////
-		COREASSERT(enableValidationLayers && !checkValidationLayerSupport(), "VULKAN: VALIDATION LAYERS REQUESTED, BUT NONE ARE AVAILIBLE");
+		if (enableValidationLayers)
+		{
+			COREASSERT(checkValidationLayerSupport(), "VULKAN: VALIDATION LAYERS REQUESTED, BUT NONE ARE AVAILIBLE");
+		}
+		
 
 		//APP INFO
 		VkApplicationInfo appInfo = {};
@@ -80,7 +84,6 @@ namespace Chaos
 		auto extensions = getRequiredExtensions();
 		createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 		createInfo.ppEnabledExtensionNames = extensions.data();
-
 
 		if (vkCreateInstance(&createInfo, nullptr, &vkInstance) != VK_SUCCESS)
 		{
@@ -209,7 +212,8 @@ namespace Chaos
 		swapchainCreateInfo.minImageCount = imageCount;
 		swapchainCreateInfo.imageFormat = surfaceFormat.format;
 		swapchainCreateInfo.imageColorSpace = surfaceFormat.colorSpace;
-		swapchainCreateInfo.imageExtent = extent;
+		swapchainCreateInfo.imageExtent.width = extent.width;
+		swapchainCreateInfo.imageExtent.height = extent.height;
 		swapchainCreateInfo.imageArrayLayers = 1;
 		swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
@@ -231,8 +235,8 @@ namespace Chaos
 		swapchainCreateInfo.preTransform = swapChainSupport.Capabilities.currentTransform;
 		swapchainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 		swapchainCreateInfo.presentMode = presentMode;
-		swapchainCreateInfo.clipped = VK_TRUE;
-
+		swapchainCreateInfo.clipped = true;
+		swapchainCreateInfo.pNext = nullptr;
 		swapchainCreateInfo.oldSwapchain = VK_NULL_HANDLE;
 
 		if (vkCreateSwapchainKHR(vkDevice, &swapchainCreateInfo, nullptr, &vkSwapChain) != VK_SUCCESS)
@@ -349,7 +353,6 @@ namespace Chaos
 	{
 		uint32_t extensionCount;
 		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
-
 		std::vector<VkExtensionProperties> availableExtensions(extensionCount);
 		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
 
@@ -357,8 +360,7 @@ namespace Chaos
 
 		for (const auto& extension : availableExtensions)
 			requiredExtensions.erase(extension.extensionName);
-		
-		COREASSERT(!requiredExtensions.empty(), "NO EXTENSION SUPPORT");
+
 
 		return requiredExtensions.empty();
 	}
@@ -462,33 +464,34 @@ namespace Chaos
 
 	VkSurfaceFormatKHR Renderer::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
 	{
-		for (const auto& availableFormat : availableFormats)
+		for (const auto& availableFormat : availableFormats) 
 		{
-			if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
-			{
+			if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
 				return availableFormat;
 			}
 		}
+
 		return availableFormats[0];
 	}
 	VkPresentModeKHR Renderer::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
 	{
-		for (const auto& presentMode : availablePresentModes)
+		for (const auto& availablePresentMode : availablePresentModes) 
 		{
-			if (presentMode == VK_PRESENT_MODE_MAILBOX_KHR)
+			if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) 
 			{
-				return presentMode;
+				return availablePresentMode;
 			}
 		}
+
 		return VK_PRESENT_MODE_FIFO_KHR;
 	}
 	VkExtent2D Renderer::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
 	{
-		if (capabilities.currentExtent.width != UINT32_MAX)
+		if (capabilities.currentExtent.width != UINT32_MAX) 
 		{
 			return capabilities.currentExtent;
 		}
-		else
+		else 
 		{
 			VkExtent2D actualExtent = { Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight() };
 
@@ -497,6 +500,5 @@ namespace Chaos
 
 			return actualExtent;
 		}
-		return VkExtent2D();
 	}
 }
