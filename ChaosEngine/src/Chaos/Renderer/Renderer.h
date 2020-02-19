@@ -3,7 +3,7 @@
 #define GLFW_INCLUDE_VULKAN
 #include <Vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
-#include <GLM/glm/glm.hpp>
+//#include <GLM/glm/glm.hpp>
 
 #include <optional>
 
