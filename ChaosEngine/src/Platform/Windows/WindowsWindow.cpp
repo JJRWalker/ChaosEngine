@@ -45,10 +45,14 @@ namespace Chaos
 			glfwSetErrorCallback(GLFWErrorCallback);
 			sGLFWInitialised = true;
 		}
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
 		mWindow = glfwCreateWindow((int)props.Width, (int)props.Height, mData.Title.c_str(), nullptr, nullptr);
-		glfwMakeContextCurrent(mWindow);
+		//glfwMakeContextCurrent(mWindow); //DO LATER
 		glfwSetWindowUserPointer(mWindow, &mData);
-		SetVSync(true);
+		//SetVSync(true); // DO LATER
+
 
 		//CALLBACKS
 		glfwSetWindowSizeCallback(mWindow, [](GLFWwindow* window, int width, int height)

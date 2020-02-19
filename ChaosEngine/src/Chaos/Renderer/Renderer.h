@@ -2,7 +2,7 @@
 #pragma once
 #define GLFW_INCLUDE_VULKAN
 #include <Vulkan/vulkan.hpp>
-#include <GLFW/glfw3.h>
+//#include <GLFW/glfw3.h>
 //#include <GLM/glm/glm.hpp>
 
 #include <optional>
@@ -24,7 +24,7 @@ namespace Chaos
 			return graphicsFamily.has_value() && presentFamily.has_value();
 		}
 	};
-	
+
 	struct SwapChainSupportDetails
 	{
 		VkSurfaceCapabilitiesKHR Capabilities;
@@ -34,6 +34,8 @@ namespace Chaos
 
 	class Renderer
 	{
+
+
 	public:
 		Renderer();
 		~Renderer();
@@ -46,42 +48,49 @@ namespace Chaos
 
 		//VULKAN TEMP
 	private:
-		void VulkanInit();
-		bool checkValidationLayerSupport();
-		void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
-		static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
-			VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-			VkDebugUtilsMessageTypeFlagsEXT messageType,
-			const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-			void* pUserData);
-		std::vector<const char*> getRequiredExtensions();
-		bool IsDeviceSuitable(VkPhysicalDevice device);
-		bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
-		int RateDeviceSuitability(VkPhysicalDevice device);
-		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
 
-		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
+		//Funcs
+		VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
+		void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
+
+		void InitVulkan();
+		void CreateInstance();
+		void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
+		void SetupDebugMessenger();
+		void CreateSurface();
+		void PickPhysicalDevice();
+		void CreateLogicalDevice();
+		void CreateSwapChain();
+		void CreateImageViews();
+		void CreateGraphicsPipeline();
 		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
+		bool IsDeviceSuitable(VkPhysicalDevice device);
+		bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
+		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
+		std::vector<const char*> GetRequiredExtensions();
+		bool CheckValidationLayerSupport();
+		static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
 
-
-		const std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation"};
-		const std::vector<const char*> deviceExtentions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
-
-		VkSwapchainKHR vkSwapChain;
-		std::vector<VkImage> swapChainImages;
-		VkFormat swapChainImageFormat;
-		VkExtent2D swapChainExtent;
-
-		VkDevice vkDevice;
 		VkInstance vkInstance;
-		VkQueue vkGraphicsQueue;
-		VkQueue vkPresentQueue;
-		VkSurfaceKHR vkSurface;
-		uint32_t queueFamilyCount = 0;
 		VkDebugUtilsMessengerEXT debugMessenger;
-		VkPhysicalDevice vkPhysicalDevice; //implicitly destroyed when instance is destroyed
-		
+		VkSurfaceKHR vkSurface;
+
+		VkPhysicalDevice vkPhysicalDevice = VK_NULL_HANDLE;
+		VkDevice vkDevice;
+
+		VkQueue graphicsQueue;
+		VkQueue presentQueue;
+
+		VkSwapchainKHR vkSwapchain;
+		std::vector<VkImageView> swapchainImageViews;
+		std::vector<VkImage> swapchainImages;
+		VkFormat swapchainImageFormat;
+		VkExtent2D swapchainExtent;
+
+		const std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
+		const std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };		
 	};
 }
