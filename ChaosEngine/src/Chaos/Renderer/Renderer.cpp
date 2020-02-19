@@ -2,6 +2,7 @@
 #include "Renderer.h"
 #include "Chaos/Core/Application.h"
 #include <GLFW/glfw3.h>
+#include <fstream>
 
 #ifdef CHAOS_DEBUG
 	//const bool enableValidationLayers = true;
@@ -281,6 +282,28 @@
 
 		void Renderer::CreateGraphicsPipeline()
 		{
+			auto vertShaderCode = readFile("/vert.spv");
+			auto fragShaderCode = readFile("/frag.spv");
+
+			VkShaderModule vertShaderModule = CreateShaderModule(vertShaderCode);
+			VkShaderModule fragShaderModule = CreateShaderModule(fragShaderCode);
+
+			VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
+			vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+			vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+			vertShaderStageInfo.module = vertShaderModule;
+			vertShaderStageInfo.pName = "main";
+
+			VkPipelineShaderStageCreateInfo fragShaderStageInfo = {};
+			fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+			fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+			fragShaderStageInfo.module = fragShaderModule;
+			fragShaderStageInfo.pName = "main";
+
+			VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
+
+			vkDestroyShaderModule(vkDevice, fragShaderModule, nullptr);
+			vkDestroyShaderModule(vkDevice, vertShaderModule, nullptr);
 		}
 
 		VkSurfaceFormatKHR Renderer::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) 
@@ -450,4 +473,36 @@
 
 			return VK_FALSE;
 		}
+		 std::vector<char> Renderer::readFile(const std::string& filename)
+		 {
+			 std::ifstream file(filename, std::ios::ate | std::ios::binary);
+
+			 if (!file.is_open()) {
+				 LOGCORE_ERROR("VULKAN: could not open file {0}", filename);
+			 }
+
+			 size_t fileSize = (size_t)file.tellg();
+			 std::vector<char> buffer(fileSize);
+
+			 file.seekg(0);
+			 file.read(buffer.data(), fileSize);
+
+			 file.close();
+
+			 return buffer;
+		 }
+		 VkShaderModule Renderer::CreateShaderModule(const std::vector<char>& code)
+		 {
+			 VkShaderModuleCreateInfo createInfo = {};
+			 createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+			 createInfo.codeSize = code.size();
+			 createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+
+			 VkShaderModule shaderModule;
+			 if (vkCreateShaderModule(vkDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+				 LOGCORE_ERROR("VULKAN: could not create shader module!");
+			 }
+
+			 return shaderModule;
+		 }
 	};

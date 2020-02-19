@@ -73,6 +73,8 @@ namespace Chaos
 		std::vector<const char*> GetRequiredExtensions();
 		bool CheckValidationLayerSupport();
 		static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
+		static std::vector<char> readFile(const std::string& filename);
+		VkShaderModule CreateShaderModule(const std::vector<char>& code);
 
 		VkInstance vkInstance;
 		VkDebugUtilsMessengerEXT debugMessenger;
