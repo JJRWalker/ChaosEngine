@@ -2,10 +2,10 @@
 
 #include "Core.h"
 #include "Chaos/Core/Window.h"
-#include "Chaos/Renderer/Renderer.h"
 #include "Chaos/Events/Event.h"
 #include "Chaos/Events/ApplicationEvent.h"
 #include "Chaos/Core/LayerStack.h"
+//#include "Chaos/Renderer/Renderer.h"
 
 
 namespace Chaos
@@ -34,7 +34,7 @@ namespace Chaos
 		std::unique_ptr<Window> mWindow;
 		//std::unique_ptr<Renderer> mRenderer;
 
-		std::unique_ptr<Renderer> mRenderer;
+		//std::unique_ptr<Renderer> mRenderer;
 
 		LayerStack mLayerStack;
 

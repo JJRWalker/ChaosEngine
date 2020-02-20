@@ -580,9 +580,6 @@
     <ProjectReference Include="vendor\GLFW\GLFW.vcxproj">
       <Project>{154B857C-0182-860D-AA6E-6C109684020F}</Project>
     </ProjectReference>
-    <ProjectReference Include="vendor\Vulkan\Vulkan.vcxproj">
-      <Project>{D6EAFCD8-C28C-27AF-AB47-3B039788AEFF}</Project>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
