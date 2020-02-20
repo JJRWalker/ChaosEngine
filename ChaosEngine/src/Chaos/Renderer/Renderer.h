@@ -42,6 +42,9 @@ namespace Chaos
 
 		inline static RendererAPI GetAPI() { return sRendererAPI; }
 
+		static Renderer* Create() { return new Renderer(); }
+
+		void DrawFrame();
 	private:
 		static RendererAPI sRendererAPI;
 
@@ -62,7 +65,13 @@ namespace Chaos
 		void CreateLogicalDevice();
 		void CreateSwapChain();
 		void CreateImageViews();
+		void CreateRenderPass();
 		void CreateGraphicsPipeline();
+		void CreateFrameBuffers();
+		void CreateCommandPool();
+		void CreateCommandBuffers();
+		void CreateSemaphores();
+		
 		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
@@ -86,8 +95,20 @@ namespace Chaos
 		VkQueue graphicsQueue;
 		VkQueue presentQueue;
 
+		VkRenderPass vkRenderPass;
+		VkPipelineLayout vkPipelineLayout;
+
+		VkPipeline vkGraphicsPipeline;
+
+		VkCommandPool vkCommandPool;
+		std::vector<VkCommandBuffer> commandBuffers;
+
+		VkSemaphore imageAvailableSemaphore;
+		VkSemaphore renderFinishedSemaphore;
+
 		VkSwapchainKHR vkSwapchain;
 		std::vector<VkImageView> swapchainImageViews;
+		std::vector<VkFramebuffer> swapchainframebuffers;
 		std::vector<VkImage> swapchainImages;
 		VkFormat swapchainImageFormat;
 		VkExtent2D swapchainExtent;

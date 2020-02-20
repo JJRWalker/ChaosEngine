@@ -63,6 +63,7 @@ project "ChaosEngine"
     {
         "GLFW",
         "ChaosEngine/vendor/Vulkan/lib/vulkan-1.lib",
+        "Vulkan",
         "opengl32.lib"
     }
 
