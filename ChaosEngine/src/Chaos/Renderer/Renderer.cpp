@@ -3,6 +3,7 @@
 #include "Chaos/Core/Application.h"
 #include <GLFW/glfw3.h>
 #include <fstream>
+#include <filesystem>
 
 #ifdef CHAOS_DEBUG
 	//const bool enableValidationLayers = true;
@@ -282,8 +283,8 @@
 
 		void Renderer::CreateGraphicsPipeline()
 		{
-			auto vertShaderCode = readFile("/vert.spv");
-			auto fragShaderCode = readFile("/frag.spv");
+			auto vertShaderCode = readFile("../vert.spv");
+			auto fragShaderCode = readFile("../frag.spv");
 
 			VkShaderModule vertShaderModule = CreateShaderModule(vertShaderCode);
 			VkShaderModule fragShaderModule = CreateShaderModule(fragShaderCode);
@@ -476,6 +477,10 @@
 		 std::vector<char> Renderer::readFile(const std::string& filename)
 		 {
 			 std::ifstream file(filename, std::ios::ate | std::ios::binary);
+			 if (std::filesystem::exists(filename))
+				 LOGCORE_WARN("VULKAN: File exists {0}", filename);
+			 else
+				 LOGCORE_WARN("VULKAN: File does not exist {0}", filename);
 
 			 if (!file.is_open()) {
 				 LOGCORE_ERROR("VULKAN: could not open file {0}", filename);
