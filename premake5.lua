@@ -61,7 +61,11 @@ project "ChaosEngine"
     links
     {
         "GLFW",
+<<<<<<< HEAD
         "ChaosEngine/vendor/Vulkan/Lib/vulkan-1.lib",
+=======
+        "ChaosEngine/vendor/Vulkan/lib/vulkan-1.lib",
+>>>>>>> 212a556404c1c13b561abb05a4006529767ca8ff
         "opengl32.lib"
     }
 
