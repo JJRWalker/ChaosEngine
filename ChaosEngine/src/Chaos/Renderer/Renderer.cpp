@@ -721,6 +721,7 @@
 				LOGCORE_ERROR("VULKAN: failed to present swapchain image");
 			}
 
+			vkQueueWaitIdle(presentQueue);
 
 			currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 		}
