@@ -34,8 +34,6 @@ namespace Chaos
 
 	class Renderer
 	{
-
-
 	public:
 		Renderer();
 		~Renderer();
@@ -46,6 +44,7 @@ namespace Chaos
 
 		void DrawFrame();
 		bool WaitIdle();
+		void WindowResized() { framebufferResized = true; }
 	private:
 		static RendererAPI sRendererAPI;
 
@@ -71,7 +70,10 @@ namespace Chaos
 		void CreateFrameBuffers();
 		void CreateCommandPool();
 		void CreateCommandBuffers();
-		void CreateSemaphores();
+		void CreateSyncObjects();
+
+		void CleanUpSwapchain();
+		void RecreateSwapchain();
 		
 		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
@@ -85,6 +87,11 @@ namespace Chaos
 		static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
 		static std::vector<char> readFile(const std::string& filename);
 		VkShaderModule CreateShaderModule(const std::vector<char>& code);
+
+		//Vars
+		const int MAX_FRAMES_IN_FLIGHT = 2;
+		bool framebufferResized = false;
+		size_t currentFrame = 0;
 
 		VkInstance vkInstance;
 		VkDebugUtilsMessengerEXT debugMessenger;
@@ -104,8 +111,10 @@ namespace Chaos
 		VkCommandPool vkCommandPool;
 		std::vector<VkCommandBuffer> commandBuffers;
 
-		VkSemaphore imageAvailableSemaphore;
-		VkSemaphore renderFinishedSemaphore;
+		std::vector<VkFence> imagesInFlight;
+		std::vector<VkFence> inFlightFences;
+		std::vector<VkSemaphore>imageAvailableSemaphores;
+		std::vector<VkSemaphore>renderFinishedSemaphores;
 
 		VkSwapchainKHR vkSwapchain;
 		std::vector<VkImageView> swapchainImageViews;

@@ -22,22 +22,17 @@
 
 		Renderer::~Renderer()
 		{
-			vkDestroySemaphore(vkDevice, renderFinishedSemaphore, nullptr);
-			vkDestroySemaphore(vkDevice, imageAvailableSemaphore, nullptr);
+			CleanUpSwapchain();
 
-			for (auto framebuffer : swapchainframebuffers)
+			for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) 
 			{
-				vkDestroyFramebuffer(vkDevice, framebuffer, nullptr);
-			}
-			vkDestroyPipeline(vkDevice, vkGraphicsPipeline, nullptr);
-			vkDestroyPipelineLayout(vkDevice, vkPipelineLayout, nullptr);
-			vkDestroyRenderPass(vkDevice, vkRenderPass, nullptr);
-
-			for (auto imageView : swapchainImageViews) {
-				vkDestroyImageView(vkDevice, imageView, nullptr);
+				vkDestroySemaphore(vkDevice, renderFinishedSemaphores[i], nullptr);
+				vkDestroySemaphore(vkDevice, imageAvailableSemaphores[i], nullptr);
+				vkDestroyFence(vkDevice, inFlightFences[i], nullptr);
 			}
 
-			vkDestroySwapchainKHR(vkDevice, vkSwapchain, nullptr);
+			vkDestroyCommandPool(vkDevice, vkCommandPool, nullptr);
+
 			vkDestroyDevice(vkDevice, nullptr);
 
 			if (enableValidationLayers) {
@@ -78,7 +73,7 @@
 			CreateFrameBuffers();
 			CreateCommandPool();
 			CreateCommandBuffers();
-			CreateSemaphores();
+			CreateSyncObjects();
 		}
 
 		void Renderer::CreateInstance() {
@@ -587,27 +582,102 @@
 			}
 		}
 
-		void Renderer::CreateSemaphores()
+		void Renderer::CreateSyncObjects()
 		{
+			imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+			renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+			inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+			imagesInFlight.resize(swapchainImages.size(), VK_NULL_HANDLE);
+
 			VkSemaphoreCreateInfo semaphoreInfo = {};
 			semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-			if (vkCreateSemaphore(vkDevice, &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS ||
-				vkCreateSemaphore(vkDevice, &semaphoreInfo, nullptr, &renderFinishedSemaphore) != VK_SUCCESS) 
+			VkFenceCreateInfo fenceInfo = {};
+			fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+			fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+			for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
 			{
-				LOGCORE_ERROR("VULKAN: failed to create semaphores!");
+				if (vkCreateSemaphore(vkDevice, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
+					vkCreateSemaphore(vkDevice, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
+					vkCreateFence(vkDevice, &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS)
+				{
+					LOGCORE_ERROR("VULKAN: failed to create synchronization objects for frame {0}!", i);
+				}
 			}
+
+
+		}
+
+		void Renderer::CleanUpSwapchain()
+		{
+			for (auto framebuffer : swapchainframebuffers)
+			{
+				vkDestroyFramebuffer(vkDevice, framebuffer, nullptr);
+			}
+			
+			vkFreeCommandBuffers(vkDevice, vkCommandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+
+			vkDestroyPipeline(vkDevice, vkGraphicsPipeline, nullptr);
+			vkDestroyPipelineLayout(vkDevice, vkPipelineLayout, nullptr);
+			vkDestroyRenderPass(vkDevice, vkRenderPass, nullptr);
+
+			for (auto imageView : swapchainImageViews) {
+				vkDestroyImageView(vkDevice, imageView, nullptr);
+			}
+
+			vkDestroySwapchainKHR(vkDevice, vkSwapchain, nullptr);
+		}
+
+		void Renderer::RecreateSwapchain()
+		{
+			if (Application::Get().GetWindow().GetWidth() == 0 || Application::Get().GetWindow().GetHeight() == 0)
+			{
+				return;
+			}
+
+			vkDeviceWaitIdle(vkDevice);
+
+			CleanUpSwapchain();
+
+			CreateSwapChain();
+			CreateImageViews();
+			CreateRenderPass();
+			CreateGraphicsPipeline();
+			CreateFrameBuffers();
+			CreateCommandBuffers();
 		}
 
 		void Renderer::DrawFrame()
 		{
+			vkWaitForFences(vkDevice, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+			vkResetFences(vkDevice, 1, &inFlightFences[currentFrame]);
+
 			uint32_t imageIndex;
-			vkAcquireNextImageKHR(vkDevice, vkSwapchain, UINT64_MAX, imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+			VkResult result = vkAcquireNextImageKHR(vkDevice, vkSwapchain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+
+			if (result == VK_ERROR_OUT_OF_DATE_KHR)
+			{
+				RecreateSwapchain();
+				return;
+			}
+			else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+			{
+				LOGCORE_ERROR("VULKAN: failed to aquire swapchain image!");
+			}
+
+			//Check if a previous frame is using the same image
+			if (imagesInFlight[imageIndex] != VK_NULL_HANDLE)
+			{
+				vkWaitForFences(vkDevice, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
+			}
+
+			imagesInFlight[imageIndex] = inFlightFences[currentFrame];
 
 			VkSubmitInfo submitInfo = {};
 			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-			VkSemaphore waitSemaphores[] = { imageAvailableSemaphore };
+			VkSemaphore waitSemaphores[] = { imageAvailableSemaphores[currentFrame] };
 			VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 			submitInfo.waitSemaphoreCount = 1;
 			submitInfo.pWaitSemaphores = waitSemaphores;
@@ -616,11 +686,13 @@
 			submitInfo.commandBufferCount = 1;
 			submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
 
-			VkSemaphore signalSemaphore[] = { renderFinishedSemaphore };
+			VkSemaphore signalSemaphore[] = { renderFinishedSemaphores[currentFrame] };
 			submitInfo.signalSemaphoreCount = 1;
 			submitInfo.pSignalSemaphores = signalSemaphore;
 
-			if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
+			vkResetFences(vkDevice, 1, &inFlightFences[currentFrame]);
+
+			if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS)
 			{
 				LOGCORE_ERROR("VULKAN: failed to submit draw command buffer!");
 			}
@@ -637,8 +709,20 @@
 			presentInfo.pImageIndices = &imageIndex;
 			presentInfo.pResults = nullptr;
 
-			vkQueuePresentKHR(presentQueue, &presentInfo);
+			result = vkQueuePresentKHR(presentQueue, &presentInfo);
 
+			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized)
+			{
+				framebufferResized = false;
+				RecreateSwapchain();
+			}
+			else if (result != VK_SUCCESS)
+			{
+				LOGCORE_ERROR("VULKAN: failed to present swapchain image");
+			}
+
+
+			currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 		}
 
 		bool Renderer::WaitIdle()
@@ -672,8 +756,9 @@
 			if (capabilities.currentExtent.width != UINT32_MAX) {
 				return capabilities.currentExtent;
 			}
-			else {
-				VkExtent2D actualExtent = { Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight() };
+			else 
+			{
+				VkExtent2D actualExtent = { Application::Get().GetWindow().GetWidth(),Application::Get().GetWindow().GetHeight() };
 
 				actualExtent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width));
 				actualExtent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height));

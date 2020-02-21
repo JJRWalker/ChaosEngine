@@ -44,6 +44,11 @@ namespace Chaos
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
 
+		if (e.GetEventType() == EventType::WindowResize)
+		{
+			//mRenderer->WindowResized();
+		}
+
 		for (auto it = mLayerStack.end(); it != mLayerStack.begin();)
 		{
 			(*--it)->OnEvent(e);
