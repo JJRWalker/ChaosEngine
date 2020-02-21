@@ -19,7 +19,6 @@ workspace "ChaosEngine"
     IncludeDir["Vulkan"] = "%{prj.name}/vendor/Vulkan/include"
 
     include "ChaosEngine/vendor/GLFW"
-    include "ChaosEngine/vendor/Vulkan"
 
 project "ChaosEngine"
     location "ChaosEngine"
@@ -40,8 +39,8 @@ project "ChaosEngine"
         "%{prj.name}/src/**.cpp",
         "%{prj.name}/vendor/glm/glm/**.hpp",
         "%{prj.name}/vendor/glm/glm/**.inl",
-        "%{prj.name}/vendor/Vulkan/include/**.hpp",
-        "%{prj.name}/vendor/Vulkan/include/**.h"
+        --"%{prj.name}/vendor/Vulkan/include/**.hpp",
+        --"%{prj.name}/vendor/Vulkan/include/**.h"
     }
     defines
     {
@@ -56,13 +55,17 @@ project "ChaosEngine"
         "%{IncludeDir.spdlog}",
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.GLM}",
-        "%{IncludeDir.Vulkan}"
+        --"%{IncludeDir.Vulkan}"
     }
 
     links
     {
         "GLFW",
+<<<<<<< HEAD
+        "ChaosEngine/vendor/Vulkan/Lib/vulkan-1.lib",
+=======
         "ChaosEngine/vendor/Vulkan/lib/vulkan-1.lib",
+>>>>>>> 212a556404c1c13b561abb05a4006529767ca8ff
         "opengl32.lib"
     }
 
