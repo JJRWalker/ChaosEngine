@@ -6,12 +6,12 @@
 #include <filesystem>
 
 #ifdef CHAOS_DEBUG
-	const bool enableValidationLayers = true;
+	//const bool enableValidationLayers = true;
 #else
-	const bool enableValidationLayers = false;
+	//const bool enableValidationLayers = false;
 #endif
 
-	//const bool enableValidationLayers = false;
+	const bool enableValidationLayers = false;
 
 	namespace Chaos
 	{
@@ -78,6 +78,7 @@
 			CreateFrameBuffers();
 			CreateCommandPool();
 			CreateCommandBuffers();
+			CreateSemaphores();
 		}
 
 		void Renderer::CreateInstance() {
@@ -640,6 +641,11 @@
 
 		}
 
+		bool Renderer::WaitIdle()
+		{
+			return vkDeviceWaitIdle(vkDevice) == VK_SUCCESS;
+		}
+
 		VkSurfaceFormatKHR Renderer::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) 
 		{
 			for (const auto& availableFormat : availableFormats) {
@@ -810,10 +816,9 @@
 		 std::vector<char> Renderer::readFile(const std::string& filename)
 		 {
 			 std::ifstream file(filename, std::ios::ate | std::ios::binary);
-			 if (std::filesystem::exists(filename))
-				 LOGCORE_WARN("VULKAN: File exists {0}", filename);
-			 else
-				 LOGCORE_WARN("VULKAN: File does not exist {0}", filename);
+			 if (!std::filesystem::exists(filename))
+				 LOGCORE_ERROR("VULKAN: could not open file {0}", filename);
+
 
 			 if (!file.is_open()) {
 				 LOGCORE_ERROR("VULKAN: could not open file {0}", filename);
@@ -826,6 +831,8 @@
 			 file.read(buffer.data(), fileSize);
 
 			 file.close();
+
+			 LOGCORE_INFO("VULKAN: File read {0}", filename);
 
 			 return buffer;
 		 }

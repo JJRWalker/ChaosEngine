@@ -1,7 +1,5 @@
 #include "chaospch.h"
 #include "Application.h"
-#include <Vulkan/vulkan.hpp>
-#include "Chaos/Renderer/Renderer.h"
 
 namespace Chaos
 {
@@ -17,7 +15,7 @@ namespace Chaos
 		mWindow = std::unique_ptr<Window>(Window::Create());
 		mWindow->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
-		//mRenderer = std::unique_ptr<Renderer>(Renderer::Create());
+		mRenderer = std::unique_ptr<Renderer>(Renderer::Create());
 		
 	}
 
@@ -28,16 +26,15 @@ namespace Chaos
 
 	void Application::Run()
 	{
-		Renderer* mRenderer = new Renderer();
 		while (mRunning)
 		{
 			for (Layer* layer : mLayerStack)
 				layer->OnUpdate();
 
-			//mRenderer->DrawFrame();
-
 			mWindow->OnUpdate();
+			mRenderer->DrawFrame();
 		}
+		mRenderer->WaitIdle();
 	}
 
 	void Application::OnEvent(Event& e)

@@ -45,6 +45,7 @@ namespace Chaos
 		static Renderer* Create() { return new Renderer(); }
 
 		void DrawFrame();
+		bool WaitIdle();
 	private:
 		static RendererAPI sRendererAPI;
 

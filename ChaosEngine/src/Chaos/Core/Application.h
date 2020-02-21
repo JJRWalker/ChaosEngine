@@ -5,7 +5,7 @@
 #include "Chaos/Events/Event.h"
 #include "Chaos/Events/ApplicationEvent.h"
 #include "Chaos/Core/LayerStack.h"
-//#include "Chaos/Renderer/Renderer.h"
+#include "Chaos/Renderer/Renderer.h"
 
 
 namespace Chaos
@@ -32,9 +32,7 @@ namespace Chaos
 
 		bool mRunning = true;
 		std::unique_ptr<Window> mWindow;
-		//std::unique_ptr<Renderer> mRenderer;
-
-		//std::unique_ptr<Renderer> mRenderer;
+		std::unique_ptr<Renderer> mRenderer;
 
 		LayerStack mLayerStack;
 
