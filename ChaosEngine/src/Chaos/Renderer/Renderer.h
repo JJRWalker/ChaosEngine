@@ -1,7 +1,7 @@
 
 #pragma once
-#define GLFW_INCLUDE_VULKAN
-#include <Vulkan/vulkan.hpp>
+//#define GLFW_INCLUDE_VULKAN
+#include <Vulkan/Include/vulkan/vulkan.h>
 //#include <GLFW/glfw3.h>
 //#include <GLM/glm/glm.hpp>
 

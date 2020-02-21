@@ -6,12 +6,12 @@
 #include <filesystem>
 
 #ifdef CHAOS_DEBUG
-	//const bool enableValidationLayers = true;
+	const bool enableValidationLayers = true;
 #else
-	//const bool enableValidationLayers = false;
+	const bool enableValidationLayers = false;
 #endif
 
-	const bool enableValidationLayers = false;
+	//const bool enableValidationLayers = false;
 
 	namespace Chaos
 	{
