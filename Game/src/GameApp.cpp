@@ -20,6 +20,16 @@ public:
 		{
 			LOGINFO("A key pressed");
 		}
+
+		if (Chaos::Input::IsKeyPressed(KEY_S))
+		{
+			LOGINFO("S key pressed");
+		}
+
+		if (Chaos::Input::IsKeyPressed(KEY_D))
+		{
+			LOGINFO("D key pressed");
+		}
 	}
 
 	void OnEvent(Chaos::Event& event) override

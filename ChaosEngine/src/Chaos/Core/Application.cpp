@@ -16,7 +16,7 @@ namespace Chaos
 		mWindow->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
 		mRenderer = std::unique_ptr<Renderer>(Renderer::Create());
-		
+	
 	}
 
 	Application::~Application()
@@ -32,7 +32,8 @@ namespace Chaos
 				layer->OnUpdate();
 
 			mWindow->OnUpdate();
-			mRenderer->DrawFrame();
+			if (mWindow->GetWidth() != 0 && mWindow->GetHeight() != 0)
+				mRenderer->DrawFrame();
 		}
 		mRenderer->WaitIdle();
 	}
@@ -46,7 +47,7 @@ namespace Chaos
 
 		if (e.GetEventType() == EventType::WindowResize)
 		{
-			//mRenderer->WindowResized();
+			mRenderer->WindowResized();
 		}
 
 		for (auto it = mLayerStack.end(); it != mLayerStack.begin();)

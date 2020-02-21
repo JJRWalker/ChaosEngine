@@ -631,11 +631,7 @@
 
 		void Renderer::RecreateSwapchain()
 		{
-			if (Application::Get().GetWindow().GetWidth() == 0 || Application::Get().GetWindow().GetHeight() == 0)
-			{
-				return;
-			}
-
+			//LOGCORE_WARN("VULKAN: Recreating swapchain");
 			vkDeviceWaitIdle(vkDevice);
 
 			CleanUpSwapchain();
@@ -646,10 +642,12 @@
 			CreateGraphicsPipeline();
 			CreateFrameBuffers();
 			CreateCommandBuffers();
+			CreateSyncObjects();
 		}
 
 		void Renderer::DrawFrame()
 		{
+			
 			vkWaitForFences(vkDevice, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 			vkResetFences(vkDevice, 1, &inFlightFences[currentFrame]);
 
@@ -665,13 +663,13 @@
 			{
 				LOGCORE_ERROR("VULKAN: failed to aquire swapchain image!");
 			}
-
+			
 			//Check if a previous frame is using the same image
 			if (imagesInFlight[imageIndex] != VK_NULL_HANDLE)
 			{
 				vkWaitForFences(vkDevice, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
 			}
-
+			
 			imagesInFlight[imageIndex] = inFlightFences[currentFrame];
 
 			VkSubmitInfo submitInfo = {};
@@ -700,7 +698,7 @@
 			VkPresentInfoKHR presentInfo = {};
 			presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
-			presentInfo.waitSemaphoreCount = 0;
+			presentInfo.waitSemaphoreCount = 1;
 			presentInfo.pWaitSemaphores = signalSemaphore;
 
 			VkSwapchainKHR swapChains[] = { vkSwapchain };
@@ -715,13 +713,14 @@
 			{
 				framebufferResized = false;
 				RecreateSwapchain();
+				return;
 			}
 			else if (result != VK_SUCCESS)
 			{
 				LOGCORE_ERROR("VULKAN: failed to present swapchain image");
 			}
 
-			vkQueueWaitIdle(presentQueue);
+			//vkQueueWaitIdle(presentQueue);
 
 			currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 		}
