@@ -11,7 +11,7 @@
 	//const bool enableValidationLayers = false;
 #endif
 
-	const bool enableValidationLayers = true;
+	const bool enableValidationLayers = false;
 
 	namespace Chaos
 	{

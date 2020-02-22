@@ -17,8 +17,10 @@ workspace "ChaosEngine"
     IncludeDir["GLFW"] = "%{prj.name}/vendor/GLFW/include"
     IncludeDir["GLM"] = "%{prj.name}/vendor/GLM/glm"
     IncludeDir["Vulkan"] = "%{prj.name}/vendor/Vulkan/include"
+	IncludeDir["ImGUI"] = "%{prj.name}/vendor/ImGUI"
 
     include "ChaosEngine/vendor/GLFW"
+	include "ChaosEngine/vendor/ImGUI"
 
 project "ChaosEngine"
     location "ChaosEngine"
@@ -38,9 +40,7 @@ project "ChaosEngine"
         "%{prj.name}/src/**.h",
         "%{prj.name}/src/**.cpp",
         "%{prj.name}/vendor/glm/glm/**.hpp",
-        "%{prj.name}/vendor/glm/glm/**.inl",
-        --"%{prj.name}/vendor/Vulkan/include/**.hpp",
-        --"%{prj.name}/vendor/Vulkan/include/**.h"
+        "%{prj.name}/vendor/glm/glm/**.inl"
     }
     defines
     {
@@ -55,14 +55,15 @@ project "ChaosEngine"
         "%{IncludeDir.spdlog}",
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.GLM}",
-        --"%{IncludeDir.Vulkan}"
+        "%{IncludeDir.ImGUI}"
     }
 
     links
     {
         "GLFW",
         "ChaosEngine/vendor/Vulkan/Lib/vulkan-1.lib",
-        "opengl32.lib"
+        "opengl32.lib",
+		"ImGUI"
     }
 
     filter "system:windows"

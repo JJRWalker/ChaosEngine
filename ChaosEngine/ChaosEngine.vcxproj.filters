@@ -10,6 +10,9 @@
     <Filter Include="src\Chaos\Core">
       <UniqueIdentifier>{A2C532C3-8E93-26C9-7727-97EF6394022E}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Chaos\Debug">
+      <UniqueIdentifier>{00D59729-6C60-05EE-7571-88E2E17B61EE}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\Chaos\Events">
       <UniqueIdentifier>{AEC71C60-9AC0-3BB2-C3F2-2037AF4A1BBE}</UniqueIdentifier>
     </Filter>
@@ -71,6 +74,9 @@
     </ClInclude>
     <ClInclude Include="src\Chaos\Core\Window.h">
       <Filter>src\Chaos\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Debug\ImGuiLayer.h">
+      <Filter>src\Chaos\Debug</Filter>
     </ClInclude>
     <ClInclude Include="src\Chaos\Events\ApplicationEvent.h">
       <Filter>src\Chaos\Events</Filter>
@@ -1259,10 +1265,10 @@
     <ClCompile Include="src\Chaos\Core\Log.cpp">
       <Filter>src\Chaos\Core</Filter>
     </ClCompile>
-    <ClCompile Include="src\Chaos\Renderer\Renderer.cpp">
-      <Filter>src\Chaos\Renderer</Filter>
+    <ClCompile Include="src\Chaos\Debug\ImGuiLayer.cpp">
+      <Filter>src\Chaos\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="src\Chaos\Renderer\SwapChain.cpp">
+    <ClCompile Include="src\Chaos\Renderer\Renderer.cpp">
       <Filter>src\Chaos\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
