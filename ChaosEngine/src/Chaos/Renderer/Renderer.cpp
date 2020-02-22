@@ -11,18 +11,26 @@
 	//const bool enableValidationLayers = false;
 #endif
 
-	const bool enableValidationLayers = false;
+	const bool enableValidationLayers = true;
 
 	namespace Chaos
 	{
 		Renderer::Renderer()
 		{
+			for (auto vert : vertices)
+			{
+				vert.Pos.x *= Application::Get().GetWindow().GetAspect();
+			}
+
 			InitVulkan();
 		}
 
 		Renderer::~Renderer()
 		{
 			CleanUpSwapchain();
+
+			vkDestroyBuffer(vkDevice, vkVertexBuffer, nullptr);
+			vkFreeMemory(vkDevice, vertexBufferMemory, nullptr);
 
 			for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) 
 			{
@@ -72,6 +80,7 @@
 			CreateGraphicsPipeline();
 			CreateFrameBuffers();
 			CreateCommandPool();
+			CreateVertexBuffers();
 			CreateCommandBuffers();
 			CreateSyncObjects();
 		}
@@ -362,13 +371,16 @@
 
 			VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
+			auto bindingDescription = Vertex::GetBindingDescription();
+			auto attributeDescription = Vertex::GetAttributeDescriptions();
+
 			//VERTEX INPUTS
 			VkPipelineVertexInputStateCreateInfo vertexInputCreateInfo = {};
 			vertexInputCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-			vertexInputCreateInfo.vertexBindingDescriptionCount = 0;
-			vertexInputCreateInfo.pVertexBindingDescriptions = nullptr;
-			vertexInputCreateInfo.vertexAttributeDescriptionCount = 0;
-			vertexInputCreateInfo.pVertexAttributeDescriptions = nullptr;
+			vertexInputCreateInfo.vertexBindingDescriptionCount = 1;
+			vertexInputCreateInfo.pVertexBindingDescriptions = &bindingDescription;
+			vertexInputCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescription.size());;
+			vertexInputCreateInfo.pVertexAttributeDescriptions = attributeDescription.data();
 
 			//INPUT ASSEMBLY
 			VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
@@ -529,6 +541,56 @@
 			}
 		}
 
+		void Renderer::CreateVertexBuffers()
+		{
+			VkBufferCreateInfo bufferInfo = {};
+			bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+			bufferInfo.size = sizeof(vertices[0]) * vertices.size();
+			bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+			bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+			if (vkCreateBuffer(vkDevice, &bufferInfo, nullptr, &vkVertexBuffer) != VK_SUCCESS)
+			{
+				LOGCORE_ERROR("VULKAN: failed to create vertex buffer!");
+			}
+
+			VkMemoryRequirements memReqs;
+			vkGetBufferMemoryRequirements(vkDevice, vkVertexBuffer, &memReqs);
+
+			VkMemoryAllocateInfo allocInfo = {};
+			allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+			allocInfo.allocationSize = memReqs.size;
+			allocInfo.memoryTypeIndex = FindMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+			if (vkAllocateMemory(vkDevice, &allocInfo, nullptr, &vertexBufferMemory) != VK_SUCCESS)
+			{
+				LOGCORE_ERROR("VULKAN: failed to allocate memory for vertex buffer!");
+			}
+
+			vkBindBufferMemory(vkDevice, vkVertexBuffer, vertexBufferMemory, 0);
+
+			void* data;
+			vkMapMemory(vkDevice, vertexBufferMemory, 0, bufferInfo.size, 0, &data);
+			memcpy(data, vertices.data(), (size_t)bufferInfo.size);
+			vkUnmapMemory(vkDevice, vertexBufferMemory);
+		}
+
+		uint32_t Renderer::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags props)
+		{
+			VkPhysicalDeviceMemoryProperties memProps;
+			vkGetPhysicalDeviceMemoryProperties(vkPhysicalDevice, &memProps);
+
+			for (uint32_t i = 0; i < memProps.memoryTypeCount; ++i)
+			{
+				if ((typeFilter & (1 << i)) && (memProps.memoryTypes[i].propertyFlags & props) == props)
+				{
+					return i;
+				}
+			}
+
+			LOGCORE_ERROR("VULKAN: failed to find suitable memory type!");
+		}
+
 		void Renderer::CreateCommandBuffers()
 		{
 			commandBuffers.resize(swapchainframebuffers.size());
@@ -562,7 +624,7 @@
 				renderPassInfo.renderArea.offset = { 0,0 };
 				renderPassInfo.renderArea.extent = swapchainExtent;
 
-				VkClearValue clearColor = { 255.0f, 0.0f, 255.0f, 1.0f };
+				VkClearValue clearColor = { mClearColor[0], mClearColor[1], mClearColor[2], mClearColor[3] };
 				renderPassInfo.clearValueCount = 1;
 				renderPassInfo.pClearValues = &clearColor;
 
@@ -570,7 +632,11 @@
 
 				vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, vkGraphicsPipeline);
 
-				vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+				VkBuffer vertexBuffers[] = { vkVertexBuffer };
+				VkDeviceSize offsets[] = { 0 };
+				vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
+
+				vkCmdDraw(commandBuffers[i], static_cast<uint32_t>(vertices.size()), 1, 0, 0);
 
 				vkCmdEndRenderPass(commandBuffers[i]);
 
@@ -720,7 +786,7 @@
 				LOGCORE_ERROR("VULKAN: failed to present swapchain image");
 			}
 
-			//vkQueueWaitIdle(presentQueue);
+			vkQueueWaitIdle(presentQueue);
 
 			currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 		}
@@ -935,4 +1001,5 @@
 
 			 return shaderModule;
 		 }
+
 	};

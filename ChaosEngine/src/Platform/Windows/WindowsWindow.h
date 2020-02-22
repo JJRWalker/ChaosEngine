@@ -16,6 +16,7 @@ namespace Chaos
 
 		inline unsigned int GetWidth() const override { return mData.Width; }
 		inline unsigned int GetHeight() const override { return mData.Height; }
+		inline float GetAspect() const override { return mData.Width / mData.Height; }
 
 		inline void SetEventCallback(const EventCallbackFn& callback) override { mData.EventCallback = callback; }
 		void SetVSync(bool enabled) override;

@@ -3,15 +3,47 @@
 //#define GLFW_INCLUDE_VULKAN
 #include <Vulkan/Include/vulkan/vulkan.h>
 //#include <GLFW/glfw3.h>
-//#include <GLM/glm/glm.hpp>
+#include <GLM/glm/glm.hpp>
 
 #include <optional>
+#include <array>
 
 namespace Chaos
 {
 	enum class RendererAPI
 	{
 		None = 0, Vulkan = 1
+	};
+
+	struct Vertex
+	{
+		glm::vec2 Pos;
+		glm::vec3 Color;
+
+		static VkVertexInputBindingDescription GetBindingDescription()
+		{
+			VkVertexInputBindingDescription bindingDescription = {};
+			bindingDescription.binding = 0;
+			bindingDescription.stride = sizeof(Vertex);
+			bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+			return bindingDescription;
+		}
+
+		static std::array<VkVertexInputAttributeDescription, 2> GetAttributeDescriptions()
+		{
+			std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions = {};
+			attributeDescriptions[0].binding = 0;
+			attributeDescriptions[0].location = 0;
+			attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+			attributeDescriptions[0].offset = offsetof(Vertex, Pos);
+
+			attributeDescriptions[1].binding = 0;
+			attributeDescriptions[1].location = 1;
+			attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+			attributeDescriptions[1].offset = offsetof(Vertex, Color);
+
+			return attributeDescriptions;
+		}
 	};
 
 	struct QueueFamilyIndices {
@@ -52,6 +84,18 @@ namespace Chaos
 		//VULKAN TEMP
 	private:
 
+		const std::vector<Vertex> vertices = {
+			{{-0.5f, -0.5f},{0.0f, 1.0f, 1.0f}},
+			{{0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}},
+			{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}},
+			{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}},
+			{{0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}},
+			{{0.5f, 0.5f},	{1.0f, 0.0f, 1.0f}}
+
+		};
+
+		const glm::vec4 mClearColor = { 0.0f,0.0f, 0.03f, 1.0f };
+
 		//Funcs
 		VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
 		void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
@@ -69,6 +113,7 @@ namespace Chaos
 		void CreateGraphicsPipeline();
 		void CreateFrameBuffers();
 		void CreateCommandPool();
+		void CreateVertexBuffers();
 		void CreateCommandBuffers();
 		void CreateSyncObjects();
 
@@ -87,6 +132,7 @@ namespace Chaos
 		static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
 		static std::vector<char> readFile(const std::string& filename);
 		VkShaderModule CreateShaderModule(const std::vector<char>& code);
+		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags props);
 
 		//Vars
 		const int MAX_FRAMES_IN_FLIGHT = 2;
@@ -110,6 +156,9 @@ namespace Chaos
 
 		VkCommandPool vkCommandPool;
 		std::vector<VkCommandBuffer> commandBuffers;
+
+		VkBuffer vkVertexBuffer;
+		VkDeviceMemory vertexBufferMemory;
 
 		std::vector<VkFence> imagesInFlight;
 		std::vector<VkFence> inFlightFences;
