@@ -17,7 +17,8 @@ workspace "ChaosEngine"
     IncludeDir["GLFW"] = "%{prj.name}/vendor/GLFW/include"
     IncludeDir["GLM"] = "%{prj.name}/vendor/GLM/glm"
     IncludeDir["Vulkan"] = "%{prj.name}/vendor/Vulkan/include"
-	IncludeDir["ImGUI"] = "%{prj.name}/vendor/ImGUI"
+    IncludeDir["ImGUI"] = "%{prj.name}/vendor/ImGUI"
+    IncludeDir["STB"] = "%{prj.name}/vendor/stb"
 
     include "ChaosEngine/vendor/GLFW"
 	include "ChaosEngine/vendor/ImGUI"
@@ -55,7 +56,8 @@ project "ChaosEngine"
         "%{IncludeDir.spdlog}",
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.GLM}",
-        "%{IncludeDir.ImGUI}"
+        "%{IncludeDir.ImGUI}",
+        "%{IncludeDir.STB}"
     }
 
     links

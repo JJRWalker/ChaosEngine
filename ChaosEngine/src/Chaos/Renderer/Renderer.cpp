@@ -2,6 +2,9 @@
 #include "Renderer.h"
 #include "Chaos/Core/Application.h"
 #include <GLFW/glfw3.h>
+
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb/stb_image.h>
 #include <fstream>
 #include <filesystem>
 
@@ -541,38 +544,44 @@
 			}
 		}
 
+		void Renderer::CreateTextureImage()
+		{
+			int texWidth, texHeight, texChannels;
+			stbi_uc* pixels = stbi_load("../Game/textures/test.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+
+			VkDeviceSize imageSize = texWidth * texHeight * 4;
+
+			if (!pixels)
+			{
+				LOGCORE_ERROR("VULKAN: could not load texture image!");
+			}
+
+			VkBuffer stagingBuffer;
+			VkDeviceMemory stagingBufferMemory;
+
+			
+		}
+
 		void Renderer::CreateVertexBuffers()
 		{
-			VkBufferCreateInfo bufferInfo = {};
-			bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-			bufferInfo.size = sizeof(vertices[0]) * vertices.size();
-			bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-			bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+			VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 
-			if (vkCreateBuffer(vkDevice, &bufferInfo, nullptr, &vkVertexBuffer) != VK_SUCCESS)
-			{
-				LOGCORE_ERROR("VULKAN: failed to create vertex buffer!");
-			}
-
-			VkMemoryRequirements memReqs;
-			vkGetBufferMemoryRequirements(vkDevice, vkVertexBuffer, &memReqs);
-
-			VkMemoryAllocateInfo allocInfo = {};
-			allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-			allocInfo.allocationSize = memReqs.size;
-			allocInfo.memoryTypeIndex = FindMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-			if (vkAllocateMemory(vkDevice, &allocInfo, nullptr, &vertexBufferMemory) != VK_SUCCESS)
-			{
-				LOGCORE_ERROR("VULKAN: failed to allocate memory for vertex buffer!");
-			}
-
-			vkBindBufferMemory(vkDevice, vkVertexBuffer, vertexBufferMemory, 0);
+			VkBuffer stagingBuffer;
+			VkDeviceMemory stagingBufferMemory;
+			CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
 			void* data;
-			vkMapMemory(vkDevice, vertexBufferMemory, 0, bufferInfo.size, 0, &data);
-			memcpy(data, vertices.data(), (size_t)bufferInfo.size);
-			vkUnmapMemory(vkDevice, vertexBufferMemory);
+			vkMapMemory(vkDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+			memcpy(data, vertices.data(), (size_t)bufferSize);
+			vkUnmapMemory(vkDevice, stagingBufferMemory);
+
+			CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vkVertexBuffer, vertexBufferMemory);
+
+			CopyBuffer(stagingBuffer, vkVertexBuffer, bufferSize);
+
+			vkDestroyBuffer(vkDevice, stagingBuffer, nullptr);
+			vkFreeMemory(vkDevice, stagingBufferMemory, nullptr);
+
 		}
 
 		uint32_t Renderer::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags props)
@@ -672,6 +681,68 @@
 				}
 			}
 
+
+		}
+
+		void Renderer::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
+		{
+			VkBufferCreateInfo bufferInfo = {};
+			bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+			bufferInfo.size = size;
+			bufferInfo.usage = usage;
+			bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+			if (vkCreateBuffer(vkDevice, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+				LOGCORE_ERROR("VULAN: failed to create buffer!");
+			}
+
+			VkMemoryRequirements memRequirements;
+			vkGetBufferMemoryRequirements(vkDevice, buffer, &memRequirements);
+
+			VkMemoryAllocateInfo allocInfo = {};
+			allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+			allocInfo.allocationSize = memRequirements.size;
+			allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
+
+			if (vkAllocateMemory(vkDevice, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
+				LOGCORE_ERROR("VULAN: failed to allocate buffer memory!");
+			}
+
+			vkBindBufferMemory(vkDevice, buffer, bufferMemory, 0);
+		}
+
+		void Renderer::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+		{
+			VkCommandBufferAllocateInfo allocInfo = {};
+			allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+			allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+			allocInfo.commandPool = vkCommandPool;
+			allocInfo.commandBufferCount = 1;
+
+			VkCommandBuffer commandBuffer;
+			vkAllocateCommandBuffers(vkDevice, &allocInfo, &commandBuffer);
+
+			VkCommandBufferBeginInfo beginInfo = {};
+			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+			vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+			VkBufferCopy copyRegion = {};
+			copyRegion.size = size;
+			vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+
+			vkEndCommandBuffer(commandBuffer);
+
+			VkSubmitInfo submitInfo = {};
+			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+			submitInfo.commandBufferCount = 1;
+			submitInfo.pCommandBuffers = &commandBuffer;
+
+			vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+			vkQueueWaitIdle(graphicsQueue);
+
+			vkFreeCommandBuffers(vkDevice, vkCommandPool, 1, &commandBuffer);
 
 		}
 
