@@ -32,7 +32,10 @@
 		{
 			CleanUpSwapchain();
 
-			vkDestroyBuffer(vkDevice, vkVertexBuffer, nullptr);
+			vkDestroyBuffer(vkDevice, indexBuffer, nullptr);
+			vkFreeMemory(vkDevice, indexBufferMemory, nullptr);
+
+			vkDestroyBuffer(vkDevice, vertexBuffer, nullptr);
 			vkFreeMemory(vkDevice, vertexBufferMemory, nullptr);
 
 			for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) 
@@ -84,6 +87,7 @@
 			CreateFrameBuffers();
 			CreateCommandPool();
 			CreateVertexBuffers();
+			CreateIndexBuffers();
 			CreateCommandBuffers();
 			CreateSyncObjects();
 		}
@@ -575,13 +579,33 @@
 			memcpy(data, vertices.data(), (size_t)bufferSize);
 			vkUnmapMemory(vkDevice, stagingBufferMemory);
 
-			CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vkVertexBuffer, vertexBufferMemory);
+			CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
 
-			CopyBuffer(stagingBuffer, vkVertexBuffer, bufferSize);
+			CopyBuffer(stagingBuffer, vertexBuffer, bufferSize);
 
 			vkDestroyBuffer(vkDevice, stagingBuffer, nullptr);
 			vkFreeMemory(vkDevice, stagingBufferMemory, nullptr);
 
+		}
+
+		void Renderer::CreateIndexBuffers()
+		{
+			VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+
+			VkBuffer stagingBuffer;
+			VkDeviceMemory stagingBufferMemory;
+			CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+			void* data;
+			vkMapMemory(vkDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+			memcpy(data, indices.data(), (size_t)bufferSize);
+			vkUnmapMemory(vkDevice, stagingBufferMemory);
+
+			CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
+			CopyBuffer(stagingBuffer, indexBuffer, bufferSize);
+
+			vkDestroyBuffer(vkDevice, stagingBuffer, nullptr);
+			vkFreeMemory(vkDevice, stagingBufferMemory, nullptr);
 		}
 
 		uint32_t Renderer::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags props)
@@ -641,11 +665,14 @@
 
 				vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, vkGraphicsPipeline);
 
-				VkBuffer vertexBuffers[] = { vkVertexBuffer };
+				VkBuffer vertexBuffers[] = { vertexBuffer };
 				VkDeviceSize offsets[] = { 0 };
 				vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
 
-				vkCmdDraw(commandBuffers[i], static_cast<uint32_t>(vertices.size()), 1, 0, 0);
+				vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+
+				vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+
 
 				vkCmdEndRenderPass(commandBuffers[i]);
 
@@ -1054,7 +1081,7 @@
 
 			 file.close();
 
-			 LOGCORE_INFO("VULKAN: File read {0}", filename);
+			 //LOGCORE_INFO("VULKAN: File read {0}", filename);
 
 			 return buffer;
 		 }
