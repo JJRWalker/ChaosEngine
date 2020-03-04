@@ -19,6 +19,7 @@ namespace Chaos
 	{
 		glm::vec2 Pos;
 		glm::vec3 Color;
+		glm::vec2 texCoord;
 
 		static VkVertexInputBindingDescription GetBindingDescription()
 		{
@@ -41,6 +42,11 @@ namespace Chaos
 			attributeDescriptions[1].location = 1;
 			attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
 			attributeDescriptions[1].offset = offsetof(Vertex, Color);
+
+			attributeDescriptions[2].binding = 0;
+			attributeDescriptions[2].location = 2;
+			attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
+			attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
 
 			return attributeDescriptions;
 		}
@@ -85,16 +91,21 @@ namespace Chaos
 	private:
 
 		const std::vector<Vertex> vertices = {
-			{{-0.5f, -0.5f},{0.0f, 1.0f, 1.0f}},
-			{{0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}},
-			{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}},
-			{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}},
-			{{0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}},
-			{{0.5f, 0.5f},	{1.0f, 0.0f, 1.0f}}
+			{{-0.5f, -0.5f},{0.0f, 1.0f, 1.0f}, {1.0f, 0.0f}},
+			{{0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}},
+			{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}},
+			{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+			{{0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}},
+			{{0.5f, 0.5f},	{1.0f, 0.0f, 1.0f}, {0.0f, 1.0f}}
 
 		};
 
 		const glm::vec4 mClearColor = { 0.0f,0.0f, 0.03f, 1.0f };
+
+		VkImage textureImage;
+		VkDeviceMemory textureImageMemory;
+		VkImageView textureImageView;
+		VkSampler textureSampler;
 
 		//Funcs
 		VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
@@ -114,12 +125,21 @@ namespace Chaos
 		void CreateFrameBuffers();
 		void CreateCommandPool();
 		void CreateTextureImage();
+		void CreateTextureImageView();
+		void CreateTextureSampler();
 		void CreateVertexBuffers();
 		void CreateCommandBuffers();
 		void CreateSyncObjects();
 
 		void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+		void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+		VkCommandBuffer  BeginSingleTimeCommands();
+		void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
+
+		void CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+		void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+		VkImageView CreateImageView(VkImage image, VkFormat format);
 
 		void CleanUpSwapchain();
 		void RecreateSwapchain();
