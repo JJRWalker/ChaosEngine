@@ -1,5 +1,7 @@
 #include "chaospch.h"
 #include "Application.h"
+#include <ctime>
+#include <chrono>
 
 namespace Chaos
 {
@@ -33,7 +35,33 @@ namespace Chaos
 
 			mWindow->OnUpdate();
 			if (mWindow->GetWidth() != 0 && mWindow->GetHeight() != 0)
+			{
 				mRenderer->DrawFrame();
+				/*
+				//PERFORMANCE TESTING
+				auto begin = std::chrono::high_resolution_clock::now();
+				int drawCalls = 10000;
+				int sampleSize = 10;
+				float total = 0;
+				for (int x = 0; x < sampleSize; ++x)
+				{
+					for (int i = 0; i < drawCalls; ++i)
+					{
+						mRenderer->DrawFrame();
+					}
+					auto end = std::chrono::high_resolution_clock::now();
+					auto dur = end - begin;
+					auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur);
+					total += ms.count();
+				}
+				total /= sampleSize;
+				LOGCORE_WARN("Average time taken to render {0} frames: {1}", drawCalls, total);
+				LOGCORE_WARN("Sample size: {0}", sampleSize);
+				break;
+				*/
+			}
+			
+				
 		}
 		mRenderer->WaitIdle();
 	}

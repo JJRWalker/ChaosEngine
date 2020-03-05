@@ -3,10 +3,13 @@
 #include "Chaos/Core/Application.h"
 #include <GLFW/glfw3.h>
 
+#include <GLM/glm/gtc/matrix_transform.hpp>
+
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 #include <fstream>
 #include <filesystem>
+#include <chrono>
 
 #ifdef CHAOS_DEBUG
 	//const bool enableValidationLayers = true;
@@ -27,13 +30,19 @@
 		{
 			CleanUpSwapchain();
 
+			vkDestroyDescriptorSetLayout(vkDevice, descriptorSetLayout, nullptr);
+
 			vkDestroySampler(vkDevice, textureSampler, nullptr);
 			vkDestroyImageView(vkDevice, textureImageView, nullptr);
 
 			vkDestroyImage(vkDevice, textureImage, nullptr);
 			vkFreeMemory(vkDevice, textureImageMemory, nullptr);
+			
+			vkDestroyBuffer(vkDevice, indexBuffer, nullptr);
+			vkFreeMemory(vkDevice, indexBufferMemory, nullptr);
 
-			vkDestroyBuffer(vkDevice, vkVertexBuffer, nullptr);
+			vkDestroyBuffer(vkDevice, vertexBuffer, nullptr);
+
 			vkFreeMemory(vkDevice, vertexBufferMemory, nullptr);
 
 			for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) 
@@ -53,6 +62,13 @@
 
 			vkDestroySurfaceKHR(vkInstance, vkSurface, nullptr);
 			vkDestroyInstance(vkInstance, nullptr);
+
+			for (size_t i = 0; i < swapchainImages.size(); i++) {
+				vkDestroyBuffer(vkDevice, uniformBuffers[i], nullptr);
+				vkFreeMemory(vkDevice, uniformBuffersMemory[i], nullptr);
+			}
+
+			vkDestroyDescriptorPool(vkDevice, descriptorPool, nullptr);
 		}
 
 		VkResult Renderer::CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
@@ -81,6 +97,7 @@
 			CreateSwapChain();
 			CreateImageViews();
 			CreateRenderPass();
+			CreateDescriptorSetLayout();
 			CreateGraphicsPipeline();
 			CreateFrameBuffers();
 			CreateCommandPool();
@@ -88,6 +105,10 @@
 			CreateTextureImageView();
 			CreateTextureSampler();
 			CreateVertexBuffers();
+			CreateIndexBuffers();
+			CreateUniformBuffers();
+			CreateDescriptorPool();
+			CreateDescriptorSets();
 			CreateCommandBuffers();
 			CreateSyncObjects();
 		}
@@ -310,6 +331,33 @@
 			}
 		}
 
+		void Renderer::CreateDescriptorSetLayout()
+		{
+			VkDescriptorSetLayoutBinding uboLayoutBinding = {};
+			uboLayoutBinding.binding = 0;
+			uboLayoutBinding.descriptorCount = 1;
+			uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			uboLayoutBinding.pImmutableSamplers = nullptr;
+			uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+			VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
+			samplerLayoutBinding.binding = 1;
+			samplerLayoutBinding.descriptorCount = 1;
+			samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			samplerLayoutBinding.pImmutableSamplers = nullptr;
+			samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+			std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
+			VkDescriptorSetLayoutCreateInfo layoutInfo = {};
+			layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+			layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+			layoutInfo.pBindings = bindings.data();
+
+			if (vkCreateDescriptorSetLayout(vkDevice, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
+				LOGCORE_ERROR("VULKAN: failed to create descriptor set layout!");
+			}
+		}
+
 		void Renderer::CreateRenderPass()
 		{
 			VkAttachmentDescription colorAttachment = {};
@@ -380,7 +428,7 @@
 
 			VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
-			auto bindingDescription = Vertex::GetBindingDescription();
+			auto bindingDescription = Vertex::GetBindingDescriptions();
 			auto attributeDescription = Vertex::GetAttributeDescriptions();
 
 			//VERTEX INPUTS
@@ -636,13 +684,113 @@
 			memcpy(data, vertices.data(), (size_t)bufferSize);
 			vkUnmapMemory(vkDevice, stagingBufferMemory);
 
-			CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vkVertexBuffer, vertexBufferMemory);
+			CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
 
-			CopyBuffer(stagingBuffer, vkVertexBuffer, bufferSize);
+			CopyBuffer(stagingBuffer, vertexBuffer, bufferSize);
 
 			vkDestroyBuffer(vkDevice, stagingBuffer, nullptr);
 			vkFreeMemory(vkDevice, stagingBufferMemory, nullptr);
 
+		}
+
+		void Renderer::CreateIndexBuffers()
+		{
+			VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+
+			VkBuffer stagingBuffer;
+			VkDeviceMemory stagingBufferMemory;
+			CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+			void* data;
+			vkMapMemory(vkDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+			memcpy(data, indices.data(), (size_t)bufferSize);
+			vkUnmapMemory(vkDevice, stagingBufferMemory);
+
+			CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
+			CopyBuffer(stagingBuffer, indexBuffer, bufferSize);
+
+			vkDestroyBuffer(vkDevice, stagingBuffer, nullptr);
+			vkFreeMemory(vkDevice, stagingBufferMemory, nullptr);
+		}
+
+		void Renderer::CreateUniformBuffers()
+		{
+			VkDeviceSize bufferSize = sizeof(UniformBufferObject);
+
+			uniformBuffers.resize(swapchainImages.size());
+			uniformBuffersMemory.resize(swapchainImages.size());
+
+			for (size_t i = 0; i < swapchainImages.size(); ++i)
+			{
+				CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
+			}
+		}
+		void Renderer::CreateDescriptorPool()
+		{
+			std::array<VkDescriptorPoolSize, 2> poolSizes = {};
+			poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			poolSizes[0].descriptorCount = static_cast<uint32_t>(swapchainImages.size());
+			poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			poolSizes[1].descriptorCount = static_cast<uint32_t>(swapchainImages.size());
+
+			VkDescriptorPoolCreateInfo poolInfo = {};
+			poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+			poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+			poolInfo.pPoolSizes = poolSizes.data();
+			poolInfo.maxSets = static_cast<uint32_t>(swapchainImages.size());
+
+			if (vkCreateDescriptorPool(vkDevice, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) 
+			{
+				LOGCORE_ERROR("VULKAN: failed to allocate descriptor pool!");
+			}
+		}
+
+		void Renderer::CreateDescriptorSets()
+		{
+			std::vector<VkDescriptorSetLayout> layouts(swapchainImages.size(), descriptorSetLayout);
+			VkDescriptorSetAllocateInfo allocInfo = {};
+			allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+			allocInfo.descriptorPool = descriptorPool;
+			allocInfo.descriptorSetCount = static_cast<uint32_t>(swapchainImages.size());
+			allocInfo.pSetLayouts = layouts.data();
+
+			descriptorSets.resize(swapchainImages.size());
+			if (vkAllocateDescriptorSets(vkDevice, &allocInfo, descriptorSets.data()) != VK_SUCCESS) 
+			{
+				LOGCORE_ERROR("VULKAN: failed to allocate descriptor sets!");
+			}
+
+			for (size_t i = 0; i < swapchainImages.size(); i++) {
+				VkDescriptorBufferInfo bufferInfo = {};
+				bufferInfo.buffer = uniformBuffers[i];
+				bufferInfo.offset = 0;
+				bufferInfo.range = sizeof(UniformBufferObject);
+
+				VkDescriptorImageInfo imageInfo = {};
+				imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				imageInfo.imageView = textureImageView;
+				imageInfo.sampler = textureSampler;
+
+				std::array<VkWriteDescriptorSet, 2> descriptorWrites = {};
+
+				descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptorWrites[0].dstSet = descriptorSets[i];
+				descriptorWrites[0].dstBinding = 0;
+				descriptorWrites[0].dstArrayElement = 0;
+				descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				descriptorWrites[0].descriptorCount = 1;
+				descriptorWrites[0].pBufferInfo = &bufferInfo;
+
+				descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptorWrites[1].dstSet = descriptorSets[i];
+				descriptorWrites[1].dstBinding = 1;
+				descriptorWrites[1].dstArrayElement = 0;
+				descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				descriptorWrites[1].descriptorCount = 1;
+				descriptorWrites[1].pImageInfo = &imageInfo;
+
+				vkUpdateDescriptorSets(vkDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+			}
 		}
 
 		uint32_t Renderer::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags props)
@@ -664,37 +812,33 @@
 		void Renderer::CreateCommandBuffers()
 		{
 			commandBuffers.resize(swapchainframebuffers.size());
+
 			VkCommandBufferAllocateInfo allocInfo = {};
 			allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 			allocInfo.commandPool = vkCommandPool;
 			allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 			allocInfo.commandBufferCount = (uint32_t)commandBuffers.size();
 
-			if (vkAllocateCommandBuffers(vkDevice, &allocInfo, commandBuffers.data()) != VK_SUCCESS)
-			{
-				LOGCORE_ERROR("VULKAN: failed to allocate command buffers!");
+			if (vkAllocateCommandBuffers(vkDevice, &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
+				throw std::runtime_error("failed to allocate command buffers!");
 			}
 
-			for (size_t i = 0; i < commandBuffers.size(); i++)
-			{
+			for (size_t i = 0; i < commandBuffers.size(); i++) {
 				VkCommandBufferBeginInfo beginInfo = {};
 				beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-				beginInfo.flags = 0; // Optional
-				beginInfo.pInheritanceInfo = nullptr; // Optional
 
-				if (vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS) 
-				{
-					LOGCORE_ERROR("VULKAN: failed to begin recording command buffer!");
+				if (vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS) {
+					throw std::runtime_error("failed to begin recording command buffer!");
 				}
 
 				VkRenderPassBeginInfo renderPassInfo = {};
 				renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 				renderPassInfo.renderPass = vkRenderPass;
 				renderPassInfo.framebuffer = swapchainframebuffers[i];
-				renderPassInfo.renderArea.offset = { 0,0 };
+				renderPassInfo.renderArea.offset = { 0, 0 };
 				renderPassInfo.renderArea.extent = swapchainExtent;
 
-				VkClearValue clearColor = { mClearColor[0], mClearColor[1], mClearColor[2], mClearColor[3] };
+				VkClearValue clearColor = { mClearColor.r, mClearColor.g, mClearColor.b, mClearColor.a};
 				renderPassInfo.clearValueCount = 1;
 				renderPassInfo.pClearValues = &clearColor;
 
@@ -702,19 +846,21 @@
 
 				vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, vkGraphicsPipeline);
 
-				VkBuffer vertexBuffers[] = { vkVertexBuffer };
+				VkBuffer vertexBuffers[] = { vertexBuffer };
 				VkDeviceSize offsets[] = { 0 };
 				vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
 
-				vkCmdDraw(commandBuffers[i], static_cast<uint32_t>(vertices.size()), 1, 0, 0);
+				vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+
+				vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipelineLayout, 0, 1, &descriptorSets[i], 0, nullptr);
+
+				vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
 				vkCmdEndRenderPass(commandBuffers[i]);
 
-				if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS)
-				{
+				if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
 					LOGCORE_ERROR("VULKAN: failed to record command buffer!");
 				}
-
 			}
 		}
 
@@ -992,7 +1138,6 @@
 
 		void Renderer::RecreateSwapchain()
 		{
-			//LOGCORE_WARN("VULKAN: Recreating swapchain");
 			vkDeviceWaitIdle(vkDevice);
 
 			CleanUpSwapchain();
@@ -1002,8 +1147,21 @@
 			CreateRenderPass();
 			CreateGraphicsPipeline();
 			CreateFrameBuffers();
+			CreateUniformBuffers();
+			CreateDescriptorPool();
+			CreateDescriptorSets();
 			CreateCommandBuffers();
 			CreateSyncObjects();
+		}
+
+		void Renderer::UpdateUniformBuffer(uint32_t currentImage)
+		{
+			UniformBufferObject ubo = {};
+
+			void* data;
+			vkMapMemory(vkDevice, uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
+			memcpy(data, &ubo, sizeof(ubo));
+			vkUnmapMemory(vkDevice, uniformBuffersMemory[currentImage]);
 		}
 
 		void Renderer::DrawFrame()
@@ -1032,6 +1190,8 @@
 			}
 			
 			imagesInFlight[imageIndex] = inFlightFences[currentFrame];
+
+			UpdateUniformBuffer(imageIndex);
 
 			VkSubmitInfo submitInfo = {};
 			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -1281,7 +1441,7 @@
 
 			 file.close();
 
-			 LOGCORE_INFO("VULKAN: File read {0}", filename);
+			 //LOGCORE_INFO("VULKAN: File read {0}", filename);
 
 			 return buffer;
 		 }

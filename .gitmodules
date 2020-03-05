@@ -4,6 +4,6 @@
 [submodule "ChaosEngine/vendor/GLM"]
 	path = ChaosEngine/vendor/GLM
 	url = https://github.com/JJRWalker/glm.git
-[submodule "ChaosEngine/Vendor/ImGUI"]
-	path = ChaosEngine/Vendor/ImGUI
+[submodule "chaosengine/vendor/ImGUI"]
+	path = chaosengine/vendor/ImGUI
 	url = https://github.com/JJRWalker/imgui.git
