@@ -30,13 +30,14 @@
 		{
 			CleanUpSwapchain();
 
-			vkDestroyDescriptorSetLayout(vkDevice, descriptorSetLayout, nullptr);
 
 			vkDestroySampler(vkDevice, textureSampler, nullptr);
 			vkDestroyImageView(vkDevice, textureImageView, nullptr);
 
 			vkDestroyImage(vkDevice, textureImage, nullptr);
 			vkFreeMemory(vkDevice, textureImageMemory, nullptr);
+
+			vkDestroyDescriptorSetLayout(vkDevice, descriptorSetLayout, nullptr);
 			
 			vkDestroyBuffer(vkDevice, indexBuffer, nullptr);
 			vkFreeMemory(vkDevice, indexBufferMemory, nullptr);
@@ -62,13 +63,6 @@
 
 			vkDestroySurfaceKHR(vkInstance, vkSurface, nullptr);
 			vkDestroyInstance(vkInstance, nullptr);
-
-			for (size_t i = 0; i < swapchainImages.size(); i++) {
-				vkDestroyBuffer(vkDevice, uniformBuffers[i], nullptr);
-				vkFreeMemory(vkDevice, uniformBuffersMemory[i], nullptr);
-			}
-
-			vkDestroyDescriptorPool(vkDevice, descriptorPool, nullptr);
 		}
 
 		VkResult Renderer::CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
@@ -428,35 +422,32 @@
 
 			VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
+			VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
+			vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+
 			auto bindingDescription = Vertex::GetBindingDescriptions();
-			auto attributeDescription = Vertex::GetAttributeDescriptions();
+			auto attributeDescriptions = Vertex::GetAttributeDescriptions();
 
-			//VERTEX INPUTS
-			VkPipelineVertexInputStateCreateInfo vertexInputCreateInfo = {};
-			vertexInputCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-			vertexInputCreateInfo.vertexBindingDescriptionCount = 1;
-			vertexInputCreateInfo.pVertexBindingDescriptions = &bindingDescription;
-			vertexInputCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescription.size());;
-			vertexInputCreateInfo.pVertexAttributeDescriptions = attributeDescription.data();
+			vertexInputInfo.vertexBindingDescriptionCount = 1;
+			vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+			vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+			vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
-			//INPUT ASSEMBLY
 			VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
 			inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 			inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 			inputAssembly.primitiveRestartEnable = VK_FALSE;
 
-			//VIEWPORT
 			VkViewport viewport = {};
-			viewport.x = 0;
-			viewport.y = 0;
+			viewport.x = 0.0f;
+			viewport.y = 0.0f;
 			viewport.width = (float)swapchainExtent.width;
 			viewport.height = (float)swapchainExtent.height;
 			viewport.minDepth = 0.0f;
-			viewport.minDepth = 1.0f;
+			viewport.maxDepth = 1.0f;
 
-			//SCISSOR
 			VkRect2D scissor = {};
-			scissor.offset = { 0,0 };
+			scissor.offset = { 0, 0 };
 			scissor.extent = swapchainExtent;
 
 			VkPipelineViewportStateCreateInfo viewportState = {};
@@ -466,7 +457,6 @@
 			viewportState.scissorCount = 1;
 			viewportState.pScissors = &scissor;
 
-			//RASTERIZER
 			VkPipelineRasterizationStateCreateInfo rasterizer = {};
 			rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 			rasterizer.depthClampEnable = VK_FALSE;
@@ -474,39 +464,17 @@
 			rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 			rasterizer.lineWidth = 1.0f;
 			rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-			rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+			rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 			rasterizer.depthBiasEnable = VK_FALSE;
-			rasterizer.depthBiasConstantFactor = 0.0f;
-			rasterizer.depthBiasClamp = 0.0f;
-			rasterizer.depthBiasSlopeFactor = 0.0f;
 
-			//MULTISAMPLING
 			VkPipelineMultisampleStateCreateInfo multisampling = {};
 			multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 			multisampling.sampleShadingEnable = VK_FALSE;
 			multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-			multisampling.minSampleShading = 1.0f;
-			multisampling.pSampleMask = nullptr;
-			multisampling.alphaToCoverageEnable = VK_FALSE;
-			multisampling.alphaToOneEnable = VK_FALSE;
 
 			VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
 			colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 			colorBlendAttachment.blendEnable = VK_FALSE;
-			colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-			colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-			colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
-			colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-			colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-			colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
-
-			colorBlendAttachment.blendEnable = VK_TRUE;
-			colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-			colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-			colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
-			colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-			colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-			colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
 
 			VkPipelineColorBlendStateCreateInfo colorBlending = {};
 			colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -521,37 +489,30 @@
 
 			VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 			pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-			pipelineLayoutInfo.setLayoutCount = 0;
-			pipelineLayoutInfo.pSetLayouts = nullptr;
-			pipelineLayoutInfo.pushConstantRangeCount = 0;
-			pipelineLayoutInfo.pPushConstantRanges = nullptr;
+			pipelineLayoutInfo.setLayoutCount = 1;
+			pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
 
-			if (vkCreatePipelineLayout(vkDevice, &pipelineLayoutInfo, nullptr, &vkPipelineLayout) != VK_SUCCESS)
-			{
-				LOGCORE_ERROR("VULKAN: failed to create pipeline layout!");
+			if (vkCreatePipelineLayout(vkDevice, &pipelineLayoutInfo, nullptr, &vkPipelineLayout) != VK_SUCCESS) {
+				throw std::runtime_error("failed to create pipeline layout!");
 			}
 
 			VkGraphicsPipelineCreateInfo pipelineInfo = {};
 			pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 			pipelineInfo.stageCount = 2;
 			pipelineInfo.pStages = shaderStages;
-			pipelineInfo.pVertexInputState = &vertexInputCreateInfo;
+			pipelineInfo.pVertexInputState = &vertexInputInfo;
 			pipelineInfo.pInputAssemblyState = &inputAssembly;
 			pipelineInfo.pViewportState = &viewportState;
 			pipelineInfo.pRasterizationState = &rasterizer;
 			pipelineInfo.pMultisampleState = &multisampling;
-			pipelineInfo.pDepthStencilState = nullptr;
 			pipelineInfo.pColorBlendState = &colorBlending;
-			pipelineInfo.pDynamicState = nullptr;
 			pipelineInfo.layout = vkPipelineLayout;
 			pipelineInfo.renderPass = vkRenderPass;
 			pipelineInfo.subpass = 0;
 			pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
-			pipelineInfo.basePipelineIndex = -1;
 
-			if (vkCreateGraphicsPipelines(vkDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &vkGraphicsPipeline) != VK_SUCCESS)
-			{
-				LOGCORE_ERROR("VULKAN: failed to create graphics pipeline!");
+			if (vkCreateGraphicsPipelines(vkDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &vkGraphicsPipeline) != VK_SUCCESS) {
+				throw std::runtime_error("failed to create graphics pipeline!");
 			}
 
 			vkDestroyShaderModule(vkDevice, fragShaderModule, nullptr);
@@ -602,17 +563,14 @@
 		{
 			int texWidth, texHeight, texChannels;
 			stbi_uc* pixels = stbi_load("../Game/textures/test.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-
 			VkDeviceSize imageSize = texWidth * texHeight * 4;
 
-			if (!pixels)
-			{
-				LOGCORE_ERROR("VULKAN: could not load texture image!");
+			if (!pixels) {
+				throw std::runtime_error("failed to load texture image!");
 			}
 
 			VkBuffer stagingBuffer;
 			VkDeviceMemory stagingBufferMemory;
-
 			CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
 			void* data;
@@ -625,9 +583,7 @@
 			CreateImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
 
 			TransitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-
 			CopyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
-
 			TransitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 			vkDestroyBuffer(vkDevice, stagingBuffer, nullptr);
@@ -645,25 +601,16 @@
 			samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 			samplerInfo.magFilter = VK_FILTER_LINEAR;
 			samplerInfo.minFilter = VK_FILTER_LINEAR;
-
 			samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 			samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 			samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-
 			samplerInfo.anisotropyEnable = VK_TRUE;
 			samplerInfo.maxAnisotropy = 16;
-
 			samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-
 			samplerInfo.unnormalizedCoordinates = VK_FALSE;
-
 			samplerInfo.compareEnable = VK_FALSE;
 			samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-
 			samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-			samplerInfo.mipLodBias = 0.0f;
-			samplerInfo.minLod = 0.0f;
-			samplerInfo.maxLod = 0.0f;
 
 			if (vkCreateSampler(vkDevice, &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS)
 			{
@@ -707,6 +654,7 @@
 			vkUnmapMemory(vkDevice, stagingBufferMemory);
 
 			CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
+			
 			CopyBuffer(stagingBuffer, indexBuffer, bufferSize);
 
 			vkDestroyBuffer(vkDevice, stagingBuffer, nullptr);
@@ -795,13 +743,11 @@
 
 		uint32_t Renderer::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags props)
 		{
-			VkPhysicalDeviceMemoryProperties memProps;
-			vkGetPhysicalDeviceMemoryProperties(vkPhysicalDevice, &memProps);
+			VkPhysicalDeviceMemoryProperties memProperties;
+			vkGetPhysicalDeviceMemoryProperties(vkPhysicalDevice, &memProperties);
 
-			for (uint32_t i = 0; i < memProps.memoryTypeCount; ++i)
-			{
-				if ((typeFilter & (1 << i)) && (memProps.memoryTypes[i].propertyFlags & props) == props)
-				{
+			for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+				if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & props) == props) {
 					return i;
 				}
 			}
@@ -819,16 +765,22 @@
 			allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 			allocInfo.commandBufferCount = (uint32_t)commandBuffers.size();
 
+			LOGCORE_INFO("size {0}", (uint32_t)commandBuffers.size());
+
 			if (vkAllocateCommandBuffers(vkDevice, &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
-				throw std::runtime_error("failed to allocate command buffers!");
+				LOGCORE_ERROR("VULKAN: failed to allocate command buffers!");
+				return;
 			}
+
+			LOGCORE_INFO("starting itteration");
 
 			for (size_t i = 0; i < commandBuffers.size(); i++) {
 				VkCommandBufferBeginInfo beginInfo = {};
 				beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
 				if (vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS) {
-					throw std::runtime_error("failed to begin recording command buffer!");
+					LOGCORE_ERROR("VULKAN: failed to begin recording command buffer!");
+					return;
 				}
 
 				VkRenderPassBeginInfo renderPassInfo = {};
@@ -858,7 +810,8 @@
 
 				vkCmdEndRenderPass(commandBuffers[i]);
 
-				if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
+				if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) 
+				{
 					LOGCORE_ERROR("VULKAN: failed to record command buffer!");
 				}
 			}
@@ -900,7 +853,7 @@
 			bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 			if (vkCreateBuffer(vkDevice, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
-				LOGCORE_ERROR("VULAN: failed to create buffer!");
+				throw std::runtime_error("failed to create buffer!");
 			}
 
 			VkMemoryRequirements memRequirements;
@@ -912,7 +865,7 @@
 			allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
 
 			if (vkAllocateMemory(vkDevice, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
-				LOGCORE_ERROR("VULAN: failed to allocate buffer memory!");
+				LOGCORE_ERROR("VULKAN: failed to allocate buffer memory!");
 			}
 
 			vkBindBufferMemory(vkDevice, buffer, bufferMemory, 0);
@@ -1011,26 +964,23 @@
 			imageInfo.tiling = tiling;
 			imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 			imageInfo.usage = usage;
-			imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 			imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-			imageInfo.flags = 0;
+			imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-			if (vkCreateImage(vkDevice, &imageInfo, nullptr, &image) != VK_SUCCESS)
-			{
+			if (vkCreateImage(vkDevice, &imageInfo, nullptr, &image) != VK_SUCCESS) {
 				LOGCORE_ERROR("VULKAN: failed to create image!");
 			}
 
-			VkMemoryRequirements memReqs;
-			vkGetImageMemoryRequirements(vkDevice, image, &memReqs);
+			VkMemoryRequirements memRequirements;
+			vkGetImageMemoryRequirements(vkDevice, image, &memRequirements);
 
 			VkMemoryAllocateInfo allocInfo = {};
 			allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-			allocInfo.allocationSize = memReqs.size;
-			allocInfo.memoryTypeIndex = FindMemoryType(memReqs.memoryTypeBits, properties);
+			allocInfo.allocationSize = memRequirements.size;
+			allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
 
-			if (vkAllocateMemory(vkDevice, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS)
-			{
-				LOGCORE_ERROR("VULKAN: could not allocate texture memory!");
+			if (vkAllocateMemory(vkDevice, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
+				LOGCORE_ERROR("VULKAN: failed to allocate image memory!");
 			}
 
 			vkBindImageMemory(vkDevice, image, imageMemory, 0);
@@ -1108,8 +1058,7 @@
 			viewInfo.subresourceRange.layerCount = 1;
 
 			VkImageView imageView;
-			if (vkCreateImageView(vkDevice, &viewInfo, nullptr, &imageView) != VK_SUCCESS) 
-			{
+			if (vkCreateImageView(vkDevice, &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
 				LOGCORE_ERROR("VULKAN: failed to create texture image view!");
 			}
 
@@ -1134,6 +1083,13 @@
 			}
 
 			vkDestroySwapchainKHR(vkDevice, vkSwapchain, nullptr);
+
+			for (size_t i = 0; i < swapchainImages.size(); i++) {
+				vkDestroyBuffer(vkDevice, uniformBuffers[i], nullptr);
+				vkFreeMemory(vkDevice, uniformBuffersMemory[i], nullptr);
+			}
+
+			vkDestroyDescriptorPool(vkDevice, descriptorPool, nullptr);
 		}
 
 		void Renderer::RecreateSwapchain()
@@ -1156,7 +1112,16 @@
 
 		void Renderer::UpdateUniformBuffer(uint32_t currentImage)
 		{
+			static auto startTime = std::chrono::high_resolution_clock::now();
+
+			auto currentTime = std::chrono::high_resolution_clock::now();
+			float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
 			UniformBufferObject ubo = {};
+			ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+			ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+			//ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f);
+			ubo.proj[1][1] *= -1;
 
 			void* data;
 			vkMapMemory(vkDevice, uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
@@ -1182,6 +1147,8 @@
 			{
 				LOGCORE_ERROR("VULKAN: failed to aquire swapchain image!");
 			}
+
+			UpdateUniformBuffer(imageIndex);
 			
 			//Check if a previous frame is using the same image
 			if (imagesInFlight[imageIndex] != VK_NULL_HANDLE)
@@ -1191,7 +1158,6 @@
 			
 			imagesInFlight[imageIndex] = inFlightFences[currentFrame];
 
-			UpdateUniformBuffer(imageIndex);
 
 			VkSubmitInfo submitInfo = {};
 			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
