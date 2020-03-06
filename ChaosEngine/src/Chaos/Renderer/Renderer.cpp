@@ -474,7 +474,13 @@
 
 			VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
 			colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-			colorBlendAttachment.blendEnable = VK_FALSE;
+			colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+			colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+			colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+			colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+			colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+			colorBlendAttachment.blendEnable = VK_TRUE;
 
 			VkPipelineColorBlendStateCreateInfo colorBlending = {};
 			colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -562,7 +568,7 @@
 		void Renderer::CreateTextureImage()
 		{
 			int texWidth, texHeight, texChannels;
-			stbi_uc* pixels = stbi_load("../Game/textures/test2.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+			stbi_uc* pixels = stbi_load("../Game/textures/sprite-test.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 			VkDeviceSize imageSize = texWidth * texHeight * 4;
 
 			if (!pixels) {
@@ -604,7 +610,7 @@
 			samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 			samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 			samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-			samplerInfo.anisotropyEnable = VK_TRUE;
+			samplerInfo.anisotropyEnable = VK_FALSE;
 			samplerInfo.maxAnisotropy = 16;
 			samplerInfo.borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
 			samplerInfo.unnormalizedCoordinates = VK_FALSE;
