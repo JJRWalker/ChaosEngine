@@ -5,6 +5,7 @@
 //#include <GLFW/glfw3.h>
 #define GLM_FORCE_RADIANS
 #include <GLM/glm/glm.hpp>
+#include "Chaos/DataTypes/Vec2.h"
 
 #include <optional>
 #include <array>
@@ -86,6 +87,7 @@ namespace Chaos
 
 		static Renderer* Create() { return new Renderer(); }
 
+		void DrawQuad(Vec2 position, Vec2 scale, const char* texturePath);
 		void DrawFrame();
 		bool WaitIdle();
 		void WindowResized() { framebufferResized = true; }
@@ -96,7 +98,7 @@ namespace Chaos
 		//VULKAN TEMP
 	private:
 
-		const std::vector<Vertex> vertices = {
+		std::vector<Vertex> vertices = {
 			{{-0.4f, -0.4f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
 			{{0.4f, -0.4f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
 			{{0.4f, 0.4f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
@@ -104,7 +106,7 @@ namespace Chaos
 
 		};
 
-		const std::vector<uint16_t> indices = {
+		std::vector<uint16_t> indices = {
 			0,1,2,2,3,0
 		};
 
@@ -136,7 +138,7 @@ namespace Chaos
 		void CreateGraphicsPipeline();
 		void CreateFrameBuffers();
 		void CreateCommandPool();
-		void CreateTextureImage();
+		void CreateTextureImage(const char* texPath);
 		void CreateTextureImageView();
 		void CreateTextureSampler();
 		void CreateVertexBuffers();

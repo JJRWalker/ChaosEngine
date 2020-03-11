@@ -2,6 +2,7 @@
 #include "Application.h"
 #include <ctime>
 #include <chrono>
+#include "Chaos/DataTypes/Vec2.h"
 
 namespace Chaos
 {
@@ -36,7 +37,8 @@ namespace Chaos
 			mWindow->OnUpdate();
 			if (mWindow->GetWidth() != 0 && mWindow->GetHeight() != 0)
 			{
-				mRenderer->DrawFrame();
+				mRenderer->DrawQuad(Vec2(0.f, 0.f), Vec2(0.f, 0.f), "../Game/textures/test.png");
+				//mRenderer->DrawFrame();
 				/*
 				//PERFORMANCE TESTING
 				auto begin = std::chrono::high_resolution_clock::now();

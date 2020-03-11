@@ -1251,6 +1251,8 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp">
       <Filter>vendor\glm\glm</Filter>
     </ClInclude>
+    <ClInclude Include="src\Chaos\DataTypes\Vec3.h" />
+    <ClInclude Include="src\Chaos\DataTypes\Vec2.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chaos\Core\Application.cpp">

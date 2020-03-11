@@ -95,8 +95,8 @@
 			CreateGraphicsPipeline();
 			CreateFrameBuffers();
 			CreateCommandPool();
-			CreateTextureImage();
-			CreateTextureImageView();
+			CreateTextureImage("../blank.png");
+			//CreateTextureImageView();
 			CreateTextureSampler();
 			CreateVertexBuffers();
 			CreateIndexBuffers();
@@ -565,10 +565,15 @@
 			}
 		}
 
-		void Renderer::CreateTextureImage()
+		void Renderer::CreateTextureImage(const char* texPath)
 		{
 			int texWidth, texHeight, texChannels;
-			stbi_uc* pixels = stbi_load("../Game/textures/test.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+			if (!std::filesystem::exists(texPath))
+			{
+				LOGCORE_WARN("VULKAN: could not open file {0}", texPath);
+				texPath = "../Game/textures/blank.png";
+			}
+			stbi_uc* pixels = stbi_load(texPath, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 			VkDeviceSize imageSize = texWidth * texHeight * 4;
 
 			if (!pixels) {
@@ -594,6 +599,8 @@
 
 			vkDestroyBuffer(vkDevice, stagingBuffer, nullptr);
 			vkFreeMemory(vkDevice, stagingBufferMemory, nullptr);
+
+			textureImageView = CreateImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB);
 		}
 
 		void Renderer::CreateTextureImageView()
@@ -984,7 +991,6 @@
 			if (vkAllocateMemory(vkDevice, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
 				LOGCORE_ERROR("VULKAN: failed to allocate image memory!");
 			}
-
 			vkBindImageMemory(vkDevice, image, imageMemory, 0);
 		}
 
@@ -1129,6 +1135,30 @@
 			vkMapMemory(vkDevice, uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
 			memcpy(data, &ubo, sizeof(ubo));
 			vkUnmapMemory(vkDevice, uniformBuffersMemory[currentImage]);
+		}
+
+		void Renderer::DrawQuad(Vec2 position, Vec2 scale, const char* texturePath)
+		{
+			vertices = {
+			{{-0.4f, -0.4f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+			{{0.4f, -0.4f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+			{{0.4f, 0.4f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+			{{-0.4f, 0.4f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
+			};
+
+			indices = {
+			0,1,2,2,3,0
+			};
+
+			CreateTextureImage(texturePath);
+			CreateTextureSampler();
+			CreateIndexBuffers();
+			CreateUniformBuffers();
+			CreateDescriptorPool();
+			CreateDescriptorSets();
+			CreateCommandBuffers();
+			CreateSyncObjects();
+			DrawFrame();
 		}
 
 		void Renderer::DrawFrame()
