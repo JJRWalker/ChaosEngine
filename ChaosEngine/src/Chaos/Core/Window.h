@@ -14,7 +14,7 @@ namespace Chaos
 		unsigned int Height;
 
 		WindowProps(const std::string& title = "Chaos Engine",
-			unsigned int width = 1280,
+			unsigned int width = 720,
 			unsigned int height = 720) : Title(title), Width(width), Height(height) {}
 	};
 
@@ -29,6 +29,7 @@ namespace Chaos
 
 		virtual unsigned int GetWidth() const = 0;
 		virtual unsigned int GetHeight() const = 0;
+		virtual float GetAspect() const = 0;
 
 		//Attributes
 		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;

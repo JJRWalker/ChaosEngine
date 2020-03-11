@@ -25,7 +25,7 @@ namespace Chaos
 #define LOGCORE_INFO(...)	::Chaos::Log::GetCoreLogger()->info(__VA_ARGS__)
 #define LOGCORE_WARN(...)	::Chaos::Log::GetCoreLogger()->warn(__VA_ARGS__)
 #define LOGCORE_ERROR(...)	::Chaos::Log::GetCoreLogger()->error(__VA_ARGS__)
-#define LOGCORE_FATAL(...)	::Chaos::Log::GetCoreLogger()->fatal(__VA_ARGS__)
+#define LOGCORE_FATAL(...)	::Chaos::Log::GetCoreLogger()->critical(__VA_ARGS__)
 
 
 	//CLIENT MACROS
@@ -33,5 +33,5 @@ namespace Chaos
 #define LOGINFO(...)	::Chaos::Log::GetClientLogger()->info(__VA_ARGS__)
 #define LOGWARN(...)	::Chaos::Log::GetClientLogger()->warn(__VA_ARGS__)
 #define LOGERROR(...)	::Chaos::Log::GetClientLogger()->error(__VA_ARGS__)
-#define LOGFATAL(...)	::Chaos::Log::GetClientLogger()->fatal(__VA_ARGS__)
+#define LOGFATAL(...)	::Chaos::Log::GetClientLogger()->critical(__VA_ARGS__)
 }
