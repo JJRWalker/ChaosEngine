@@ -568,7 +568,7 @@
 		void Renderer::CreateTextureImage()
 		{
 			int texWidth, texHeight, texChannels;
-			stbi_uc* pixels = stbi_load("../Game/textures/sprite-test.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+			stbi_uc* pixels = stbi_load("../Game/textures/test.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 			VkDeviceSize imageSize = texWidth * texHeight * 4;
 
 			if (!pixels) {
