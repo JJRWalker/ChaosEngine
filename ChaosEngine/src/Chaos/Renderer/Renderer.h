@@ -87,7 +87,7 @@ namespace Chaos
 
 		static Renderer* Create() { return new Renderer(); }
 
-		void DrawQuad(Vec2 position, Vec2 scale, const char* texturePath);
+		void DrawQuad(Vec2* position, Vec2* scale, const char* texturePath);
 		void DrawFrame();
 		bool WaitIdle();
 		void WindowResized() { framebufferResized = true; }
@@ -101,7 +101,7 @@ namespace Chaos
 		std::vector<Vertex> vertices = {
 			{{-0.4f, -0.4f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
 			{{0.4f, -0.4f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-			{{0.4f, 0.4f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+			{{0.4f , 0.4f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
 			{{-0.4f, 0.4f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
 
 		};

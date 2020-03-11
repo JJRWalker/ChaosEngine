@@ -3,6 +3,7 @@
 #include <ctime>
 #include <chrono>
 #include "Chaos/DataTypes/Vec2.h"
+#include "Chaos/Input/Input.h"
 
 namespace Chaos
 {
@@ -29,6 +30,10 @@ namespace Chaos
 
 	void Application::Run()
 	{
+
+		Vec2* pos = new Vec2(0.f, 0.f);
+		int xModifier = 1;
+		int yModifier = 1;
 		while (mRunning)
 		{
 			for (Layer* layer : mLayerStack)
@@ -37,7 +42,37 @@ namespace Chaos
 			mWindow->OnUpdate();
 			if (mWindow->GetWidth() != 0 && mWindow->GetHeight() != 0)
 			{
-				mRenderer->DrawQuad(Vec2(0.f, 0.f), Vec2(0.f, 0.f), "../Game/textures/test.png");
+				if (Input::IsKeyPressed(KEY_A))
+				{
+					xModifier = -1;
+				}
+				else if (Input::IsKeyPressed(KEY_D))
+				{
+					xModifier = 1;
+				}
+				else
+				{
+					xModifier = 0;
+				}
+
+				if (Input::IsKeyPressed(KEY_S))
+				{
+					yModifier = -1;
+				}
+				else if (Input::IsKeyPressed(KEY_W))
+				{
+					yModifier = 1;
+				}
+				else
+				{
+					yModifier = 0;
+				}
+			
+				//mRenderer->DrawQuad(pos, Vec2(0.f, 0.f), "../Game/textures/test.png");
+				mRenderer->DrawQuad(pos, new Vec2(5.f, 5.f), "../Game/textures/sprite-test.png");
+
+				pos->Y += 0.01f * yModifier;
+				pos->X += 0.01f * xModifier;
 				//mRenderer->DrawFrame();
 				/*
 				//PERFORMANCE TESTING

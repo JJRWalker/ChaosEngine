@@ -10,6 +10,9 @@
     <Filter Include="src\Chaos\Core">
       <UniqueIdentifier>{A2C532C3-8E93-26C9-7727-97EF6394022E}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Chaos\DataTypes">
+      <UniqueIdentifier>{A88C50B4-14EE-2DC2-9D5B-747409BC6481}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\Chaos\Debug">
       <UniqueIdentifier>{00D59729-6C60-05EE-7571-88E2E17B61EE}</UniqueIdentifier>
     </Filter>
@@ -74,6 +77,12 @@
     </ClInclude>
     <ClInclude Include="src\Chaos\Core\Window.h">
       <Filter>src\Chaos\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\DataTypes\Vec2.h">
+      <Filter>src\Chaos\DataTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\DataTypes\Vec3.h">
+      <Filter>src\Chaos\DataTypes</Filter>
     </ClInclude>
     <ClInclude Include="src\Chaos\Debug\ImGuiLayer.h">
       <Filter>src\Chaos\Debug</Filter>
@@ -1251,8 +1260,6 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp">
       <Filter>vendor\glm\glm</Filter>
     </ClInclude>
-    <ClInclude Include="src\Chaos\DataTypes\Vec3.h" />
-    <ClInclude Include="src\Chaos\DataTypes\Vec2.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chaos\Core\Application.cpp">

@@ -43,7 +43,6 @@
 			vkFreeMemory(vkDevice, indexBufferMemory, nullptr);
 
 			vkDestroyBuffer(vkDevice, vertexBuffer, nullptr);
-
 			vkFreeMemory(vkDevice, vertexBufferMemory, nullptr);
 
 			for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) 
@@ -95,8 +94,8 @@
 			CreateGraphicsPipeline();
 			CreateFrameBuffers();
 			CreateCommandPool();
-			CreateTextureImage("../blank.png");
-			//CreateTextureImageView();
+			CreateTextureImage("brokenFilePath");
+			CreateTextureImageView();
 			CreateTextureSampler();
 			CreateVertexBuffers();
 			CreateIndexBuffers();
@@ -463,8 +462,7 @@
 			rasterizer.rasterizerDiscardEnable = VK_FALSE;
 			rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 			rasterizer.lineWidth = 1.0f;
-			rasterizer.cullMode = VK_CULL_MODE_FRONT_BIT;
-			rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+			rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
 			rasterizer.depthBiasEnable = VK_FALSE;
 
 			VkPipelineMultisampleStateCreateInfo multisampling = {};
@@ -1126,10 +1124,10 @@
 			float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
 			UniformBufferObject ubo = {};
-			ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-			ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-			ubo.proj = glm::perspective(glm::radians(45.0f), swapchainExtent.width / (float)swapchainExtent.height, 0.1f, 10.0f);
-			ubo.proj[1][1] *= -1;
+			//ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+			//ubo.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+			ubo.proj = glm::ortho(-5.0f * (float)swapchainExtent.width / (float)swapchainExtent.height, 5.0f * (float)swapchainExtent.width / (float)swapchainExtent.height, 5.0f, -5.0f, -5.0f, 5.0f); //glm::perspective(glm::radians(45.0f), (float)swapchainExtent.width / (float)swapchainExtent.height, 0.1f, 1000.0f);
+			//ubo.proj[1][1] *= -1;
 
 			void* data;
 			vkMapMemory(vkDevice, uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
@@ -1137,27 +1135,45 @@
 			vkUnmapMemory(vkDevice, uniformBuffersMemory[currentImage]);
 		}
 
-		void Renderer::DrawQuad(Vec2 position, Vec2 scale, const char* texturePath)
+		void Renderer::DrawQuad(Vec2* position, Vec2* scale, const char* texturePath)
 		{
+			/*
 			vertices = {
-			{{-0.4f, -0.4f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-			{{0.4f, -0.4f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-			{{0.4f, 0.4f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-			{{-0.4f, 0.4f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
+				{{(-0.5f + position->X) * scale->X / 2, (-0.5f + position->Y) * scale->Y/ 2}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+				{{(0.5f + position->X) * scale->X / 2, (-0.5f + position->Y) * scale->Y / 2}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+				{{(0.5f + position->X) * scale->X / 2, (0.5f + position->Y) * scale->Y / 2}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+				{{(-0.5f + position->X) * scale->X / 2, (0.5f + position->Y) * scale->Y / 2}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
 			};
-
+			*/
+			vertices = {
+				{{(-0.5f * scale->X / 2) + position->X, (-0.5f * scale->Y / 2) + position->Y}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},
+				{{(0.5f * scale->X / 2) + position->X, (-0.5f * scale->Y / 2) + position->Y}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}},
+				{{(0.5f * scale->X / 2) + position->X, (0.5f * scale->Y / 2) + position->Y}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},
+				{{(-0.5f * scale->X / 2) + position->X, (0.5f * scale->Y / 2) + position->Y}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}}
+			};
 			indices = {
 			0,1,2,2,3,0
 			};
 
+			vkDestroySampler(vkDevice, textureSampler, nullptr);
+			vkDestroyImageView(vkDevice, textureImageView, nullptr);
+
+			vkDestroyImage(vkDevice, textureImage, nullptr);
+			vkFreeMemory(vkDevice, textureImageMemory, nullptr);
+
+			vkDestroyBuffer(vkDevice, indexBuffer, nullptr);
+			vkFreeMemory(vkDevice, indexBufferMemory, nullptr);
+
+			vkDestroyBuffer(vkDevice, vertexBuffer, nullptr);
+			vkFreeMemory(vkDevice, vertexBufferMemory, nullptr);				
+			vkFreeCommandBuffers(vkDevice, vkCommandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+
+
 			CreateTextureImage(texturePath);
 			CreateTextureSampler();
+			CreateVertexBuffers();
 			CreateIndexBuffers();
-			CreateUniformBuffers();
-			CreateDescriptorPool();
-			CreateDescriptorSets();
 			CreateCommandBuffers();
-			CreateSyncObjects();
 			DrawFrame();
 		}
 
