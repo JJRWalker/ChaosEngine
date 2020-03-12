@@ -31,7 +31,7 @@ namespace Chaos
 	void Application::Run()
 	{
 
-		Vec2* pos = new Vec2(0.f, 0.f);
+		Vec2* pos = new Vec2(0.f, 1.f);
 		int xModifier = 1;
 		int yModifier = 1;
 		while (mRunning)
@@ -68,8 +68,9 @@ namespace Chaos
 					yModifier = 0;
 				}
 			
-				//mRenderer->DrawQuad(pos, Vec2(0.f, 0.f), "../Game/textures/test.png");
-				mRenderer->DrawQuad(pos, new Vec2(5.f, 5.f), "../Game/textures/sprite-test.png");
+				mRenderer->DrawQuad(pos, new Vec2(1.f, 1.f), "../Game/textures/test.png");
+				//mRenderer->DrawQuad(pos, new Vec2(5.f, 5.f), "../Game/textures/sprite-test.png");
+				//mRenderer->DrawQuad(pos, new Vec2(5.f, 5.f), "../Game/textures/blank.png");
 
 				pos->Y += 0.01f * yModifier;
 				pos->X += 0.01f * xModifier;

@@ -1146,16 +1146,17 @@
 			};
 			*/
 			vertices = {
-				{{(-0.5f * scale->X / 2) + position->X, (-0.5f * scale->Y / 2) + position->Y}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},
-				{{(0.5f * scale->X / 2) + position->X, (-0.5f * scale->Y / 2) + position->Y}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}},
-				{{(0.5f * scale->X / 2) + position->X, (0.5f * scale->Y / 2) + position->Y}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},
-				{{(-0.5f * scale->X / 2) + position->X, (0.5f * scale->Y / 2) + position->Y}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}}
+				{{(-1.f * scale->X / 2) + position->X, (-1.f * scale->Y / 2) + position->Y }, {0.0f, 0.0f, 0.0f}, {0.01f, 1.01f}},
+				{{(1.f * scale->X / 2) + position->X, (-1.f * scale->Y / 2) + position->Y }, {0.0f, 0.0f, 0.0f}, {1.01f, 1.01f}},
+				{{(1.f * scale->X / 2) + position->X, (1.f * scale->Y / 2) + position->Y }, {0.0f, 0.0f, 0.0f}, {1.01f, 0.01f}},
+				{{(-1.f * scale->X / 2) + position->X, (1.f * scale->Y / 2) + position->Y }, {1.0f, 1.0f, 0.0f}, {0.01f, 0.01f}}
 			};
+			
+
 			indices = {
 			0,1,2,2,3,0
 			};
 
-			vkDestroySampler(vkDevice, textureSampler, nullptr);
 			vkDestroyImageView(vkDevice, textureImageView, nullptr);
 
 			vkDestroyImage(vkDevice, textureImage, nullptr);
@@ -1170,7 +1171,6 @@
 
 
 			CreateTextureImage(texturePath);
-			CreateTextureSampler();
 			CreateVertexBuffers();
 			CreateIndexBuffers();
 			CreateCommandBuffers();
