@@ -53,6 +53,13 @@ namespace Chaos
 		}
 	};
 
+	struct Quad
+	{
+		std::vector<Vertex> verts;
+		std::vector<uint32_t> inds = { 0, 1, 2, 2, 3, 0 };
+		const char* textPath;
+	};
+
 	struct UniformBufferObject {
 		alignas(16) glm::mat4 model;
 		alignas(16) glm::mat4 view;
