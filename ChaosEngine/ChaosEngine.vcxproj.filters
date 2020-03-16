@@ -28,6 +28,9 @@
     <Filter Include="src\Platform">
       <UniqueIdentifier>{21CA02E5-0D2D-9289-B6B2-CA3FA2F45D0C}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Platform\Vulkan">
+      <UniqueIdentifier>{81084748-ED69-2456-76D7-6A08E2375B15}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\Platform\Windows">
       <UniqueIdentifier>{5B054582-4794-CE4B-F0B2-E246DC20DFF1}</UniqueIdentifier>
     </Filter>
@@ -108,8 +111,26 @@
     <ClInclude Include="src\Chaos\Input\MouseCodes.h">
       <Filter>src\Chaos\Input</Filter>
     </ClInclude>
+    <ClInclude Include="src\Chaos\Renderer\PrimitiveType.h">
+      <Filter>src\Chaos\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Renderer\Quad.h">
+      <Filter>src\Chaos\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src\Chaos\Renderer\Renderer.h">
       <Filter>src\Chaos\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Renderer\RendererAPI.h">
+      <Filter>src\Chaos\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Renderer\Texture.h">
+      <Filter>src\Chaos\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Renderer\Vertex.h">
+      <Filter>src\Chaos\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\Vulkan\VulkanTexture.h">
+      <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Windows\WindowsInput.h">
       <Filter>src\Platform\Windows</Filter>
@@ -1260,10 +1281,6 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp">
       <Filter>vendor\glm\glm</Filter>
     </ClInclude>
-    <ClInclude Include="src\Chaos\DataTypes\PrimitiveType.h" />
-    <ClInclude Include="src\Chaos\DataTypes\Image.h" />
-    <ClInclude Include="src\Chaos\DataTypes\Vertex.h" />
-    <ClInclude Include="src\Chaos\DataTypes\Quad.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chaos\Core\Application.cpp">
@@ -1282,6 +1299,12 @@
       <Filter>src\Chaos\Debug</Filter>
     </ClCompile>
     <ClCompile Include="src\Chaos\Renderer\Renderer.cpp">
+      <Filter>src\Chaos\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Chaos\Renderer\RendererAPI.cpp">
+      <Filter>src\Chaos\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Chaos\Renderer\Texture.cpp">
       <Filter>src\Chaos\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">

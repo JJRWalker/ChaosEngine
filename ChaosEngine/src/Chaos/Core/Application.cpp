@@ -5,6 +5,8 @@
 #include "Chaos/DataTypes/Vec2.h"
 #include "Chaos/Input/Input.h"
 
+#include "Chaos/Renderer/Texture.h"
+
 namespace Chaos
 {
 	Application* Application::sInstance = nullptr;
@@ -20,7 +22,6 @@ namespace Chaos
 		mWindow->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
 		mRenderer = std::unique_ptr<Renderer>(Renderer::Create());
-	
 	}
 
 	Application::~Application()
@@ -31,7 +32,7 @@ namespace Chaos
 	void Application::Run()
 	{
 
-		Vec2* pos = new Vec2(0.f, 1.f);
+		Vec2* pos = new Vec2(0.f, 0.f);
 		int xModifier = 1;
 		int yModifier = 1;
 		while (mRunning)
@@ -67,13 +68,16 @@ namespace Chaos
 				{
 					yModifier = 0;
 				}
-			
-				mRenderer->DrawQuad(pos, new Vec2(1.f, 1.f), "../Game/textures/test.png");
-				//mRenderer->DrawQuad(pos, new Vec2(5.f, 5.f), "../Game/textures/sprite-test.png");
-				//mRenderer->DrawQuad(pos, new Vec2(5.f, 5.f), "../Game/textures/blank.png");
-
 				pos->Y += 0.01f * yModifier;
 				pos->X += 0.01f * xModifier;
+
+				mRenderer->DrawQuad(pos, new Vec2(1.f, 1.f), Texture::Create("../Game/textures/sprite-test.png"));
+				mRenderer->DrawQuad(new Vec2 (-5.f , 5.f), new Vec2(1.f, 1.f), Texture::Create("../Game/textures/test.png"));
+				mRenderer->DrawQuad(new Vec2 (-5.f , -5.f), new Vec2(1.f, 1.f), Texture::Create("../Game/textures/test.png"));
+				mRenderer->DrawQuad(new Vec2 (5.f , 5.f), new Vec2(1.f, 1.f), Texture::Create("../Game/textures/test.png"));
+				mRenderer->DrawQuad(new Vec2(0.f, 0.f), new Vec2(1.f, 1.f), Texture::Create("../Game/textures/blank.png"));
+
+
 				//mRenderer->DrawFrame();
 				/*
 				//PERFORMANCE TESTING
@@ -97,6 +101,8 @@ namespace Chaos
 				LOGCORE_WARN("Sample size: {0}", sampleSize);
 				break;
 				*/
+
+				mRenderer->DrawFrame();
 			}
 			
 				

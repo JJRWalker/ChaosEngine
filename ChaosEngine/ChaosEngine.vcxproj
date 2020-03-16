@@ -148,12 +148,8 @@
     <ClInclude Include="src\Chaos\Core\LayerStack.h" />
     <ClInclude Include="src\Chaos\Core\Log.h" />
     <ClInclude Include="src\Chaos\Core\Window.h" />
-    <ClInclude Include="src\Chaos\DataTypes\Image.h" />
-    <ClInclude Include="src\Chaos\DataTypes\PrimitiveType.h" />
-    <ClInclude Include="src\Chaos\DataTypes\Quad.h" />
     <ClInclude Include="src\Chaos\DataTypes\Vec2.h" />
     <ClInclude Include="src\Chaos\DataTypes\Vec3.h" />
-    <ClInclude Include="src\Chaos\DataTypes\Vertex.h" />
     <ClInclude Include="src\Chaos\Debug\ImGuiLayer.h" />
     <ClInclude Include="src\Chaos\Events\ApplicationEvent.h" />
     <ClInclude Include="src\Chaos\Events\Event.h" />
@@ -162,7 +158,13 @@
     <ClInclude Include="src\Chaos\Input\Input.h" />
     <ClInclude Include="src\Chaos\Input\KeyCodes.h" />
     <ClInclude Include="src\Chaos\Input\MouseCodes.h" />
+    <ClInclude Include="src\Chaos\Renderer\PrimitiveType.h" />
+    <ClInclude Include="src\Chaos\Renderer\Quad.h" />
     <ClInclude Include="src\Chaos\Renderer\Renderer.h" />
+    <ClInclude Include="src\Chaos\Renderer\RendererAPI.h" />
+    <ClInclude Include="src\Chaos\Renderer\Texture.h" />
+    <ClInclude Include="src\Chaos\Renderer\Vertex.h" />
+    <ClInclude Include="src\Platform\Vulkan\VulkanTexture.h" />
     <ClInclude Include="src\Platform\Windows\WindowsInput.h" />
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h" />
     <ClInclude Include="src\chaospch.h" />
@@ -554,6 +556,8 @@
     <ClCompile Include="src\Chaos\Core\Log.cpp" />
     <ClCompile Include="src\Chaos\Debug\ImGuiLayer.cpp" />
     <ClCompile Include="src\Chaos\Renderer\Renderer.cpp" />
+    <ClCompile Include="src\Chaos\Renderer\RendererAPI.cpp" />
+    <ClCompile Include="src\Chaos\Renderer\Texture.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />
     <ClCompile Include="src\chaospch.cpp">

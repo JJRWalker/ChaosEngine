@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #ifdef CHAOS_PLATFORM_WINDOWS
 
 #else
@@ -21,3 +23,14 @@
 #define BIND_EVENT_FN(fn) std::bind(&fn, this, std::placeholders::_1)
 
 #define  BIT(x) (1 << x)
+
+namespace Chaos
+{
+	template<typename T>
+	using Ref = std::shared_ptr<T>;
+	template<typename T, typename ... Args>
+	constexpr Ref<T> CreateRef(Args&& ... args)
+	{
+		return std::make_shared<T>(std::forward<Args>(args)...);
+	}
+}

@@ -1,23 +1,25 @@
 
 #pragma once
-//#define GLFW_INCLUDE_VULKAN
+
 #include <Vulkan/Include/vulkan/vulkan.h>
-//#include <GLFW/glfw3.h>
+
 #define GLM_FORCE_RADIANS
 #include <GLM/glm/glm.hpp>
-#include "Chaos/DataTypes/Vec2.h"
 
 #include <optional>
 #include <array>
 
+#include "RendererAPI.h"
+#include "Chaos/DataTypes/Vec2.h"
+#include "Chaos/DataTypes/Vec3.h"
+#include "Chaos/Renderer/Texture.h"
+#include "Chaos/Renderer/PrimitiveType.h"
+
 namespace Chaos
 {
-	enum class RendererAPI
-	{
-		None = 0, Vulkan = 1
-	};
 
-	struct Vertex {
+
+	struct VulkanVertex {
 		glm::vec2 pos;
 		glm::vec3 color;
 		glm::vec2 texCoord;
@@ -25,7 +27,7 @@ namespace Chaos
 		static VkVertexInputBindingDescription GetBindingDescriptions() {
 			VkVertexInputBindingDescription bindingDescription = {};
 			bindingDescription.binding = 0;
-			bindingDescription.stride = sizeof(Vertex);
+			bindingDescription.stride = sizeof(VulkanVertex);
 			bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
 			return bindingDescription;
@@ -37,27 +39,20 @@ namespace Chaos
 			attributeDescriptions[0].binding = 0;
 			attributeDescriptions[0].location = 0;
 			attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
-			attributeDescriptions[0].offset = offsetof(Vertex, pos);
+			attributeDescriptions[0].offset = offsetof(VulkanVertex, pos);
 			
 			attributeDescriptions[1].binding = 0;
 			attributeDescriptions[1].location = 1;
 			attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-			attributeDescriptions[1].offset = offsetof(Vertex, color);
+			attributeDescriptions[1].offset = offsetof(VulkanVertex, color);
 			
 			attributeDescriptions[2].binding = 0;
 			attributeDescriptions[2].location = 2;
 			attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-			attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
+			attributeDescriptions[2].offset = offsetof(VulkanVertex, texCoord);
 
 			return attributeDescriptions;
 		}
-	};
-
-	struct Quad
-	{
-		std::vector<Vertex> verts;
-		std::vector<uint32_t> inds = { 0, 1, 2, 2, 3, 0 };
-		const char* textPath;
 	};
 
 	struct UniformBufferObject {
@@ -90,11 +85,11 @@ namespace Chaos
 		Renderer();
 		~Renderer();
 
-		inline static RendererAPI GetAPI() { return sRendererAPI; }
+		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 
 		static Renderer* Create() { return new Renderer(); }
 
-		void DrawQuad(Vec2* position, Vec2* scale, const char* texturePath);
+		void DrawQuad(Vec2* position, Vec2* scale, Texture* texture);
 		void DrawFrame();
 		bool WaitIdle();
 		void WindowResized() { framebufferResized = true; }
@@ -105,7 +100,9 @@ namespace Chaos
 		//VULKAN TEMP
 	private:
 
-		std::vector<Vertex> vertices = {
+		std::vector<PrimitiveType*> mRenderQueue;
+
+		std::vector<VulkanVertex> vertices = {
 			{{-0.4f, -0.4f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
 			{{0.4f, -0.4f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
 			{{0.4f , 0.4f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
@@ -145,7 +142,7 @@ namespace Chaos
 		void CreateGraphicsPipeline();
 		void CreateFrameBuffers();
 		void CreateCommandPool();
-		void CreateTextureImage(const char* texPath);
+		void CreateTextureImage(Texture* tex);
 		void CreateTextureImageView();
 		void CreateTextureSampler();
 		void CreateVertexBuffers();

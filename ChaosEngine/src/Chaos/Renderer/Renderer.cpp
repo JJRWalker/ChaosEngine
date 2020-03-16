@@ -11,6 +11,10 @@
 #include <filesystem>
 #include <chrono>
 
+#include "Chaos/Renderer/Quad.h"
+#include "Chaos/Renderer/Vertex.h"
+#include "Platform/Vulkan/VulkanTexture.h"
+
 #ifdef CHAOS_DEBUG
 	//const bool enableValidationLayers = true;
 #else
@@ -94,7 +98,7 @@
 			CreateGraphicsPipeline();
 			CreateFrameBuffers();
 			CreateCommandPool();
-			CreateTextureImage("brokenFilePath");
+			CreateTextureImage(Texture::Create("IncorrectFilePath"));
 			CreateTextureImageView();
 			CreateTextureSampler();
 			CreateVertexBuffers();
@@ -424,8 +428,8 @@
 			VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
 			vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
-			auto bindingDescription = Vertex::GetBindingDescriptions();
-			auto attributeDescriptions = Vertex::GetAttributeDescriptions();
+			auto bindingDescription = VulkanVertex::GetBindingDescriptions();
+			auto attributeDescriptions = VulkanVertex::GetAttributeDescriptions();
 
 			vertexInputInfo.vertexBindingDescriptionCount = 1;
 			vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
@@ -563,15 +567,16 @@
 			}
 		}
 
-		void Renderer::CreateTextureImage(const char* texPath)
+		void Renderer::CreateTextureImage(Texture* tex)
 		{
 			int texWidth, texHeight, texChannels;
-			if (!std::filesystem::exists(texPath))
+			if (!std::filesystem::exists(tex->GetFilePath()))
 			{
-				LOGCORE_WARN("VULKAN: could not open file {0}", texPath);
-				texPath = "../Game/textures/blank.png";
+				LOGCORE_WARN("VULKAN: could not open file {0}", tex->GetFilePath());
+				tex->SetFilePath("../Game/textures/blank.png");
 			}
-			stbi_uc* pixels = stbi_load(texPath, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+
+			stbi_uc* pixels = stbi_load(tex->GetFilePath(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 			VkDeviceSize imageSize = texWidth * texHeight * 4;
 
 			if (!pixels) {
@@ -598,6 +603,8 @@
 			vkDestroyBuffer(vkDevice, stagingBuffer, nullptr);
 			vkFreeMemory(vkDevice, stagingBufferMemory, nullptr);
 
+			VulkanTexture* vkTex = (VulkanTexture*)tex;
+			vkTex->SetData(&textureImage);			
 			textureImageView = CreateImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB);
 		}
 
@@ -1135,28 +1142,84 @@
 			vkUnmapMemory(vkDevice, uniformBuffersMemory[currentImage]);
 		}
 
-		void Renderer::DrawQuad(Vec2* position, Vec2* scale, const char* texturePath)
+		void Renderer::DrawQuad(Vec2* position, Vec2* scale, Texture* texture)
 		{
+
 			/*
-			vertices = {
-				{{(-0.5f + position->X) * scale->X / 2, (-0.5f + position->Y) * scale->Y/ 2}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-				{{(0.5f + position->X) * scale->X / 2, (-0.5f + position->Y) * scale->Y / 2}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-				{{(0.5f + position->X) * scale->X / 2, (0.5f + position->Y) * scale->Y / 2}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-				{{(-0.5f + position->X) * scale->X / 2, (0.5f + position->Y) * scale->Y / 2}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
-			};
-			*/
 			vertices = {
 				{{(-1.f * scale->X / 2) + position->X, (-1.f * scale->Y / 2) + position->Y }, {0.0f, 0.0f, 0.0f}, {0.01f, 1.01f}},
 				{{(1.f * scale->X / 2) + position->X, (-1.f * scale->Y / 2) + position->Y }, {0.0f, 0.0f, 0.0f}, {1.01f, 1.01f}},
 				{{(1.f * scale->X / 2) + position->X, (1.f * scale->Y / 2) + position->Y }, {0.0f, 0.0f, 0.0f}, {1.01f, 0.01f}},
-				{{(-1.f * scale->X / 2) + position->X, (1.f * scale->Y / 2) + position->Y }, {1.0f, 1.0f, 0.0f}, {0.01f, 0.01f}}
+				{{(-1.f * scale->X / 2) + position->X, (1.f * scale->Y / 2) + position->Y }, {1.0f, 1.0f, 0.0f}, {0.01f, 0.01f}},
+				{{(-2.f * scale->X / 2) + position->X, (-1.f * scale->Y / 2) + position->Y }, {0.0f, 0.0f, 0.0f}, {0.01f, 1.01f}},
+				{{(2.f * scale->X / 2) + position->X, (-1.f * scale->Y / 2) + position->Y }, {0.0f, 0.0f, 0.0f}, {1.01f, 1.01f}},
+				{{(2.f * scale->X / 2) + position->X, (1.f * scale->Y / 2) + position->Y }, {0.0f, 0.0f, 0.0f}, {1.01f, 0.01f}},
+				{{(-2.f * scale->X / 2) + position->X, (1.f * scale->Y / 2) + position->Y }, {1.0f, 1.0f, 0.0f}, {0.01f, 0.01f}}
 			};
+						indices = {
+			0,1,2,2,3,0,4,5,7,6
+			};
+			*/
 			
+			std::vector<Vertex> verts;
+			verts.push_back(Vertex(Vec2((-1.f * scale->X / 2) + position->X, (-1.f * scale->Y / 2) + position->Y), Vec3(0, 0, 0), Vec2(0.01f, 1.01f)));
+			verts.push_back(Vertex(Vec2((1.f * scale->X / 2) + position->X, (-1.f * scale->Y / 2) + position->Y), Vec3(0, 0, 0), Vec2(1.01f, 1.01f)));
+			verts.push_back(Vertex(Vec2((1.f * scale->X / 2) + position->X, (1.f * scale->Y / 2) + position->Y), Vec3(0, 0, 0), Vec2(1.01f, 0.01f)));
+			verts.push_back(Vertex(Vec2((-1.f * scale->X / 2) + position->X, (1.f * scale->Y / 2) + position->Y), Vec3(0, 0, 0), Vec2(0.01f, 0.01f)));
 
-			indices = {
+			std::vector<uint32_t> ind = {
 			0,1,2,2,3,0
 			};
 
+			Quad* quad = new Quad(verts, ind, texture);
+			mRenderQueue.push_back(quad);
+
+
+			std::vector<VulkanVertex> toAdd = {
+				{{quad->GetVertices()[0].GetPosition().X, quad->GetVertices()[0].GetPosition().Y}, {0,0,0}, {quad->GetVertices()[0].GetTexCoord().X, quad->GetVertices()[0].GetTexCoord().Y}},
+				{{quad->GetVertices()[1].GetPosition().X, quad->GetVertices()[1].GetPosition().Y}, {0,0,0}, {quad->GetVertices()[1].GetTexCoord().X, quad->GetVertices()[1].GetTexCoord().Y}},
+				{{quad->GetVertices()[2].GetPosition().X, quad->GetVertices()[2].GetPosition().Y}, {0,0,0}, {quad->GetVertices()[2].GetTexCoord().X, quad->GetVertices()[2].GetTexCoord().Y}},
+				{{quad->GetVertices()[3].GetPosition().X, quad->GetVertices()[3].GetPosition().Y}, {0,0,0}, {quad->GetVertices()[3].GetTexCoord().X, quad->GetVertices()[3].GetTexCoord().Y}}
+			};
+
+			//vertices.insert(vertices.end(), toAdd.begin(), toAdd.end());
+
+			//indices.insert(indices.end(), ind.begin(), ind.end());
+			/*
+
+			*/
+
+			//DrawFrame();
+		}
+
+		void Renderer::DrawFrame()
+		{
+			std::vector<const char*> uniquePaths;
+			for (PrimitiveType* t : mRenderQueue)
+			{
+				//SORT VECTOR BY IMAGEPATH
+			}
+
+			uint32_t indOffset = 0;
+			for (PrimitiveType* t : mRenderQueue)
+			{
+				uint32_t highestInd = 0;
+				for (int i = 0; i < t->GetVertices().size(); ++i)
+				{
+					vertices.push_back({ {t->GetVertices()[i].GetPosition().X, t->GetVertices()[i].GetPosition().Y}, {0,0,0}, {t->GetVertices()[i].GetTexCoord().X, t->GetVertices()[i].GetTexCoord().Y} });
+				}
+				for (int i = 0; i < t->GetIndices().size(); ++i)
+				{
+					indices.push_back((t->GetIndices()[i] + indOffset));
+					if (t->GetIndices()[i] > highestInd)
+					{
+						highestInd = t->GetIndices()[i];
+					}
+				}
+				indOffset += highestInd + 1;				
+			}
+
+			//PREDRAW
 			vkDestroyImageView(vkDevice, textureImageView, nullptr);
 
 			vkDestroyImage(vkDevice, textureImage, nullptr);
@@ -1166,20 +1229,15 @@
 			vkFreeMemory(vkDevice, indexBufferMemory, nullptr);
 
 			vkDestroyBuffer(vkDevice, vertexBuffer, nullptr);
-			vkFreeMemory(vkDevice, vertexBufferMemory, nullptr);				
+			vkFreeMemory(vkDevice, vertexBufferMemory, nullptr);
 			vkFreeCommandBuffers(vkDevice, vkCommandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
 
-
-			CreateTextureImage(texturePath);
+			CreateTextureImage(mRenderQueue[1]->GetTexture());
 			CreateVertexBuffers();
 			CreateIndexBuffers();
 			CreateCommandBuffers();
-			DrawFrame();
-		}
 
-		void Renderer::DrawFrame()
-		{
-			
+			//DRAW
 			vkWaitForFences(vkDevice, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 			vkResetFences(vkDevice, 1, &inFlightFences[currentFrame]);
 
@@ -1255,9 +1313,13 @@
 				LOGCORE_ERROR("VULKAN: failed to present swapchain image");
 			}
 
-			vkQueueWaitIdle(presentQueue);
-
+			//vkQueueWaitIdle(presentQueue);
+					   
 			currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+
+			vertices.clear();
+			indices.clear();
+			mRenderQueue.clear();
 		}
 
 		bool Renderer::WaitIdle()
