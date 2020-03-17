@@ -14,6 +14,8 @@ namespace Chaos
 			case RendererAPI::API::None: LOGCORE_ERROR("Render API not supported!"); return nullptr;
 			case RendererAPI::API::Vulkan: return new VulkanTexture(path);
 			}
+			LOGCORE_ERROR("Render API not found");
+			return nullptr;
 		}
 
 }

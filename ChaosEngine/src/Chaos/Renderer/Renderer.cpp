@@ -36,18 +36,29 @@
 
 
 			vkDestroySampler(vkDevice, textureSampler, nullptr);
-			vkDestroyImageView(vkDevice, textureImageView, nullptr);
 
-			vkDestroyImage(vkDevice, textureImage, nullptr);
-			vkFreeMemory(vkDevice, textureImageMemory, nullptr);
+			for (int i = 0; i < textureImageViews.size(); ++i)
+			{
+				vkDestroyImageView(vkDevice, textureImageViews[i], nullptr);
+				vkDestroyImage(vkDevice, textureImages[i], nullptr);
+				vkFreeMemory(vkDevice, textureImagesMemory[i], nullptr);
+			}
+
 
 			vkDestroyDescriptorSetLayout(vkDevice, descriptorSetLayout, nullptr);
 			
-			vkDestroyBuffer(vkDevice, indexBuffer, nullptr);
-			vkFreeMemory(vkDevice, indexBufferMemory, nullptr);
+			for (int i = 0; i < indexBuffers.size(); ++i)
+			{
+				vkDestroyBuffer(vkDevice, indexBuffers[i], nullptr);
+				vkFreeMemory(vkDevice, indexBuffersMemory[i], nullptr);
+			}
 
-			vkDestroyBuffer(vkDevice, vertexBuffer, nullptr);
-			vkFreeMemory(vkDevice, vertexBufferMemory, nullptr);
+			for (int i = 0; i < vertexBuffers.size(); ++i)
+			{
+				vkDestroyBuffer(vkDevice, vertexBuffers[i], nullptr);
+				vkFreeMemory(vkDevice, vertexBuffersMemory[i], nullptr);
+			}
+
 
 			for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) 
 			{
@@ -98,15 +109,15 @@
 			CreateGraphicsPipeline();
 			CreateFrameBuffers();
 			CreateCommandPool();
-			CreateTextureImage(Texture::Create("IncorrectFilePath"));
-			CreateTextureImageView();
+			//CreateTextureImage(Texture::Create("IncorrectFilePath"));
+			//CreateTextureImageView();
 			CreateTextureSampler();
 			CreateVertexBuffers();
 			CreateIndexBuffers();
 			CreateUniformBuffers();
 			CreateDescriptorPool();
-			CreateDescriptorSets();
-			CreateCommandBuffers();
+			//CreateDescriptorSets();
+			//CreateCommandBuffers();
 			CreateSyncObjects();
 		}
 
@@ -344,6 +355,8 @@
 			samplerLayoutBinding.pImmutableSamplers = nullptr;
 			samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
+
+
 			std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
 			VkDescriptorSetLayoutCreateInfo layoutInfo = {};
 			layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -570,47 +583,69 @@
 		void Renderer::CreateTextureImage(Texture* tex)
 		{
 			int texWidth, texHeight, texChannels;
-			if (!std::filesystem::exists(tex->GetFilePath()))
-			{
-				LOGCORE_WARN("VULKAN: could not open file {0}", tex->GetFilePath());
-				tex->SetFilePath("../Game/textures/blank.png");
-			}
-
-			stbi_uc* pixels = stbi_load(tex->GetFilePath(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-			VkDeviceSize imageSize = texWidth * texHeight * 4;
-
-			if (!pixels) {
-				throw std::runtime_error("failed to load texture image!");
-			}
-
 			VkBuffer stagingBuffer;
 			VkDeviceMemory stagingBufferMemory;
-			CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+			VkImage image;
+			VkDeviceMemory memory;
+			VkImageView view;
+			//if the texture does not have data, load data, otherwise use pixel data stored on the texture object
+			if (tex->GetData() == NULL)
+			{				
+				if (!std::filesystem::exists(tex->GetFilePath()))
+				{
+					LOGCORE_WARN("VULKAN: could not open file {0}", tex->GetFilePath());
+					tex->SetFilePath("../Game/textures/blank.png");
+				}
 
-			void* data;
-			vkMapMemory(vkDevice, stagingBufferMemory, 0, imageSize, 0, &data);
-			memcpy(data, pixels, static_cast<size_t>(imageSize));
-			vkUnmapMemory(vkDevice, stagingBufferMemory);
+				stbi_uc* pixels = stbi_load(tex->GetFilePath(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+				VkDeviceSize imageSize = texWidth * texHeight * 4;
 
-			stbi_image_free(pixels);
+				if (!pixels) {
+					LOGCORE_ERROR("VULKAN: failed to load texture image!");
+				}
 
-			CreateImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+				CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
-			TransitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-			CopyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
-			TransitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+				void* data;
+				vkMapMemory(vkDevice, stagingBufferMemory, 0, imageSize, 0, &data);
+				memcpy(data, pixels, static_cast<size_t>(imageSize));
+				vkUnmapMemory(vkDevice, stagingBufferMemory);
+
+				stbi_image_free(pixels);
+			}
+			else
+			{
+				texWidth = tex->GetWidth();
+				texHeight = tex->GetHeight();
+				VkDeviceSize imageSize = texWidth * texHeight * 4;
+
+				CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+				void* data;
+				vkMapMemory(vkDevice, stagingBufferMemory, 0, imageSize, 0, &data);
+				memcpy(data, tex->GetData(), static_cast<size_t>(imageSize));
+				vkUnmapMemory(vkDevice, stagingBufferMemory);
+			}
+
+			CreateImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, image, memory);
+
+			TransitionImageLayout(image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+			CopyBufferToImage(stagingBuffer, image, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+			TransitionImageLayout(image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 			vkDestroyBuffer(vkDevice, stagingBuffer, nullptr);
 			vkFreeMemory(vkDevice, stagingBufferMemory, nullptr);
 
-			VulkanTexture* vkTex = (VulkanTexture*)tex;
-			vkTex->SetData(&textureImage);			
-			textureImageView = CreateImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB);
+			view = CreateImageView(image, VK_FORMAT_R8G8B8A8_SRGB);
+
+			textureImages.push_back(image);
+			textureImagesMemory.push_back(memory);
+			textureImageViews.push_back(view);
 		}
 
 		void Renderer::CreateTextureImageView()
 		{
-			textureImageView = CreateImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB);
+			//textureImageView = CreateImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB);
 		}
 
 		void Renderer::CreateTextureSampler()
@@ -649,6 +684,9 @@
 			memcpy(data, vertices.data(), (size_t)bufferSize);
 			vkUnmapMemory(vkDevice, stagingBufferMemory);
 
+			VkBuffer vertexBuffer;
+			VkDeviceMemory vertexBufferMemory;
+
 			CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
 
 			CopyBuffer(stagingBuffer, vertexBuffer, bufferSize);
@@ -656,6 +694,8 @@
 			vkDestroyBuffer(vkDevice, stagingBuffer, nullptr);
 			vkFreeMemory(vkDevice, stagingBufferMemory, nullptr);
 
+			vertexBuffers.push_back(vertexBuffer);
+			vertexBuffersMemory.push_back(vertexBufferMemory);
 		}
 
 		void Renderer::CreateIndexBuffers()
@@ -671,12 +711,18 @@
 			memcpy(data, indices.data(), (size_t)bufferSize);
 			vkUnmapMemory(vkDevice, stagingBufferMemory);
 
+			VkBuffer indexBuffer;
+			VkDeviceMemory indexBufferMemory;
+
 			CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
 			
 			CopyBuffer(stagingBuffer, indexBuffer, bufferSize);
 
 			vkDestroyBuffer(vkDevice, stagingBuffer, nullptr);
 			vkFreeMemory(vkDevice, stagingBufferMemory, nullptr);
+
+			indexBuffers.push_back(indexBuffer);
+			indexBuffersMemory.push_back(indexBufferMemory);
 		}
 
 		void Renderer::CreateUniformBuffers()
@@ -695,15 +741,15 @@
 		{
 			std::array<VkDescriptorPoolSize, 2> poolSizes = {};
 			poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			poolSizes[0].descriptorCount = static_cast<uint32_t>(swapchainImages.size());
+			poolSizes[0].descriptorCount = static_cast<uint32_t>(mRenderQueue.size());
 			poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			poolSizes[1].descriptorCount = static_cast<uint32_t>(swapchainImages.size());
+			poolSizes[1].descriptorCount = static_cast<uint32_t>(mRenderQueue.size());
 
 			VkDescriptorPoolCreateInfo poolInfo = {};
 			poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 			poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 			poolInfo.pPoolSizes = poolSizes.data();
-			poolInfo.maxSets = static_cast<uint32_t>(swapchainImages.size());
+			poolInfo.maxSets = static_cast<uint32_t>(mRenderQueue.size());
 
 			if (vkCreateDescriptorPool(vkDevice, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) 
 			{
@@ -713,20 +759,23 @@
 
 		void Renderer::CreateDescriptorSets()
 		{
-			std::vector<VkDescriptorSetLayout> layouts(swapchainImages.size(), descriptorSetLayout);
+			std::vector<VkDescriptorSetLayout> layouts(mRenderQueue.size(), descriptorSetLayout);
 			VkDescriptorSetAllocateInfo allocInfo = {};
 			allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 			allocInfo.descriptorPool = descriptorPool;
-			allocInfo.descriptorSetCount = static_cast<uint32_t>(swapchainImages.size());
+			allocInfo.descriptorSetCount = static_cast<uint32_t>(mRenderQueue.size());
 			allocInfo.pSetLayouts = layouts.data();
 
-			descriptorSets.resize(swapchainImages.size());
+			descriptorSets.resize(mRenderQueue.size());
 			if (vkAllocateDescriptorSets(vkDevice, &allocInfo, descriptorSets.data()) != VK_SUCCESS) 
 			{
 				LOGCORE_ERROR("VULKAN: failed to allocate descriptor sets!");
 			}
 
-			for (size_t i = 0; i < swapchainImages.size(); i++) {
+			for (size_t i = 0; i < mRenderQueue.size(); i++) {
+
+				CreateTextureImage(mRenderQueue[i][0]->GetTexture());
+
 				VkDescriptorBufferInfo bufferInfo = {};
 				bufferInfo.buffer = uniformBuffers[i];
 				bufferInfo.offset = 0;
@@ -734,7 +783,7 @@
 
 				VkDescriptorImageInfo imageInfo = {};
 				imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				imageInfo.imageView = textureImageView;
+				imageInfo.imageView = textureImageViews[i];
 				imageInfo.sampler = textureSampler;
 
 				std::array<VkWriteDescriptorSet, 2> descriptorWrites = {};
@@ -783,11 +832,14 @@
 			allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 			allocInfo.commandBufferCount = (uint32_t)commandBuffers.size();
 
+			vkDestroyDescriptorPool(vkDevice, descriptorPool, nullptr);
+			CreateDescriptorPool();
+			CreateDescriptorSets();
+
 			if (vkAllocateCommandBuffers(vkDevice, &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
 				LOGCORE_ERROR("VULKAN: failed to allocate command buffers!");
 				return;
 			}
-
 			for (size_t i = 0; i < commandBuffers.size(); i++) {
 				VkCommandBufferBeginInfo beginInfo = {};
 				beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -796,7 +848,6 @@
 					LOGCORE_ERROR("VULKAN: failed to begin recording command buffer!");
 					return;
 				}
-
 				VkRenderPassBeginInfo renderPassInfo = {};
 				renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 				renderPassInfo.renderPass = vkRenderPass;
@@ -809,21 +860,46 @@
 				renderPassInfo.pClearValues = &clearColor;
 
 				vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
 				vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, vkGraphicsPipeline);
+				for (int x = 0; x < mRenderQueue.size(); ++x)
+				{
+					//Clearing lists before next draw call
+					vertices.clear();
+					indices.clear();
+					uint32_t indOffset = 0;
+					for (PrimitiveType* t : mRenderQueue[x])
+					{
+						uint32_t highestInd = 0;
+						for (int y = 0; y < t->GetVertices().size(); ++y)
+						{
+							vertices.push_back({ {t->GetVertices()[y].GetPosition().X, t->GetVertices()[y].GetPosition().Y}, {0,0,0}, {t->GetVertices()[y].GetTexCoord().X, t->GetVertices()[y].GetTexCoord().Y} });
+						}
+						for (int y = 0; y < t->GetIndices().size(); ++y)
+						{
+							indices.push_back((t->GetIndices()[y] + indOffset));
+							if (t->GetIndices()[y] > highestInd)
+							{
+								highestInd = t->GetIndices()[y];
+							}
+						}
+						indOffset += highestInd + 1;
+					}
+					
+					//updating vertex and index buffers using the indicies and vertcies from the list of primatives
+					CreateVertexBuffers();
+					CreateIndexBuffers();
 
-				VkBuffer vertexBuffers[] = { vertexBuffer };
-				VkDeviceSize offsets[] = { 0 };
-				vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
+					VkBuffer vertexBuffersToBind[] = { vertexBuffers[x] };
+					VkDeviceSize offsets[] = { 0 };
+					vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffersToBind, offsets);
 
-				vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+					vkCmdBindIndexBuffer(commandBuffers[i], indexBuffers[x], 0, VK_INDEX_TYPE_UINT16);
 
-				vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipelineLayout, 0, 1, &descriptorSets[i], 0, nullptr);
+					vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipelineLayout, 0, 1, &descriptorSets[x], 0, nullptr);
 
-				vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
-
+					vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+				}
 				vkCmdEndRenderPass(commandBuffers[i]);
-
 				if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) 
 				{
 					LOGCORE_ERROR("VULKAN: failed to record command buffer!");
@@ -1143,24 +1219,7 @@
 		}
 
 		void Renderer::DrawQuad(Vec2* position, Vec2* scale, Texture* texture)
-		{
-
-			/*
-			vertices = {
-				{{(-1.f * scale->X / 2) + position->X, (-1.f * scale->Y / 2) + position->Y }, {0.0f, 0.0f, 0.0f}, {0.01f, 1.01f}},
-				{{(1.f * scale->X / 2) + position->X, (-1.f * scale->Y / 2) + position->Y }, {0.0f, 0.0f, 0.0f}, {1.01f, 1.01f}},
-				{{(1.f * scale->X / 2) + position->X, (1.f * scale->Y / 2) + position->Y }, {0.0f, 0.0f, 0.0f}, {1.01f, 0.01f}},
-				{{(-1.f * scale->X / 2) + position->X, (1.f * scale->Y / 2) + position->Y }, {1.0f, 1.0f, 0.0f}, {0.01f, 0.01f}},
-				{{(-2.f * scale->X / 2) + position->X, (-1.f * scale->Y / 2) + position->Y }, {0.0f, 0.0f, 0.0f}, {0.01f, 1.01f}},
-				{{(2.f * scale->X / 2) + position->X, (-1.f * scale->Y / 2) + position->Y }, {0.0f, 0.0f, 0.0f}, {1.01f, 1.01f}},
-				{{(2.f * scale->X / 2) + position->X, (1.f * scale->Y / 2) + position->Y }, {0.0f, 0.0f, 0.0f}, {1.01f, 0.01f}},
-				{{(-2.f * scale->X / 2) + position->X, (1.f * scale->Y / 2) + position->Y }, {1.0f, 1.0f, 0.0f}, {0.01f, 0.01f}}
-			};
-						indices = {
-			0,1,2,2,3,0,4,5,7,6
-			};
-			*/
-			
+		{			
 			std::vector<Vertex> verts;
 			verts.push_back(Vertex(Vec2((-1.f * scale->X / 2) + position->X, (-1.f * scale->Y / 2) + position->Y), Vec3(0, 0, 0), Vec2(0.01f, 1.01f)));
 			verts.push_back(Vertex(Vec2((1.f * scale->X / 2) + position->X, (-1.f * scale->Y / 2) + position->Y), Vec3(0, 0, 0), Vec2(1.01f, 1.01f)));
@@ -1172,69 +1231,29 @@
 			};
 
 			Quad* quad = new Quad(verts, ind, texture);
-			mRenderQueue.push_back(quad);
+			if (mRenderQueue.size() == 0)
+			{
+				mRenderQueue.push_back(std::vector<PrimitiveType*>());
+				mRenderQueue[0].push_back(quad);
+				return;
+			}
 
+			for (auto& i : mRenderQueue)
+			{
+				if (quad->GetTexture()->GetFilePath() == i[0]->GetTexture()->GetFilePath())
+				{
+					i.push_back(quad);
+					return;
+				}
+			}
+			std::vector<PrimitiveType*> primativeList = { quad };
+			mRenderQueue.push_back(primativeList);
 
-			std::vector<VulkanVertex> toAdd = {
-				{{quad->GetVertices()[0].GetPosition().X, quad->GetVertices()[0].GetPosition().Y}, {0,0,0}, {quad->GetVertices()[0].GetTexCoord().X, quad->GetVertices()[0].GetTexCoord().Y}},
-				{{quad->GetVertices()[1].GetPosition().X, quad->GetVertices()[1].GetPosition().Y}, {0,0,0}, {quad->GetVertices()[1].GetTexCoord().X, quad->GetVertices()[1].GetTexCoord().Y}},
-				{{quad->GetVertices()[2].GetPosition().X, quad->GetVertices()[2].GetPosition().Y}, {0,0,0}, {quad->GetVertices()[2].GetTexCoord().X, quad->GetVertices()[2].GetTexCoord().Y}},
-				{{quad->GetVertices()[3].GetPosition().X, quad->GetVertices()[3].GetPosition().Y}, {0,0,0}, {quad->GetVertices()[3].GetTexCoord().X, quad->GetVertices()[3].GetTexCoord().Y}}
-			};
-
-			//vertices.insert(vertices.end(), toAdd.begin(), toAdd.end());
-
-			//indices.insert(indices.end(), ind.begin(), ind.end());
-			/*
-
-			*/
-
-			//DrawFrame();
 		}
 
 		void Renderer::DrawFrame()
 		{
-			std::vector<const char*> uniquePaths;
-			for (PrimitiveType* t : mRenderQueue)
-			{
-				//SORT VECTOR BY IMAGEPATH
-			}
 
-			uint32_t indOffset = 0;
-			for (PrimitiveType* t : mRenderQueue)
-			{
-				uint32_t highestInd = 0;
-				for (int i = 0; i < t->GetVertices().size(); ++i)
-				{
-					vertices.push_back({ {t->GetVertices()[i].GetPosition().X, t->GetVertices()[i].GetPosition().Y}, {0,0,0}, {t->GetVertices()[i].GetTexCoord().X, t->GetVertices()[i].GetTexCoord().Y} });
-				}
-				for (int i = 0; i < t->GetIndices().size(); ++i)
-				{
-					indices.push_back((t->GetIndices()[i] + indOffset));
-					if (t->GetIndices()[i] > highestInd)
-					{
-						highestInd = t->GetIndices()[i];
-					}
-				}
-				indOffset += highestInd + 1;				
-			}
-
-			//PREDRAW
-			vkDestroyImageView(vkDevice, textureImageView, nullptr);
-
-			vkDestroyImage(vkDevice, textureImage, nullptr);
-			vkFreeMemory(vkDevice, textureImageMemory, nullptr);
-
-			vkDestroyBuffer(vkDevice, indexBuffer, nullptr);
-			vkFreeMemory(vkDevice, indexBufferMemory, nullptr);
-
-			vkDestroyBuffer(vkDevice, vertexBuffer, nullptr);
-			vkFreeMemory(vkDevice, vertexBufferMemory, nullptr);
-			vkFreeCommandBuffers(vkDevice, vkCommandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
-
-			CreateTextureImage(mRenderQueue[1]->GetTexture());
-			CreateVertexBuffers();
-			CreateIndexBuffers();
 			CreateCommandBuffers();
 
 			//DRAW
@@ -1255,13 +1274,13 @@
 			}
 
 			UpdateUniformBuffer(imageIndex);
-			
+
 			//Check if a previous frame is using the same image
 			if (imagesInFlight[imageIndex] != VK_NULL_HANDLE)
 			{
 				vkWaitForFences(vkDevice, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
 			}
-			
+
 			imagesInFlight[imageIndex] = inFlightFences[currentFrame];
 
 
@@ -1313,12 +1332,46 @@
 				LOGCORE_ERROR("VULKAN: failed to present swapchain image");
 			}
 
-			//vkQueueWaitIdle(presentQueue);
-					   
 			currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+			vkQueueWaitIdle(presentQueue);
 
-			vertices.clear();
-			indices.clear();
+			vkFreeCommandBuffers(vkDevice, vkCommandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+
+			for (int i = 0; i < textureImageViews.size(); ++i)
+			{
+				vkDestroyImageView(vkDevice, textureImageViews[i], nullptr);
+				vkDestroyImage(vkDevice, textureImages[i], nullptr);
+				vkFreeMemory(vkDevice, textureImagesMemory[i], nullptr);
+			}
+
+			for (int i = 0; i < vertexBuffers.size(); ++i)
+			{
+				vkDestroyBuffer(vkDevice, vertexBuffers[i], nullptr);
+				vkFreeMemory(vkDevice, vertexBuffersMemory[i], nullptr);
+			}
+
+			for (int i = 0; i < indexBuffers.size(); ++i)
+			{
+				vkDestroyBuffer(vkDevice, indexBuffers[i], nullptr);
+				vkFreeMemory(vkDevice, indexBuffersMemory[i], nullptr);
+			}
+
+			//deleting all pointers before clearing the list
+			for (auto& l : mRenderQueue)
+			{
+				for (auto* x : l)
+				{
+					delete x;
+				}
+				l.clear();
+			}
+			indexBuffers.clear();
+			indexBuffersMemory.clear();
+			vertexBuffers.clear();
+			vertexBuffersMemory.clear();
+			textureImages.clear();
+			textureImagesMemory.clear();
+			textureImageViews.clear();
 			mRenderQueue.clear();
 		}
 

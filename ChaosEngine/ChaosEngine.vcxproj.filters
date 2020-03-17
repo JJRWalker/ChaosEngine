@@ -1307,6 +1307,9 @@
     <ClCompile Include="src\Chaos\Renderer\Texture.cpp">
       <Filter>src\Chaos\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src\Platform\Vulkan\VulkanTexture.cpp">
+      <Filter>src\Platform\Vulkan</Filter>
+    </ClCompile>
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
       <Filter>src\Platform\Windows</Filter>
     </ClCompile>

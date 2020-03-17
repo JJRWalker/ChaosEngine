@@ -18,6 +18,9 @@ namespace Chaos
 		virtual uint32_t GetWidth() const = 0;
 		virtual void SetHeight(uint32_t height) = 0;
 		virtual uint32_t GetHeight() const = 0;
+		virtual int GetSize() const = 0;
+		virtual void* GetData() const = 0;
+		inline virtual void SetData(void* data) = 0;
 
 
 		static Texture* Create(const char* path);

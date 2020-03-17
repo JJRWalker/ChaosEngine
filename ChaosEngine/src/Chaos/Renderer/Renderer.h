@@ -100,7 +100,7 @@ namespace Chaos
 		//VULKAN TEMP
 	private:
 
-		std::vector<PrimitiveType*> mRenderQueue;
+		std::vector<std::vector<PrimitiveType*>> mRenderQueue;
 
 		std::vector<VulkanVertex> vertices = {
 			{{-0.4f, -0.4f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
@@ -114,14 +114,11 @@ namespace Chaos
 			0,1,2,2,3,0
 		};
 
-
-
-
 		const glm::vec4 mClearColor = { 0.0f,0.0f, 0.03f, 1.0f };
 
-		VkImage textureImage;
-		VkDeviceMemory textureImageMemory;
-		VkImageView textureImageView;
+		std::vector<VkImage> textureImages;
+		std::vector<VkDeviceMemory> textureImagesMemory;
+		std::vector<VkImageView> textureImageViews;
 		VkSampler textureSampler;
 
 		//Funcs
@@ -206,10 +203,10 @@ namespace Chaos
 		VkCommandPool vkCommandPool;
 		std::vector<VkCommandBuffer> commandBuffers;
 
-		VkBuffer vertexBuffer;
-		VkDeviceMemory vertexBufferMemory;
-		VkBuffer indexBuffer;
-		VkDeviceMemory indexBufferMemory;
+		std::vector<VkBuffer> vertexBuffers;
+		std::vector<VkDeviceMemory> vertexBuffersMemory;
+		std::vector<VkBuffer> indexBuffers;
+		std::vector<VkDeviceMemory> indexBuffersMemory;
 
 		VkDescriptorPool descriptorPool;
 		std::vector<VkDescriptorSet> descriptorSets;
