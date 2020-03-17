@@ -31,9 +31,9 @@ namespace Chaos
 
 	void Application::Run()
 	{
-		Texture* testSprite = Texture::Create("../Game/textures/sprite-test.png");
-		Texture* test = Texture::Create("../Game/textures/test.png");
-		Texture* blank = Texture::Create("");
+		Texture* testSprite = Texture::Create("../Game/textures/sprite-test.png", 1);
+		Texture* test = Texture::Create("../Game/textures/Floor.jpg", 20);
+		Texture* blank = Texture::Create("", 1);
 		Vec2* pos = new Vec2(0.f, 0.f);
 		int xModifier = 1;
 		int yModifier = 1;
@@ -73,12 +73,14 @@ namespace Chaos
 				pos->Y += 0.01f * yModifier;
 				pos->X += 0.01f * xModifier;
 
-				mRenderer->DrawQuad(new Vec2 (3.f, 3.f), new Vec2(1.f, 1.f), blank);
-				mRenderer->DrawQuad(new Vec2 (3.f, 3.f), new Vec2(1.f, 1.f), blank);
-				mRenderer->DrawQuad(new Vec2 (-5.f , 5.f), new Vec2(1.f, 1.f), test);
-				mRenderer->DrawQuad(new Vec2 (-5.f , -5.f), new Vec2(1.f, 1.f), test);
-				mRenderer->DrawQuad(new Vec2 (5.f , 5.f), new Vec2(1.f, 1.f), test);
-				mRenderer->DrawQuad(new Vec2(5.f, -5.f), new Vec2(1.f, 1.f), test);
+				for (int x = -10; x < 10; ++x)
+				{
+					for (int y = -10; y < 10; ++y)
+					{
+						
+					}
+				}
+				mRenderer->DrawQuad(new Vec2(0.f, 0.f), new Vec2(20.f, 20.f), test);
 				mRenderer->DrawQuad(pos, new Vec2(1.f, 1.f), testSprite);
 
 

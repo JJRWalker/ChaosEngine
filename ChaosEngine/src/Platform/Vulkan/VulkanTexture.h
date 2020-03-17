@@ -6,7 +6,7 @@ namespace Chaos
 	class VulkanTexture : public Texture
 	{
 	public:
-		VulkanTexture(const char* filePath);
+		VulkanTexture(const char* filePath, float tilingFactor);
 		virtual ~VulkanTexture() {
 			free(mPixelData);
 			delete mPixelData;
@@ -39,10 +39,12 @@ namespace Chaos
 
 		inline virtual void* GetData() const override { return mPixelData; }
 
+		inline virtual float GetTilingFactor() const override { return mTilingFactor; }
 
 	private: 
 		mutable const char* mFilePath;
 		void* mPixelData;
+		float mTilingFactor = 1;
 		uint32_t mWidth = 0;
 		uint32_t mHeight = 0;
 		int mSize;

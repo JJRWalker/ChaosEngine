@@ -5,7 +5,7 @@
 
 namespace Chaos
 {
-	VulkanTexture::VulkanTexture(const char* filePath) : mFilePath(filePath)
+	VulkanTexture::VulkanTexture(const char* filePath, float tilingFactor) : mFilePath(filePath), mTilingFactor(tilingFactor)
 	{
 		int texWidth, texHeight, texChannels;
 		if (!std::filesystem::exists(mFilePath))

@@ -1221,9 +1221,9 @@
 		void Renderer::DrawQuad(Vec2* position, Vec2* scale, Texture* texture)
 		{			
 			std::vector<Vertex> verts;
-			verts.push_back(Vertex(Vec2((-1.f * scale->X / 2) + position->X, (-1.f * scale->Y / 2) + position->Y), Vec3(0, 0, 0), Vec2(0.01f, 1.01f)));
-			verts.push_back(Vertex(Vec2((1.f * scale->X / 2) + position->X, (-1.f * scale->Y / 2) + position->Y), Vec3(0, 0, 0), Vec2(1.01f, 1.01f)));
-			verts.push_back(Vertex(Vec2((1.f * scale->X / 2) + position->X, (1.f * scale->Y / 2) + position->Y), Vec3(0, 0, 0), Vec2(1.01f, 0.01f)));
+			verts.push_back(Vertex(Vec2((-1.f * scale->X / 2) + position->X, (-1.f * scale->Y / 2) + position->Y), Vec3(0, 0, 0), Vec2(0.01f, texture->GetTilingFactor())));
+			verts.push_back(Vertex(Vec2((1.f * scale->X / 2) + position->X, (-1.f * scale->Y / 2) + position->Y), Vec3(0, 0, 0), Vec2(texture->GetTilingFactor(), texture->GetTilingFactor())));
+			verts.push_back(Vertex(Vec2((1.f * scale->X / 2) + position->X, (1.f * scale->Y / 2) + position->Y), Vec3(0, 0, 0), Vec2(texture->GetTilingFactor(), 0.01f)));
 			verts.push_back(Vertex(Vec2((-1.f * scale->X / 2) + position->X, (1.f * scale->Y / 2) + position->Y), Vec3(0, 0, 0), Vec2(0.01f, 0.01f)));
 
 			std::vector<uint32_t> ind = {
@@ -1253,126 +1253,128 @@
 
 		void Renderer::DrawFrame()
 		{
-
-			CreateCommandBuffers();
-
-			//DRAW
-			vkWaitForFences(vkDevice, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
-			vkResetFences(vkDevice, 1, &inFlightFences[currentFrame]);
-
-			uint32_t imageIndex;
-			VkResult result = vkAcquireNextImageKHR(vkDevice, vkSwapchain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
-
-			if (result == VK_ERROR_OUT_OF_DATE_KHR)
+			if (mRenderQueue.size() > 0)
 			{
-				RecreateSwapchain();
-				return;
-			}
-			else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
-			{
-				LOGCORE_ERROR("VULKAN: failed to aquire swapchain image!");
-			}
+				CreateCommandBuffers();
 
-			UpdateUniformBuffer(imageIndex);
+				//DRAW
+				vkWaitForFences(vkDevice, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+				vkResetFences(vkDevice, 1, &inFlightFences[currentFrame]);
 
-			//Check if a previous frame is using the same image
-			if (imagesInFlight[imageIndex] != VK_NULL_HANDLE)
-			{
-				vkWaitForFences(vkDevice, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
-			}
+				uint32_t imageIndex;
+				VkResult result = vkAcquireNextImageKHR(vkDevice, vkSwapchain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
-			imagesInFlight[imageIndex] = inFlightFences[currentFrame];
-
-
-			VkSubmitInfo submitInfo = {};
-			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
-			VkSemaphore waitSemaphores[] = { imageAvailableSemaphores[currentFrame] };
-			VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-			submitInfo.waitSemaphoreCount = 1;
-			submitInfo.pWaitSemaphores = waitSemaphores;
-			submitInfo.pWaitDstStageMask = waitStages;
-
-			submitInfo.commandBufferCount = 1;
-			submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
-
-			VkSemaphore signalSemaphore[] = { renderFinishedSemaphores[currentFrame] };
-			submitInfo.signalSemaphoreCount = 1;
-			submitInfo.pSignalSemaphores = signalSemaphore;
-
-			vkResetFences(vkDevice, 1, &inFlightFences[currentFrame]);
-
-			if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS)
-			{
-				LOGCORE_ERROR("VULKAN: failed to submit draw command buffer!");
-			}
-
-			VkPresentInfoKHR presentInfo = {};
-			presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-
-			presentInfo.waitSemaphoreCount = 1;
-			presentInfo.pWaitSemaphores = signalSemaphore;
-
-			VkSwapchainKHR swapChains[] = { vkSwapchain };
-			presentInfo.swapchainCount = 1;
-			presentInfo.pSwapchains = swapChains;
-			presentInfo.pImageIndices = &imageIndex;
-			presentInfo.pResults = nullptr;
-
-			result = vkQueuePresentKHR(presentQueue, &presentInfo);
-
-			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized)
-			{
-				framebufferResized = false;
-				RecreateSwapchain();
-				return;
-			}
-			else if (result != VK_SUCCESS)
-			{
-				LOGCORE_ERROR("VULKAN: failed to present swapchain image");
-			}
-
-			currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-			vkQueueWaitIdle(presentQueue);
-
-			vkFreeCommandBuffers(vkDevice, vkCommandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
-
-			for (int i = 0; i < textureImageViews.size(); ++i)
-			{
-				vkDestroyImageView(vkDevice, textureImageViews[i], nullptr);
-				vkDestroyImage(vkDevice, textureImages[i], nullptr);
-				vkFreeMemory(vkDevice, textureImagesMemory[i], nullptr);
-			}
-
-			for (int i = 0; i < vertexBuffers.size(); ++i)
-			{
-				vkDestroyBuffer(vkDevice, vertexBuffers[i], nullptr);
-				vkFreeMemory(vkDevice, vertexBuffersMemory[i], nullptr);
-			}
-
-			for (int i = 0; i < indexBuffers.size(); ++i)
-			{
-				vkDestroyBuffer(vkDevice, indexBuffers[i], nullptr);
-				vkFreeMemory(vkDevice, indexBuffersMemory[i], nullptr);
-			}
-
-			//deleting all pointers before clearing the list
-			for (auto& l : mRenderQueue)
-			{
-				for (auto* x : l)
+				if (result == VK_ERROR_OUT_OF_DATE_KHR)
 				{
-					delete x;
+					RecreateSwapchain();
+					return;
 				}
-				l.clear();
+				else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+				{
+					LOGCORE_ERROR("VULKAN: failed to aquire swapchain image!");
+				}
+
+				UpdateUniformBuffer(imageIndex);
+
+				//Check if a previous frame is using the same image
+				if (imagesInFlight[imageIndex] != VK_NULL_HANDLE)
+				{
+					vkWaitForFences(vkDevice, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
+				}
+
+				imagesInFlight[imageIndex] = inFlightFences[currentFrame];
+
+
+				VkSubmitInfo submitInfo = {};
+				submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+				VkSemaphore waitSemaphores[] = { imageAvailableSemaphores[currentFrame] };
+				VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+				submitInfo.waitSemaphoreCount = 1;
+				submitInfo.pWaitSemaphores = waitSemaphores;
+				submitInfo.pWaitDstStageMask = waitStages;
+
+				submitInfo.commandBufferCount = 1;
+				submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
+
+				VkSemaphore signalSemaphore[] = { renderFinishedSemaphores[currentFrame] };
+				submitInfo.signalSemaphoreCount = 1;
+				submitInfo.pSignalSemaphores = signalSemaphore;
+
+				vkResetFences(vkDevice, 1, &inFlightFences[currentFrame]);
+
+				if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS)
+				{
+					LOGCORE_ERROR("VULKAN: failed to submit draw command buffer!");
+				}
+
+				VkPresentInfoKHR presentInfo = {};
+				presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+				presentInfo.waitSemaphoreCount = 1;
+				presentInfo.pWaitSemaphores = signalSemaphore;
+
+				VkSwapchainKHR swapChains[] = { vkSwapchain };
+				presentInfo.swapchainCount = 1;
+				presentInfo.pSwapchains = swapChains;
+				presentInfo.pImageIndices = &imageIndex;
+				presentInfo.pResults = nullptr;
+
+				result = vkQueuePresentKHR(presentQueue, &presentInfo);
+
+				if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized)
+				{
+					framebufferResized = false;
+					RecreateSwapchain();
+					return;
+				}
+				else if (result != VK_SUCCESS)
+				{
+					LOGCORE_ERROR("VULKAN: failed to present swapchain image");
+				}
+
+				currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+				vkQueueWaitIdle(presentQueue);
+
+				vkFreeCommandBuffers(vkDevice, vkCommandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+
+				for (int i = 0; i < textureImageViews.size(); ++i)
+				{
+					vkDestroyImageView(vkDevice, textureImageViews[i], nullptr);
+					vkDestroyImage(vkDevice, textureImages[i], nullptr);
+					vkFreeMemory(vkDevice, textureImagesMemory[i], nullptr);
+				}
+
+				for (int i = 0; i < vertexBuffers.size(); ++i)
+				{
+					vkDestroyBuffer(vkDevice, vertexBuffers[i], nullptr);
+					vkFreeMemory(vkDevice, vertexBuffersMemory[i], nullptr);
+				}
+
+				for (int i = 0; i < indexBuffers.size(); ++i)
+				{
+					vkDestroyBuffer(vkDevice, indexBuffers[i], nullptr);
+					vkFreeMemory(vkDevice, indexBuffersMemory[i], nullptr);
+				}
+
+				//deleting all pointers before clearing the list
+				for (auto& l : mRenderQueue)
+				{
+					for (auto* x : l)
+					{
+						delete x;
+					}
+					l.clear();
+				}
+				indexBuffers.clear();
+				indexBuffersMemory.clear();
+				vertexBuffers.clear();
+				vertexBuffersMemory.clear();
+				textureImages.clear();
+				textureImagesMemory.clear();
+				textureImageViews.clear();
+				mRenderQueue.clear();
 			}
-			indexBuffers.clear();
-			indexBuffersMemory.clear();
-			vertexBuffers.clear();
-			vertexBuffersMemory.clear();
-			textureImages.clear();
-			textureImagesMemory.clear();
-			textureImageViews.clear();
-			mRenderQueue.clear();
 		}
 
 		bool Renderer::WaitIdle()

@@ -21,8 +21,9 @@ namespace Chaos
 		virtual int GetSize() const = 0;
 		virtual void* GetData() const = 0;
 		inline virtual void SetData(void* data) = 0;
+		inline virtual float GetTilingFactor() const = 0;
 
 
-		static Texture* Create(const char* path);
+		static Texture* Create(const char* path, float tilingFactor);
 	};
 }

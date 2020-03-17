@@ -13,7 +13,7 @@ namespace Chaos
 
 		virtual std::vector<Vertex> GetVertices() override { return mVertcies; }
 		virtual std::vector<uint32_t> GetIndices() override { return mIndcies; }
-		virtual Texture* GetTexture() { return mTexture; }
+		virtual Texture* GetTexture() override { return mTexture; }
 
 	protected:
 		std::vector<Vertex> mVertcies;
