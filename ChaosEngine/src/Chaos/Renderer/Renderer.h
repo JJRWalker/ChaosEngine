@@ -93,6 +93,40 @@ namespace Chaos
 		void DrawFrame();
 		bool WaitIdle();
 		void WindowResized() { framebufferResized = true; }
+		VkInstance GetInstance() { return vkInstance; }
+		VkPhysicalDevice GetPhysicalDevice() { return vkPhysicalDevice; }
+		VkDevice GetLogicalDevice() { return vkDevice; }
+		VkSwapchainKHR GetSwapchain() { return vkSwapchain; }
+		VkQueue GetQueue() { return presentQueue; }
+		VkFormat GetSwapchainFormat() { return swapchainImageFormat; }
+		VkRenderPass GetRenderpass() { return vkRenderPass; }
+		std::vector<VkSemaphore> GetImageAvailableSemaphores() { return imageAvailableSemaphores; }
+		std::vector<VkSemaphore> GetRenderFinishedSemaphores() { return renderFinishedSemaphores; }
+		size_t GetCurrentFrame() { return currentFrame; }
+		std::vector<VkFence> GetImagesInFlight() { return imagesInFlight; }
+		std::vector<VkImageView> GetSwapchainImageViews() { return swapchainImageViews; }
+		VkExtent2D GetSwapChainExtent() { return swapchainExtent; }
+		const glm::vec4 GetClearColor() { return mClearColor; }
+		void SetImGuiCommandBuffer(std::vector<VkCommandBuffer> commandBuffers) { ImGuiCommandBuffers = commandBuffers; }
+		void SetImGuiCommandPool(VkCommandPool* pool) { imGuiCommandPool = pool; }
+		void SetImGuiFramebuffer(std::vector<VkFramebuffer>* buffer) { imGuiFrameBuffer = buffer; }
+		std::vector<VkFence> GetInFlightFences() { return inFlightFences; }
+		uint32_t GetCurrentImageIndex() { return imageIndex; }
+
+		VkCommandBuffer  BeginSingleTimeCommands();
+		void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
+		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags props);
+		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
+		void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+		void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+		void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+		static std::vector<char> readFile(const std::string& filename);
+		VkShaderModule CreateShaderModule(const std::vector<char>& code);
+		void CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+		VkImageView CreateImageView(VkImage image, VkFormat format);
+
+
 	private:
 		static RendererAPI sRendererAPI;
 
@@ -148,17 +182,7 @@ namespace Chaos
 		void CreateDescriptorPool();
 		void CreateDescriptorSets();
 		void CreateCommandBuffers();
-		void CreateSyncObjects();
-
-		void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-		void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
-		VkCommandBuffer  BeginSingleTimeCommands();
-		void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
-
-		void CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
-		void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
-		VkImageView CreateImageView(VkImage image, VkFormat format);
+		void CreateSyncObjects();		
 
 		void CleanUpSwapchain();
 		void RecreateSwapchain();
@@ -171,13 +195,12 @@ namespace Chaos
 		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
 		bool IsDeviceSuitable(VkPhysicalDevice device);
 		bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
-		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
+
 		std::vector<const char*> GetRequiredExtensions();
 		bool CheckValidationLayerSupport();
 		static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
-		static std::vector<char> readFile(const std::string& filename);
-		VkShaderModule CreateShaderModule(const std::vector<char>& code);
-		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags props);
+
+		
 
 		//Vars
 		const int MAX_FRAMES_IN_FLIGHT = 2;
@@ -201,7 +224,11 @@ namespace Chaos
 		VkPipeline vkGraphicsPipeline;
 
 		VkCommandPool vkCommandPool;
+		VkCommandPool* imGuiCommandPool;
 		std::vector<VkCommandBuffer> commandBuffers;
+		std::vector<VkCommandBuffer> ImGuiCommandBuffers;
+
+		std::vector<VkFramebuffer>* imGuiFrameBuffer;
 
 		std::vector<VkBuffer> vertexBuffers;
 		std::vector<VkDeviceMemory> vertexBuffersMemory;
@@ -214,6 +241,7 @@ namespace Chaos
 		std::vector<VkBuffer> uniformBuffers;
 		std::vector<VkDeviceMemory> uniformBuffersMemory;
 
+		bool waitingOnFences = true;
 		std::vector<VkFence> imagesInFlight;
 		std::vector<VkFence> inFlightFences;
 		std::vector<VkSemaphore>imageAvailableSemaphores;
@@ -223,6 +251,7 @@ namespace Chaos
 		std::vector<VkImageView> swapchainImageViews;
 		std::vector<VkFramebuffer> swapchainframebuffers;
 		std::vector<VkImage> swapchainImages;
+		uint32_t imageIndex = 0;
 		VkFormat swapchainImageFormat;
 		VkExtent2D swapchainExtent;
 

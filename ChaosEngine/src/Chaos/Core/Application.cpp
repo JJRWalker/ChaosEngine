@@ -4,8 +4,9 @@
 #include <chrono>
 #include "Chaos/DataTypes/Vec2.h"
 #include "Chaos/Input/Input.h"
-
 #include "Chaos/Renderer/Texture.h"
+#include "Chaos/Renderer/Renderer.h"
+#include "Chaos/Debug/ImGuiLayer.h"
 
 namespace Chaos
 {
@@ -22,6 +23,10 @@ namespace Chaos
 		mWindow->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
 		mRenderer = std::unique_ptr<Renderer>(Renderer::Create());
+
+		guiLayer = new ImGuiLayer();
+
+		mLayerStack.PushLayer(guiLayer);
 	}
 
 	Application::~Application()
@@ -39,10 +44,26 @@ namespace Chaos
 		int yModifier = 1;
 		while (mRunning)
 		{
+			//PERFORMANCE TESTING
+			auto begin = std::chrono::high_resolution_clock::now();
+			int drawCalls = 10000;
+			int sampleSize = 10;
+			float total = 0;
+
 			for (Layer* layer : mLayerStack)
+			{
 				layer->OnUpdate();
+			}
+
+			guiLayer->Begin();
+			for (Layer* layer : mLayerStack)
+			{
+				layer->OnImGuiRender();
+			}
+			guiLayer->End();
 
 			mWindow->OnUpdate();
+			
 			if (mWindow->GetWidth() != 0 && mWindow->GetHeight() != 0)
 			{
 				if (Input::IsKeyPressed(KEY_A))
@@ -73,47 +94,19 @@ namespace Chaos
 				pos->Y += 0.01f * yModifier;
 				pos->X += 0.01f * xModifier;
 
-				for (int x = -10; x < 10; ++x)
-				{
-					for (int y = -10; y < 10; ++y)
-					{
-						
-					}
-				}
 				mRenderer->DrawQuad(new Vec2(0.f, 0.f), new Vec2(20.f, 20.f), test);
 				mRenderer->DrawQuad(pos, new Vec2(1.f, 1.f), testSprite);
 
-
-				//mRenderer->DrawFrame();
-				/*
-				//PERFORMANCE TESTING
-				auto begin = std::chrono::high_resolution_clock::now();
-				int drawCalls = 10000;
-				int sampleSize = 10;
-				float total = 0;
-				for (int x = 0; x < sampleSize; ++x)
-				{
-					for (int i = 0; i < drawCalls; ++i)
-					{
-						mRenderer->DrawFrame();
-					}
-					auto end = std::chrono::high_resolution_clock::now();
-					auto dur = end - begin;
-					auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur);
-					total += ms.count();
-				}
-				total /= sampleSize;
-				LOGCORE_WARN("Average time taken to render {0} frames: {1}", drawCalls, total);
-				LOGCORE_WARN("Sample size: {0}", sampleSize);
-				break;
-				*/
-
 				mRenderer->DrawFrame();
-			}
-			
-				
+
+				auto end = std::chrono::high_resolution_clock::now();
+				auto dur = end - begin;
+				auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur);
+				//LOGCORE_WARN("FPS: {0}", ( 1000.f / ms.count()));
+
+			}				
 		}
-		mRenderer->WaitIdle();
+		//mRenderer->WaitIdle();
 	}
 
 	void Application::OnEvent(Event& e)

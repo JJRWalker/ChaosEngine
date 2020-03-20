@@ -21,7 +21,7 @@
 	//const bool enableValidationLayers = false;
 #endif
 
-	const bool enableValidationLayers = false;
+	const bool enableValidationLayers = true;
 
 	namespace Chaos
 	{
@@ -67,7 +67,7 @@
 				vkDestroyFence(vkDevice, inFlightFences[i], nullptr);
 			}
 
-			vkDestroyCommandPool(vkDevice, vkCommandPool, nullptr);
+			vkResetCommandPool(vkDevice, vkCommandPool, 0);
 
 			vkDestroyDevice(vkDevice, nullptr);
 
@@ -418,8 +418,8 @@
 
 		void Renderer::CreateGraphicsPipeline()
 		{
-			auto vertShaderCode = readFile("../vert.spv");
-			auto fragShaderCode = readFile("../frag.spv");
+			auto vertShaderCode = readFile("../chaosengine/shaders/vert.spv");
+			auto fragShaderCode = readFile("../chaosengine/shaders/frag.spv");
 
 			VkShaderModule vertShaderModule = CreateShaderModule(vertShaderCode);
 			VkShaderModule fragShaderModule = CreateShaderModule(fragShaderCode);
@@ -739,17 +739,20 @@
 		}
 		void Renderer::CreateDescriptorPool()
 		{
+			uint32_t numOfSets = 1000;
+
 			std::array<VkDescriptorPoolSize, 2> poolSizes = {};
 			poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			poolSizes[0].descriptorCount = static_cast<uint32_t>(mRenderQueue.size());
+			poolSizes[0].descriptorCount = numOfSets;
 			poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			poolSizes[1].descriptorCount = static_cast<uint32_t>(mRenderQueue.size());
+			poolSizes[1].descriptorCount = numOfSets;
 
 			VkDescriptorPoolCreateInfo poolInfo = {};
 			poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+			poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 			poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 			poolInfo.pPoolSizes = poolSizes.data();
-			poolInfo.maxSets = static_cast<uint32_t>(mRenderQueue.size());
+			poolInfo.maxSets = numOfSets;
 
 			if (vkCreateDescriptorPool(vkDevice, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) 
 			{
@@ -832,8 +835,10 @@
 			allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 			allocInfo.commandBufferCount = (uint32_t)commandBuffers.size();
 
-			vkDestroyDescriptorPool(vkDevice, descriptorPool, nullptr);
-			CreateDescriptorPool();
+			if (descriptorSets.size() > 0)
+			{
+				vkFreeDescriptorSets(vkDevice, descriptorPool, descriptorSets.size(), descriptorSets.data());
+			}
 			CreateDescriptorSets();
 
 			if (vkAllocateCommandBuffers(vkDevice, &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
@@ -1123,7 +1128,7 @@
 
 			vkCmdPipelineBarrier(
 				commandBuffer,
-				0, 0,
+				sourceStage, destinationStage,
 				0,
 				0, nullptr,
 				0, nullptr,
@@ -1258,10 +1263,11 @@
 				CreateCommandBuffers();
 
 				//DRAW
+				waitingOnFences = true;
 				vkWaitForFences(vkDevice, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 				vkResetFences(vkDevice, 1, &inFlightFences[currentFrame]);
+				waitingOnFences = false;
 
-				uint32_t imageIndex;
 				VkResult result = vkAcquireNextImageKHR(vkDevice, vkSwapchain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
 				if (result == VK_ERROR_OUT_OF_DATE_KHR)
@@ -1284,7 +1290,11 @@
 
 				imagesInFlight[imageIndex] = inFlightFences[currentFrame];
 
-
+				std::vector<VkCommandBuffer> submitCommandBuffers = { commandBuffers[imageIndex] };
+				if (ImGuiCommandBuffers.size() > 0)
+				{					
+					submitCommandBuffers.push_back(ImGuiCommandBuffers[imageIndex]);
+				}
 				VkSubmitInfo submitInfo = {};
 				submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
@@ -1294,8 +1304,8 @@
 				submitInfo.pWaitSemaphores = waitSemaphores;
 				submitInfo.pWaitDstStageMask = waitStages;
 
-				submitInfo.commandBufferCount = 1;
-				submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
+				submitInfo.commandBufferCount = submitCommandBuffers.size();
+				submitInfo.pCommandBuffers = submitCommandBuffers.data();
 
 				VkSemaphore signalSemaphore[] = { renderFinishedSemaphores[currentFrame] };
 				submitInfo.signalSemaphoreCount = 1;
@@ -1337,6 +1347,12 @@
 				vkQueueWaitIdle(presentQueue);
 
 				vkFreeCommandBuffers(vkDevice, vkCommandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+				vkFreeCommandBuffers(vkDevice, *imGuiCommandPool, static_cast<uint32_t>(ImGuiCommandBuffers.size()), ImGuiCommandBuffers.data());
+				vkResetCommandPool(vkDevice, *imGuiCommandPool, VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT);
+
+				for (auto framebuffer : *imGuiFrameBuffer) {
+					vkDestroyFramebuffer(vkDevice, framebuffer, nullptr);
+				}
 
 				for (int i = 0; i < textureImageViews.size(); ++i)
 				{
@@ -1366,6 +1382,7 @@
 					}
 					l.clear();
 				}
+
 				indexBuffers.clear();
 				indexBuffersMemory.clear();
 				vertexBuffers.clear();
@@ -1373,6 +1390,7 @@
 				textureImages.clear();
 				textureImagesMemory.clear();
 				textureImageViews.clear();
+				ImGuiCommandBuffers.clear();
 				mRenderQueue.clear();
 			}
 		}

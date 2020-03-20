@@ -1281,6 +1281,7 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp">
       <Filter>vendor\glm\glm</Filter>
     </ClInclude>
+    <ClInclude Include="src\Chaos\Core\Time.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chaos\Core\Application.cpp">
@@ -1294,6 +1295,9 @@
     </ClCompile>
     <ClCompile Include="src\Chaos\Core\Log.cpp">
       <Filter>src\Chaos\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Chaos\Debug\ImGuiBuild.cpp">
+      <Filter>src\Chaos\Debug</Filter>
     </ClCompile>
     <ClCompile Include="src\Chaos\Debug\ImGuiLayer.cpp">
       <Filter>src\Chaos\Debug</Filter>

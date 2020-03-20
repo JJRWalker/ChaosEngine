@@ -5,11 +5,13 @@
 #include "Chaos/Events/Event.h"
 #include "Chaos/Events/ApplicationEvent.h"
 #include "Chaos/Core/LayerStack.h"
-#include "Chaos/Renderer/Renderer.h"
 
 
 namespace Chaos
 {
+	extern class Renderer;
+	extern class ImGuiLayer;
+
 	class Application
 	{
 	public:
@@ -26,6 +28,7 @@ namespace Chaos
 
 		inline static Application& Get() { return *sInstance; }
 		inline Window& GetWindow() { return *mWindow; }
+		inline Renderer& GetRenderer() { return *mRenderer; }
 
 	private:
 		bool OnWindowClose(WindowCloseEvent& e);
@@ -36,6 +39,7 @@ namespace Chaos
 
 		LayerStack mLayerStack;
 
+		ImGuiLayer* guiLayer;
 
 		static Application* sInstance;
 	};

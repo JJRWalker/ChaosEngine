@@ -18,10 +18,12 @@ workspace "ChaosEngine"
     IncludeDir["GLM"] = "%{prj.name}/vendor/GLM/glm"
     IncludeDir["Vulkan"] = "%{prj.name}/vendor/Vulkan/include"
     IncludeDir["ImGUI"] = "%{prj.name}/vendor/ImGUI"
+    IncludeDir["GLAD"] = "%{prj.name}/vendor/GLAD/include"
     IncludeDir["STB"] = "%{prj.name}/vendor/stb"
 
     include "ChaosEngine/vendor/GLFW"
-	include "ChaosEngine/vendor/ImGUI"
+    include "ChaosEngine/vendor/ImGUI"
+    include "ChaosEngine/vendor/Glad"
 
 project "ChaosEngine"
     location "ChaosEngine"
@@ -57,6 +59,7 @@ project "ChaosEngine"
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.GLM}",
         "%{IncludeDir.ImGUI}",
+        "%{IncludeDir.GLAD}",
         "%{IncludeDir.STB}"
     }
 
@@ -65,6 +68,7 @@ project "ChaosEngine"
         "GLFW",
         "ChaosEngine/vendor/Vulkan/Lib/vulkan-1.lib",
         "opengl32.lib",
+        "GLAD",
 		"ImGUI"
     }
 

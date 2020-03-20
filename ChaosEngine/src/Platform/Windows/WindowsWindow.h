@@ -1,6 +1,6 @@
 #pragma once
 #include "Chaos/Core/Window.h"
-#define GLFW_INCLUDE_VULKAN
+
 #include <GLFW/glfw3.h>
 
 
@@ -23,11 +23,14 @@ namespace Chaos
 		bool IsVSync() const override;
 
 		inline virtual void* GetNativeWindow() const override { return mWindow; }
+		virtual void* GetUIWindow() const override { return mUIWindow; }
 	private:
 		virtual void Init(const WindowProps& props);
 		virtual void Shutdown();
 	private:
 		GLFWwindow* mWindow;
+		GLFWwindow* mUIWindow;
+
 
 		struct WindowData
 		{
