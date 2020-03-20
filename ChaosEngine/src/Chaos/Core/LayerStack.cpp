@@ -20,14 +20,12 @@ namespace Chaos
 
 	void LayerStack::PushLayer(Layer* layer)
 	{
-		layer->OnAttach();
 		mLayers.emplace(mLayers.begin() + mLayerInsertIndex, layer);
 		mLayerInsertIndex++;
 	}
 
 	void LayerStack::PushOverlay(Layer* overlay)
 	{
-		overlay->OnAttach();
 		mLayers.emplace_back(overlay);
 	}
 

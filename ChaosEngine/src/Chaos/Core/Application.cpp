@@ -7,6 +7,7 @@
 #include "Chaos/Renderer/Texture.h"
 #include "Chaos/Renderer/Renderer.h"
 #include "Chaos/Debug/ImGuiLayer.h"
+#include "GLFW/glfw3.h"
 
 namespace Chaos
 {
@@ -26,7 +27,7 @@ namespace Chaos
 
 		guiLayer = new ImGuiLayer();
 
-		mLayerStack.PushLayer(guiLayer);
+		PushOverlay(guiLayer);
 	}
 
 	Application::~Application()
@@ -36,77 +37,30 @@ namespace Chaos
 
 	void Application::Run()
 	{
-		Texture* testSprite = Texture::Create("../Game/textures/sprite-test.png", 1);
-		Texture* test = Texture::Create("../Game/textures/Floor.jpg", 20);
-		Texture* blank = Texture::Create("", 1);
-		Vec2* pos = new Vec2(0.f, 0.f);
-		int xModifier = 1;
-		int yModifier = 1;
 		while (mRunning)
 		{
-			//PERFORMANCE TESTING
-			auto begin = std::chrono::high_resolution_clock::now();
-			int drawCalls = 10000;
-			int sampleSize = 10;
-			float total = 0;
+			float time = (float)glfwGetTime();
+			mDeltaTime = time - mTimeLastFrame;
+			mTimeLastFrame = time;
 
-			for (Layer* layer : mLayerStack)
-			{
-				layer->OnUpdate();
-			}
+			for (Layer* layer : mLayerStack)			
+				layer->OnUpdate(mDeltaTime);
+			
 
 			guiLayer->Begin();
 			for (Layer* layer : mLayerStack)
-			{
 				layer->OnImGuiRender();
-			}
+			
 			guiLayer->End();
 
 			mWindow->OnUpdate();
 			
 			if (mWindow->GetWidth() != 0 && mWindow->GetHeight() != 0)
 			{
-				if (Input::IsKeyPressed(KEY_A))
-				{
-					xModifier = -1;
-				}
-				else if (Input::IsKeyPressed(KEY_D))
-				{
-					xModifier = 1;
-				}
-				else
-				{
-					xModifier = 0;
-				}
-
-				if (Input::IsKeyPressed(KEY_S))
-				{
-					yModifier = -1;
-				}
-				else if (Input::IsKeyPressed(KEY_W))
-				{
-					yModifier = 1;
-				}
-				else
-				{
-					yModifier = 0;
-				}
-				pos->Y += 0.01f * yModifier;
-				pos->X += 0.01f * xModifier;
-
-				mRenderer->DrawQuad(new Vec2(0.f, 0.f), new Vec2(20.f, 20.f), test);
-				mRenderer->DrawQuad(pos, new Vec2(1.f, 1.f), testSprite);
-
 				mRenderer->DrawFrame();
-
-				auto end = std::chrono::high_resolution_clock::now();
-				auto dur = end - begin;
-				auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur);
-				//LOGCORE_WARN("FPS: {0}", ( 1000.f / ms.count()));
-
 			}				
 		}
-		//mRenderer->WaitIdle();
+		mRenderer->WaitIdle();
 	}
 
 	void Application::OnEvent(Event& e)

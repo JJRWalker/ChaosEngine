@@ -39,6 +39,9 @@ namespace Chaos
 
 		LayerStack mLayerStack;
 
+		float mDeltaTime = 0.0f;
+		float mTimeLastFrame = 0.0f;
+
 		ImGuiLayer* guiLayer;
 
 		static Application* sInstance;
