@@ -6,7 +6,6 @@
 #include "Chaos/Events/KeyEvent.h"
 
 #include <GLFW/glfw3.h>
-#include <GLAD/glad.h>
 
 namespace Chaos
 {
@@ -48,20 +47,13 @@ namespace Chaos
 			glfwSetErrorCallback(GLFWErrorCallback);
 			sGLFWInitialised = true;
 		}
-		//mUIWindow = glfwCreateWindow((int)props.Width, (int)props.Height, mData.Title.c_str(), nullptr, nullptr);
-		//glfwMakeContextCurrent(mUIWindow);
-		//int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-		//COREASSERT(status, "Failed to initalise glad");
-
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		//glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
 		mWindow = glfwCreateWindow((int)props.Width, (int)props.Height, mData.Title.c_str(), nullptr, nullptr);
-		//glfwMakeContextCurrent(mWindow); //DO LATER
 
 		glfwSetWindowUserPointer(mWindow, &mData);
 
-		//glfwMakeContextCurrent(mWindow);
 		//SetVSync(true); // DO LATER
 
 
@@ -166,7 +158,6 @@ namespace Chaos
 	void WindowsWindow::OnUpdate()
 	{
 		glfwPollEvents();
-		//glfwSwapBuffers(mUIWindow);
 	}
 
 	void WindowsWindow::SetVSync(bool enabled)
