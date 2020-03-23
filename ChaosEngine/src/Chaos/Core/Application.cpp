@@ -60,7 +60,7 @@ namespace Chaos
 				mRenderer->DrawFrame();
 			}				
 		}
-		mRenderer->WaitIdle();
+		//mRenderer->WaitIdle();
 	}
 
 	void Application::OnEvent(Event& e)
