@@ -23,7 +23,6 @@ workspace "ChaosEngine"
 
     include "ChaosEngine/vendor/GLFW"
     include "ChaosEngine/vendor/ImGUI"
-    include "ChaosEngine/vendor/Glad"
 
 project "ChaosEngine"
     location "ChaosEngine"
@@ -59,7 +58,6 @@ project "ChaosEngine"
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.GLM}",
         "%{IncludeDir.ImGUI}",
-        "%{IncludeDir.GLAD}",
         "%{IncludeDir.STB}"
     }
 
@@ -67,8 +65,6 @@ project "ChaosEngine"
     {
         "GLFW",
         "ChaosEngine/vendor/Vulkan/Lib/vulkan-1.lib",
-        "opengl32.lib",
-        "GLAD",
 		"ImGUI"
     }
 

@@ -23,7 +23,6 @@ namespace Chaos
 		inline virtual void SetData(void* data) = 0;
 		inline virtual float GetTilingFactor() const = 0;
 
-
 		static Texture* Create(const char* path, float tilingFactor);
 	};
 }

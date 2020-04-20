@@ -1,17 +1,22 @@
 #pragma once
 #include "Chaos/Renderer/Texture.h"
+#include "Vulkan/Include/vulkan/vulkan.h"
 
 namespace Chaos
 {
 	class VulkanTexture : public Texture
 	{
+
 	public:
 		VulkanTexture(const char* filePath, float tilingFactor);
+		VulkanTexture(VulkanTexture& copy);
+
 		virtual ~VulkanTexture() {
 			free(mPixelData);
 			delete mPixelData;
 			delete mFilePath;
 		}
+
 		virtual void SetData(void* data, uint32_t size) {};
 
 		virtual void SetFilePath(const char* path) const override { mFilePath = path; }
@@ -38,8 +43,12 @@ namespace Chaos
 			mPixelData = image; }
 
 		inline virtual void* GetData() const override { return mPixelData; }
-
 		inline virtual float GetTilingFactor() const override { return mTilingFactor; }
+		
+		VkImage& GetImage() { return mImage; }
+		VkDeviceMemory& GetImageMemory() { return mImageMemory; }
+		VkImageView& GetImageView() { return mImageView; }
+
 
 	private: 
 		mutable const char* mFilePath;
@@ -48,5 +57,9 @@ namespace Chaos
 		uint32_t mWidth = 0;
 		uint32_t mHeight = 0;
 		int mSize;
+		int mIndex;
+		VkImage mImage;
+		VkDeviceMemory mImageMemory;
+		VkImageView mImageView;
 	};
 }

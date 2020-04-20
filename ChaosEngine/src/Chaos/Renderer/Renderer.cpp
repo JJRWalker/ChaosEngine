@@ -13,15 +13,13 @@
 
 #include "Chaos/Renderer/Quad.h"
 #include "Chaos/Renderer/Vertex.h"
-#include "Platform/Vulkan/VulkanTexture.h"
+
 
 #ifdef CHAOS_DEBUG
-	//const bool enableValidationLayers = true;
-#else
-	//const bool enableValidationLayers = false;
-#endif
-
 	const bool enableValidationLayers = true;
+#else
+	const bool enableValidationLayers = false;
+#endif
 
 	namespace Chaos
 	{
@@ -110,7 +108,6 @@
 			CreateFrameBuffers();
 			CreateCommandPool();
 			//CreateTextureImage(Texture::Create("IncorrectFilePath"));
-			//CreateTextureImageView();
 			CreateTextureSampler();
 			CreateVertexBuffers();
 			CreateIndexBuffers();
@@ -638,14 +635,12 @@
 
 			view = CreateImageView(image, VK_FORMAT_R8G8B8A8_SRGB);
 
+			VulkanTexture* loaded = new VulkanTexture(*(VulkanTexture*)tex);
+
 			textureImages.push_back(image);
 			textureImagesMemory.push_back(memory);
 			textureImageViews.push_back(view);
-		}
-
-		void Renderer::CreateTextureImageView()
-		{
-			//textureImageView = CreateImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB);
+			mLoadedTextures.push_back(loaded);
 		}
 
 		void Renderer::CreateTextureSampler()
@@ -725,14 +720,15 @@
 			indexBuffersMemory.push_back(indexBufferMemory);
 		}
 
+		//SHOULD BE CALLED ON SCENE LOAD ONCE WE HAVE A MANIFEST OF ALL THE TEXTURES / SHADERS NEEDED IN THE SCENE
 		void Renderer::CreateUniformBuffers()
 		{
 			VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 
-			uniformBuffers.resize(swapchainImages.size());
-			uniformBuffersMemory.resize(swapchainImages.size());
+			uniformBuffers.resize(swapchainImages.size() + 100);	//Affording for 100 different textures, increadibly sub optimal. Increases memory footprint
+			uniformBuffersMemory.resize(swapchainImages.size() + 100);
 
-			for (size_t i = 0; i < swapchainImages.size(); ++i)
+			for (size_t i = 0; i < swapchainImages.size() + 100; ++i)
 			{
 				CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
 			}
@@ -760,6 +756,7 @@
 			}
 		}
 
+		//SHOULD ALSO BE CALLED ON SCENE LOAD TO AVOID CALLING EVERY FRAME
 		void Renderer::CreateDescriptorSets()
 		{
 			std::vector<VkDescriptorSetLayout> layouts(mRenderQueue.size(), descriptorSetLayout);
@@ -775,9 +772,10 @@
 				LOGCORE_ERROR("VULKAN: failed to allocate descriptor sets!");
 			}
 
-			for (size_t i = 0; i < mRenderQueue.size(); i++) {
+			for (size_t i = 0; i < mRenderQueue.size(); i++) 
+			{
 
-				CreateTextureImage(mRenderQueue[i][0]->GetTexture());
+				VulkanTexture& texture = *(VulkanTexture*)mRenderQueue[i][0]->GetTexture();
 
 				VkDescriptorBufferInfo bufferInfo = {};
 				bufferInfo.buffer = uniformBuffers[i];
@@ -786,7 +784,7 @@
 
 				VkDescriptorImageInfo imageInfo = {};
 				imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				imageInfo.imageView = textureImageViews[i];
+				imageInfo.imageView = texture.GetImageView();
 				imageInfo.sampler = textureSampler;
 
 				std::array<VkWriteDescriptorSet, 2> descriptorWrites = {};
@@ -823,6 +821,8 @@
 			}
 
 			LOGCORE_ERROR("VULKAN: failed to find suitable memory type!");
+
+			return NULL;
 		}
 
 		void Renderer::CreateCommandBuffers()
@@ -837,9 +837,9 @@
 
 			if (descriptorSets.size() > 0)
 			{
-				vkFreeDescriptorSets(vkDevice, descriptorPool, descriptorSets.size(), descriptorSets.data());
+				vkFreeDescriptorSets(vkDevice, descriptorPool, (uint32_t)descriptorSets.size(), descriptorSets.data());
 			}
-			CreateDescriptorSets();
+			CreateDescriptorSets();			
 
 			if (vkAllocateCommandBuffers(vkDevice, &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
 				LOGCORE_ERROR("VULKAN: failed to allocate command buffers!");
@@ -1204,23 +1204,23 @@
 			CreateSyncObjects();
 		}
 
-		void Renderer::UpdateUniformBuffer(uint32_t currentImage)
+		void Renderer::UpdateUniformBuffers()
 		{
-			static auto startTime = std::chrono::high_resolution_clock::now();
+			uniformBuffers.resize(mRenderQueue.size());
+			uniformBuffersMemory.resize(mRenderQueue.size());
+			for (size_t i = 0; i < mRenderQueue.size(); ++i)
+			{
+				UniformBufferObject ubo = {};
+				//ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+				//ubo.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+				ubo.proj = glm::ortho(-5.0f * (float)swapchainExtent.width / (float)swapchainExtent.height, 5.0f * (float)swapchainExtent.width / (float)swapchainExtent.height, 5.0f, -5.0f, -5.0f, 5.0f); //glm::perspective(glm::radians(45.0f), (float)swapchainExtent.width / (float)swapchainExtent.height, 0.1f, 1000.0f);
+				//ubo.proj[1][1] *= -1;
 
-			auto currentTime = std::chrono::high_resolution_clock::now();
-			float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
-			UniformBufferObject ubo = {};
-			//ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-			//ubo.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-			ubo.proj = glm::ortho(-5.0f * (float)swapchainExtent.width / (float)swapchainExtent.height, 5.0f * (float)swapchainExtent.width / (float)swapchainExtent.height, 5.0f, -5.0f, -5.0f, 5.0f); //glm::perspective(glm::radians(45.0f), (float)swapchainExtent.width / (float)swapchainExtent.height, 0.1f, 1000.0f);
-			//ubo.proj[1][1] *= -1;
-
-			void* data;
-			vkMapMemory(vkDevice, uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
-			memcpy(data, &ubo, sizeof(ubo));
-			vkUnmapMemory(vkDevice, uniformBuffersMemory[currentImage]);
+				void* data;
+				vkMapMemory(vkDevice, uniformBuffersMemory[i], 0, sizeof(ubo), 0, &data);
+				memcpy(data, &ubo, sizeof(ubo));
+				vkUnmapMemory(vkDevice, uniformBuffersMemory[i]);
+			}
 		}
 
 		void Renderer::DrawQuad(Vec2* position, Vec2* scale, Texture* texture)
@@ -1260,8 +1260,6 @@
 		{
 			if (mRenderQueue.size() > 0)
 			{
-				CreateCommandBuffers();
-
 				//DRAW
 				waitingOnFences = true;
 				vkWaitForFences(vkDevice, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
@@ -1279,8 +1277,9 @@
 				{
 					LOGCORE_ERROR("VULKAN: failed to aquire swapchain image!");
 				}
-
-				UpdateUniformBuffer(imageIndex);
+				
+				UpdateUniformBuffers();
+				CreateCommandBuffers();
 
 				//Check if a previous frame is using the same image
 				if (imagesInFlight[imageIndex] != VK_NULL_HANDLE)
@@ -1304,7 +1303,7 @@
 				submitInfo.pWaitSemaphores = waitSemaphores;
 				submitInfo.pWaitDstStageMask = waitStages;
 
-				submitInfo.commandBufferCount = submitCommandBuffers.size();
+				submitInfo.commandBufferCount = (uint32_t)submitCommandBuffers.size();
 				submitInfo.pCommandBuffers = submitCommandBuffers.data();
 
 				VkSemaphore signalSemaphore[] = { renderFinishedSemaphores[currentFrame] };
@@ -1354,12 +1353,7 @@
 					vkDestroyFramebuffer(vkDevice, framebuffer, nullptr);
 				}
 
-				for (int i = 0; i < textureImageViews.size(); ++i)
-				{
-					vkDestroyImageView(vkDevice, textureImageViews[i], nullptr);
-					vkDestroyImage(vkDevice, textureImages[i], nullptr);
-					vkFreeMemory(vkDevice, textureImagesMemory[i], nullptr);
-				}
+
 
 				for (int i = 0; i < vertexBuffers.size(); ++i)
 				{
@@ -1387,9 +1381,6 @@
 				indexBuffersMemory.clear();
 				vertexBuffers.clear();
 				vertexBuffersMemory.clear();
-				textureImages.clear();
-				textureImagesMemory.clear();
-				textureImageViews.clear();
 				ImGuiCommandBuffers.clear();
 				mRenderQueue.clear();
 			}

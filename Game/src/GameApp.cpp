@@ -15,6 +15,8 @@ public:
 	Chaos::Texture* player = Chaos::Texture::Create("../Game/textures/sprite-test.png", 1);
 	Chaos::Texture* floor = Chaos::Texture::Create("../Game/textures/Floor.jpg", 20);
 	Chaos::Texture* test = Chaos::Texture::Create("../Game/textures/test.png", 1);
+	Chaos::Texture* big = Chaos::Texture::Create("../Game/textures/big-texture.png", 1);
+	Chaos::Texture* test2 = Chaos::Texture::Create("../Game/textures/test2.png", 1);
 	float x = 0;
 	float y = 0;
 
@@ -51,8 +53,8 @@ public:
 		Chaos::Application::Get().GetRenderer().DrawQuad(new Chaos::Vec2(0.f, 0.f), new Chaos::Vec2(20.f, 20.f), floor);
 		Chaos::Application::Get().GetRenderer().DrawQuad(new Chaos::Vec2(4.f, 0.f), new Chaos::Vec2(1.f, 1.f), test);
 		Chaos::Application::Get().GetRenderer().DrawQuad(new Chaos::Vec2(3.f, 0.f), new Chaos::Vec2(1.f, 1.f), test);
-		Chaos::Application::Get().GetRenderer().DrawQuad(new Chaos::Vec2(2.f, 0.f), new Chaos::Vec2(1.f, 1.f), test);
-		Chaos::Application::Get().GetRenderer().DrawQuad(new Chaos::Vec2(1.f, 0.f), new Chaos::Vec2(1.f, 1.f), test);
+		Chaos::Application::Get().GetRenderer().DrawQuad(new Chaos::Vec2(2.f, 0.f), new Chaos::Vec2(1.f, 1.f), test2);
+		Chaos::Application::Get().GetRenderer().DrawQuad(new Chaos::Vec2(2.f, 2.f), new Chaos::Vec2(1.f, 1.f), big);
 		Chaos::Application::Get().GetRenderer().DrawQuad(new Chaos::Vec2(x, y), new Chaos::Vec2(1.f, 1.f), player);
 	}
 

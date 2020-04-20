@@ -8,7 +8,7 @@ namespace Chaos
 	{
 	public:
 		ImGuiLayer();
-		~ImGuiLayer() ;
+		~ImGuiLayer();
 
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;

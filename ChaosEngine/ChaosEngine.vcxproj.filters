@@ -78,6 +78,12 @@
     <ClInclude Include="src\Chaos\Core\Log.h">
       <Filter>src\Chaos\Core</Filter>
     </ClInclude>
+    <ClInclude Include="src\Chaos\Core\Scene.h">
+      <Filter>src\Chaos\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Core\Time.h">
+      <Filter>src\Chaos\Core</Filter>
+    </ClInclude>
     <ClInclude Include="src\Chaos\Core\Window.h">
       <Filter>src\Chaos\Core</Filter>
     </ClInclude>
@@ -1281,7 +1287,6 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp">
       <Filter>vendor\glm\glm</Filter>
     </ClInclude>
-    <ClInclude Include="src\Chaos\Core\Time.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chaos\Core\Application.cpp">
@@ -1294,6 +1299,9 @@
       <Filter>src\Chaos\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\Chaos\Core\Log.cpp">
+      <Filter>src\Chaos\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Chaos\Core\Scene.cpp">
       <Filter>src\Chaos\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\Chaos\Debug\ImGuiBuild.cpp">

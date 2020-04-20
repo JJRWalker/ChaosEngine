@@ -1,8 +1,9 @@
 #pragma once
 #include "Chaos/Core/Window.h"
-
+#ifndef GLFW_INCLUDE_NONE
+#define GLFW_INCLUDE_NONE
+#endif // !GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
-
 
 namespace Chaos
 {
@@ -16,21 +17,18 @@ namespace Chaos
 
 		inline unsigned int GetWidth() const override { return mData.Width; }
 		inline unsigned int GetHeight() const override { return mData.Height; }
-		inline float GetAspect() const override { return mData.Width / mData.Height; }
+		inline float GetAspect() const override { return (float) (mData.Width / mData.Height); }
 
 		inline void SetEventCallback(const EventCallbackFn& callback) override { mData.EventCallback = callback; }
 		void SetVSync(bool enabled) override;
 		bool IsVSync() const override;
 
 		inline virtual void* GetNativeWindow() const override { return mWindow; }
-		virtual void* GetUIWindow() const override { return mUIWindow; }
 	private:
 		virtual void Init(const WindowProps& props);
 		virtual void Shutdown();
 	private:
 		GLFWwindow* mWindow;
-		GLFWwindow* mUIWindow;
-
 
 		struct WindowData
 		{

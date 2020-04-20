@@ -5,7 +5,7 @@
 #include "Chaos/Events/MouseEvent.h"
 #include "Chaos/Events/KeyEvent.h"
 
-#include <GLFW/glfw3.h>
+
 
 namespace Chaos
 {

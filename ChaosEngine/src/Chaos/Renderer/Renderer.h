@@ -13,6 +13,7 @@
 #include "Chaos/DataTypes/Vec2.h"
 #include "Chaos/DataTypes/Vec3.h"
 #include "Chaos/Renderer/Texture.h"
+#include "Platform/Vulkan/VulkanTexture.h"
 #include "Chaos/Renderer/PrimitiveType.h"
 
 namespace Chaos
@@ -82,6 +83,7 @@ namespace Chaos
 	class Renderer
 	{
 		friend class ImGuiLayer;
+		friend class VulkanTexture;
 	public:
 		Renderer();
 		~Renderer();
@@ -118,6 +120,7 @@ namespace Chaos
 
 		const glm::vec4 mClearColor = { 0.0f,0.0f, 0.03f, 1.0f };
 
+		std::vector<Texture*> mLoadedTextures;
 		std::vector<VkImage> textureImages;
 		std::vector<VkDeviceMemory> textureImagesMemory;
 		std::vector<VkImageView> textureImageViews;
@@ -142,7 +145,6 @@ namespace Chaos
 		void CreateFrameBuffers();
 		void CreateCommandPool();
 		void CreateTextureImage(Texture* tex);
-		void CreateTextureImageView();
 		void CreateTextureSampler();
 		void CreateVertexBuffers();
 		void CreateIndexBuffers();
@@ -155,7 +157,7 @@ namespace Chaos
 		void CleanUpSwapchain();
 		void RecreateSwapchain();
 
-		void UpdateUniformBuffer(uint32_t currentImage);
+		void UpdateUniformBuffers();
 		
 		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);

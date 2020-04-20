@@ -2,13 +2,15 @@
 #include "ImGuiLayer.h"
 
 #include <imgui.h>
-#include "Chaos/Debug/ImGuiBuild.cpp"
+#include "ImGUI/examples/imgui_impl_vulkan.h"
+#include "ImGUI/examples/imgui_impl_glfw.h"
 #include "Chaos/Core/Application.h"
 #include "Chaos/Renderer/Renderer.h"
 
+#ifndef GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_NONE
+#endif // !GLFW_INCLUDE_NONE
 #include "GLFW/glfw3.h"
-#include "Vulkan/Include/vulkan/vulkan.h"
 #include <GLM/glm/glm.hpp>
 
 #define VK_CHECK_RESULT(x) {if (x != VK_SUCCESS) { LOGCORE_ERROR("IMGUI: Failed to create vulkan object");}}
@@ -202,8 +204,6 @@ namespace Chaos
 			}
 		}
 
-
-		
 		VkCommandBufferBeginInfo beginInfo = {};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
