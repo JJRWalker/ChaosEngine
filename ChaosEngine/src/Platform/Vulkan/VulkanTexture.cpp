@@ -1,6 +1,6 @@
 #include "chaospch.h"
 #include "VulkanTexture.h"
-#include "Chaos/Renderer/Renderer.h"
+#include "Platform/Vulkan/VulkanRenderer.h"
 #include "Chaos/Core/Application.h"
 #include <stb/stb_image.h>
 #include <filesystem>
@@ -10,7 +10,7 @@ namespace Chaos
 	VulkanTexture::VulkanTexture(const char* filePath, float tilingFactor) : mFilePath(filePath), mTilingFactor(tilingFactor)
 	{
 		int texWidth, texHeight, texChannels;
-		Renderer& renderer = Application::Get().GetRenderer();
+		VulkanRenderer& renderer = dynamic_cast<VulkanRenderer&>(Application::Get().GetRenderer());
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
 

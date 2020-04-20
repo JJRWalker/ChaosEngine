@@ -6,6 +6,7 @@
 #include "ImGUI/examples/imgui_impl_glfw.h"
 #include "Chaos/Core/Application.h"
 #include "Chaos/Renderer/Renderer.h"
+#include "Platform/Vulkan/VulkanRenderer.h"
 
 #ifndef GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_NONE
@@ -64,7 +65,7 @@ namespace Chaos
 
 		Application& app = Application::Get();
 		GLFWwindow* window = static_cast<GLFWwindow*>(app.GetWindow().GetNativeWindow());
-		Renderer& renderer = app.GetRenderer();
+		VulkanRenderer& renderer = dynamic_cast<VulkanRenderer&>(app.GetRenderer());
 
 		VulkanInit();
 
@@ -96,7 +97,8 @@ namespace Chaos
 
 	void ImGuiLayer::OnDetach()
 	{
-		Renderer& renderer = Application::Get().GetRenderer();
+		Application& app = Application::Get();
+		VulkanRenderer& renderer = dynamic_cast<VulkanRenderer&>(app.GetRenderer());
 		vkDestroyRenderPass(renderer.vkDevice, renderpass, nullptr);
 
 		vkFreeCommandBuffers(renderer.vkDevice, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
@@ -157,7 +159,7 @@ namespace Chaos
 		ImGuiIO& io = ImGui::GetIO();
 		Application& app = Application::Get();
 		io.DisplaySize = ImVec2((float)app.GetWindow().GetWidth(), (float)app.GetWindow().GetHeight());
-		Renderer& renderer = app.GetRenderer();
+		VulkanRenderer& renderer = dynamic_cast<VulkanRenderer&>(app.GetRenderer());
 		//Rendering			   
 		ImGui::Render();
 
@@ -237,7 +239,7 @@ namespace Chaos
 		ImGuiIO& io = ImGui::GetIO();
 
 		Application& app = Application::Get();
-		Renderer& renderer = app.GetRenderer();
+		VulkanRenderer& renderer = dynamic_cast<VulkanRenderer&>(app.GetRenderer());
 
 		VkDescriptorPoolSize poolSizes[] =
 		{
