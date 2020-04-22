@@ -87,7 +87,7 @@ namespace Chaos
 		virtual void DrawQuad(Vec2* position, Vec2* scale, Texture* texture) override;
 		virtual void DrawFrame() override;
 		virtual bool WaitIdle() override;
-		virtual void WindowResized() override { framebufferResized = true; }
+		virtual void WindowResized() override { mFramebufferResized = true; }
 		//VULKAN TEMP
 	private:
 
@@ -107,15 +107,12 @@ namespace Chaos
 
 		const glm::vec4 mClearColor = { 0.0f,0.0f, 0.03f, 1.0f };
 
-		std::vector<Texture*> mLoadedTextures;
-		std::vector<VkImage> textureImages;
-		std::vector<VkDeviceMemory> textureImagesMemory;
-		std::vector<VkImageView> textureImageViews;
+
 		VkSampler textureSampler;
 
 		//Funcs
 		VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
-		void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
+		void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT mDebugMessenger, const VkAllocationCallbacks* pAllocator);
 
 		void InitVulkan();
 		void CreateInstance();
@@ -172,64 +169,65 @@ namespace Chaos
 		VkCommandBuffer  BeginSingleTimeCommands();
 		void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
 
-		void SetImGuiCommandBuffer(std::vector<VkCommandBuffer> commandBuffers) { ImGuiCommandBuffers = commandBuffers; }
-		void SetImGuiCommandPool(VkCommandPool* pool) { imGuiCommandPool = pool; }
-		void SetImGuiFramebuffer(std::vector<VkFramebuffer>* buffer) { imGuiFrameBuffer = buffer; }
+		void SetImGuiCommandBuffer(std::vector<VkCommandBuffer> mCommandBuffers) { mImGuiCommandBuffers = mCommandBuffers; }
+		void SetImGuiCommandPool(VkCommandPool* pool) { mImGuiCommandPool = pool; }
+		void SetImGuiFramebuffer(std::vector<VkFramebuffer>* buffer) { mImGuiFrameBuffer = buffer; }
 
 		//Vars
 		const int MAX_FRAMES_IN_FLIGHT = 2;
-		bool framebufferResized = false;
-		size_t currentFrame = 0;
+		bool mFramebufferResized = false;
+		bool mRenderingGUI = false;
+		size_t mCurrentFrame = 0;
 
-		VkInstance vkInstance;
-		VkDebugUtilsMessengerEXT debugMessenger;
-		VkSurfaceKHR vkSurface;
+		VkInstance mInstance;
+		VkDebugUtilsMessengerEXT mDebugMessenger;
+		VkSurfaceKHR mSurface;
 
-		VkPhysicalDevice vkPhysicalDevice = VK_NULL_HANDLE;
-		VkDevice vkDevice;
+		VkPhysicalDevice mPhysicalDevice = VK_NULL_HANDLE;
+		VkDevice mDevice;
 
-		VkQueue graphicsQueue;
-		VkQueue presentQueue;
+		VkQueue mGraphicsQueue;
+		VkQueue mPresentQueue;
 
-		VkRenderPass vkRenderPass;
-		VkDescriptorSetLayout descriptorSetLayout;
-		VkPipelineLayout vkPipelineLayout;
+		VkRenderPass mRenderPass;
+		VkDescriptorSetLayout mDescriptorSetLayout;
+		VkPipelineLayout mPipelineLayout;
 
-		VkPipeline vkGraphicsPipeline;
+		VkPipeline mGraphicsPipeline;
 
-		VkCommandPool vkCommandPool;
-		VkCommandPool* imGuiCommandPool;
-		std::vector<VkCommandBuffer> commandBuffers;
-		std::vector<VkCommandBuffer> ImGuiCommandBuffers;
+		VkCommandPool mCommandPool;
+		VkCommandPool* mImGuiCommandPool = VK_NULL_HANDLE;
+		std::vector<VkCommandBuffer> mCommandBuffers;
+		std::vector<VkCommandBuffer> mImGuiCommandBuffers;
 
-		std::vector<VkFramebuffer>* imGuiFrameBuffer;
+		std::vector<VkFramebuffer>* mImGuiFrameBuffer;
 
-		std::vector<VkBuffer> vertexBuffers;
-		std::vector<VkDeviceMemory> vertexBuffersMemory;
-		std::vector<VkBuffer> indexBuffers;
-		std::vector<VkDeviceMemory> indexBuffersMemory;
+		std::vector<VkBuffer> mVertexBuffers;
+		std::vector<VkDeviceMemory> mVertexBuffersMemory;
+		std::vector<VkBuffer> mIndexBuffers;
+		std::vector<VkDeviceMemory> mIndexBuffersMemory;
 
-		VkDescriptorPool descriptorPool;
-		std::vector<VkDescriptorSet> descriptorSets;
+		VkDescriptorPool mDescriptorPool;
+		std::vector<VkDescriptorSet> mDescriptorSets;
 
-		std::vector<VkBuffer> uniformBuffers;
-		std::vector<VkDeviceMemory> uniformBuffersMemory;
+		std::vector<VkBuffer> mUniformBuffers;
+		std::vector<VkDeviceMemory> mUniformBuffersMemory;
 
-		bool waitingOnFences = true;
-		std::vector<VkFence> imagesInFlight;
-		std::vector<VkFence> inFlightFences;
-		std::vector<VkSemaphore>imageAvailableSemaphores;
-		std::vector<VkSemaphore>renderFinishedSemaphores;
+		bool mWaitingOnFences = true;
+		std::vector<VkFence> mImagesInFlight;
+		std::vector<VkFence> mInFlightFences;
+		std::vector<VkSemaphore>mImageAvailableSemaphores;
+		std::vector<VkSemaphore>mRenderFinishedSemaphores;
 
-		VkSwapchainKHR vkSwapchain;
-		std::vector<VkImageView> swapchainImageViews;
-		std::vector<VkFramebuffer> swapchainframebuffers;
-		std::vector<VkImage> swapchainImages;
-		uint32_t imageIndex = 0;
-		VkFormat swapchainImageFormat;
-		VkExtent2D swapchainExtent;
+		VkSwapchainKHR mSwapchain;
+		std::vector<VkImageView> mSwapchainImageViews;
+		std::vector<VkFramebuffer> mSwapchainframebuffers;
+		std::vector<VkImage> mSwapchainImages;
+		uint32_t mImageIndex = 0;
+		VkFormat mSwapchainImageFormat;
+		VkExtent2D mSwapchainExtent;
 
-		const std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
-		const std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+		const std::vector<const char*> mValidationLayers = { "VK_LAYER_KHRONOS_validation" };
+		const std::vector<const char*> mDeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 	};
 }

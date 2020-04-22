@@ -75,13 +75,13 @@ namespace Chaos
 		// Setup Platform/Renderer bindings
 
 		ImGui_ImplVulkan_InitInfo init_info = {};
-		init_info.Instance = renderer.vkInstance;
-		init_info.PhysicalDevice = renderer.vkPhysicalDevice;
-		init_info.Device = renderer.vkDevice;
-		init_info.QueueFamily = renderer.FindQueueFamilies(renderer.vkPhysicalDevice).graphicsFamily.value();
-		init_info.Queue = renderer.presentQueue;
+		init_info.Instance = renderer.mInstance;
+		init_info.PhysicalDevice = renderer.mPhysicalDevice;
+		init_info.Device = renderer.mDevice;
+		init_info.QueueFamily = renderer.FindQueueFamilies(renderer.mPhysicalDevice).graphicsFamily.value();
+		init_info.Queue = renderer.mPresentQueue;
 		init_info.PipelineCache = VK_NULL_HANDLE;
-		init_info.DescriptorPool = descriptorPool;
+		init_info.DescriptorPool = mDescriptorPool;
 		init_info.Allocator = nullptr;
 		init_info.MinImageCount = 2;
 		init_info.ImageCount = 2;
@@ -99,16 +99,16 @@ namespace Chaos
 	{
 		Application& app = Application::Get();
 		VulkanRenderer& renderer = dynamic_cast<VulkanRenderer&>(app.GetRenderer());
-		vkDestroyRenderPass(renderer.vkDevice, renderpass, nullptr);
+		vkDestroyRenderPass(renderer.mDevice, renderpass, nullptr);
 
-		vkFreeCommandBuffers(renderer.vkDevice, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
-		vkDestroyCommandPool(renderer.vkDevice, commandPool, nullptr);
+		vkFreeCommandBuffers(renderer.mDevice, commandPool, static_cast<uint32_t>(mCommandBuffers.size()), mCommandBuffers.data());
+		vkDestroyCommandPool(renderer.mDevice, commandPool, nullptr);
 
 		// Resources to destroy when the program ends
 		ImGui_ImplVulkan_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
-		vkDestroyDescriptorPool(renderer.vkDevice, descriptorPool, nullptr);
+		vkDestroyDescriptorPool(renderer.mDevice, mDescriptorPool, nullptr);
 	}
 
 	void ImGuiLayer::Begin()
@@ -171,36 +171,36 @@ namespace Chaos
 			glfwMakeContextCurrent(backup_current_context);
 		}
 
-		uint32_t imageIndex = renderer.imageIndex;
+		uint32_t mImageIndex = renderer.mImageIndex;
 
 		//Create command bufferr
-		commandBuffers.resize(renderer.swapchainImageViews.size());
+		mCommandBuffers.resize(renderer.mSwapchainImageViews.size());
 
 		VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
 		commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		commandBufferAllocateInfo.commandPool = commandPool;
-		commandBufferAllocateInfo.commandBufferCount = (uint32_t)commandBuffers.size();
-		vkAllocateCommandBuffers(renderer.vkDevice, &commandBufferAllocateInfo, commandBuffers.data());
+		commandBufferAllocateInfo.commandBufferCount = (uint32_t)mCommandBuffers.size();
+		vkAllocateCommandBuffers(renderer.mDevice, &commandBufferAllocateInfo, mCommandBuffers.data());
 
-		frameBuffers.resize(renderer.swapchainImageViews.size());
+		frameBuffers.resize(renderer.mSwapchainImageViews.size());
 
 		//Create frame buffers
-		for (size_t i = 0; i < renderer.swapchainImageViews.size(); ++i)
+		for (size_t i = 0; i < renderer.mSwapchainImageViews.size(); ++i)
 		{
 			VkImageView attachments[] = {
-				renderer.swapchainImageViews[i]
+				renderer.mSwapchainImageViews[i]
 			};
 			VkFramebufferCreateInfo framebufferInfo = {};
 			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 			framebufferInfo.renderPass = renderpass;
 			framebufferInfo.attachmentCount = 1;
 			framebufferInfo.pAttachments = attachments;
-			framebufferInfo.width = renderer.swapchainExtent.width;
-			framebufferInfo.height = renderer.swapchainExtent.height;
+			framebufferInfo.width = renderer.mSwapchainExtent.width;
+			framebufferInfo.height = renderer.mSwapchainExtent.height;
 			framebufferInfo.layers = 1;
 
-			if (vkCreateFramebuffer(renderer.vkDevice, &framebufferInfo, nullptr, &frameBuffers[i]) != VK_SUCCESS)
+			if (vkCreateFramebuffer(renderer.mDevice, &framebufferInfo, nullptr, &frameBuffers[i]) != VK_SUCCESS)
 			{
 				LOGCORE_ERROR("IMGUI: failed to create framebuffer!");
 			}
@@ -209,29 +209,30 @@ namespace Chaos
 		VkCommandBufferBeginInfo beginInfo = {};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-		for (size_t i = 0; i < commandBuffers.size(); ++i)
+		for (size_t i = 0; i < mCommandBuffers.size(); ++i)
 		{
 			VkRenderPassBeginInfo renderpassinfo = {};
 			renderpassinfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 			renderpassinfo.renderPass = renderpass;
 			renderpassinfo.framebuffer = frameBuffers[i];
-			renderpassinfo.renderArea.extent.width = renderer.swapchainExtent.width;
-			renderpassinfo.renderArea.extent.height = renderer.swapchainExtent.height;
+			renderpassinfo.renderArea.extent.width = renderer.mSwapchainExtent.width;
+			renderpassinfo.renderArea.extent.height = renderer.mSwapchainExtent.height;
 			renderpassinfo.clearValueCount = 1;
 			renderpassinfo.pClearValues = &clear;
 
-			vkBeginCommandBuffer(commandBuffers[i], &beginInfo);
+			vkBeginCommandBuffer(mCommandBuffers[i], &beginInfo);
 
-			vkCmdBeginRenderPass(commandBuffers[i], &renderpassinfo, VK_SUBPASS_CONTENTS_INLINE);
+			vkCmdBeginRenderPass(mCommandBuffers[i], &renderpassinfo, VK_SUBPASS_CONTENTS_INLINE);
 
-			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffers[i]);
+			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), mCommandBuffers[i]);
 
-			vkCmdEndRenderPass(commandBuffers[i]);
-			vkEndCommandBuffer(commandBuffers[i]);
+			vkCmdEndRenderPass(mCommandBuffers[i]);
+			vkEndCommandBuffer(mCommandBuffers[i]);
 		}
-		renderer.SetImGuiCommandBuffer(commandBuffers);	
+		renderer.SetImGuiCommandBuffer(mCommandBuffers);	
 		renderer.SetImGuiCommandPool(&commandPool);
 		renderer.SetImGuiFramebuffer(&frameBuffers);
+		renderer.mRenderingGUI = true;
 	}
 
 	void ImGuiLayer::VulkanInit()
@@ -263,7 +264,7 @@ namespace Chaos
 		poolInfo.poolSizeCount = (uint32_t)IM_ARRAYSIZE(poolSizes);
 		poolInfo.pPoolSizes = poolSizes;
 
-		if (vkCreateDescriptorPool(renderer.vkDevice, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS)
+		if (vkCreateDescriptorPool(renderer.mDevice, &poolInfo, nullptr, &mDescriptorPool) != VK_SUCCESS)
 		{
 			LOGCORE_ERROR("VULKAN: failed to allocate descriptor pool!");
 		}
@@ -272,15 +273,15 @@ namespace Chaos
 		//Create command pool
 		VkCommandPoolCreateInfo commandPoolCreateInfo = {};
 		commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-		commandPoolCreateInfo.queueFamilyIndex = renderer.FindQueueFamilies(renderer.vkPhysicalDevice).graphicsFamily.value();
+		commandPoolCreateInfo.queueFamilyIndex = renderer.FindQueueFamilies(renderer.mPhysicalDevice).graphicsFamily.value();
 		commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-		if (vkCreateCommandPool(renderer.vkDevice, &commandPoolCreateInfo, nullptr, &commandPool) != VK_SUCCESS) {
+		if (vkCreateCommandPool(renderer.mDevice, &commandPoolCreateInfo, nullptr, &commandPool) != VK_SUCCESS) {
 			LOGCORE_ERROR("IMGUI: Could not create graphics command pool");
 		}
 
 		VkAttachmentDescription attachment = {};
-		attachment.format = renderer.swapchainImageFormat;
+		attachment.format = renderer.mSwapchainImageFormat;
 		attachment.samples = VK_SAMPLE_COUNT_1_BIT;
 		attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -315,7 +316,7 @@ namespace Chaos
 		info.dependencyCount = 1;
 		info.pDependencies = &dependency;
 
-		if (vkCreateRenderPass(renderer.vkDevice, &info, nullptr, &renderpass) != VK_SUCCESS) {
+		if (vkCreateRenderPass(renderer.mDevice, &info, nullptr, &renderpass) != VK_SUCCESS) {
 			LOGCORE_ERROR("IMGUI: Could not create ImGui's render pass");
 		}
 	}

@@ -23,12 +23,12 @@ namespace Chaos
 	private:
 		float mTime = 0.0f;
 
-		VkDescriptorPool descriptorPool;
-		VkDescriptorSetLayout descriptorSetLayout;
+		VkDescriptorPool mDescriptorPool;
+		VkDescriptorSetLayout mDescriptorSetLayout;
 		VkDescriptorSet descriptorSet;
 		VkRenderPass renderpass;
 		VkCommandPool commandPool;
-		std::vector<VkCommandBuffer> commandBuffers;
+		std::vector<VkCommandBuffer> mCommandBuffers;
 		std::vector<VkFramebuffer> frameBuffers;
 		VkClearValue clear;
 	};
