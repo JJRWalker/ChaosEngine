@@ -96,6 +96,7 @@ namespace Chaos
 		}
 	}
 
+	//All functions that need to be called when a vulkan instance is set up 
 	void VulkanRenderer::InitVulkan() {
 		CreateInstance();
 		SetupDebugMessenger();
@@ -109,7 +110,6 @@ namespace Chaos
 		CreateGraphicsPipeline();
 		CreateFrameBuffers();
 		CreateCommandPool();
-		//CreateTextureImage(Texture::Create("IncorrectFilePath"));
 		CreateTextureSampler();
 		CreateVertexBuffers();
 		CreateIndexBuffers();
@@ -182,12 +182,14 @@ namespace Chaos
 		}
 	}
 
+	//Creating a platform angostic object to display on using window library in use, needs to be changed to use precompiler macros when porting to other systems
 	void VulkanRenderer::CreateSurface() {
 		if (glfwCreateWindowSurface(mInstance, (GLFWwindow*)Application::Get().GetWindow().GetNativeWindow(), nullptr, &mSurface) != VK_SUCCESS) {
 			LOGCORE_ERROR("VULKAN: failed to create window surface!");
 		}
 	}
 
+	//Selecting the correct graphics card, gives each device a score and picks the one that is most suitable for presenting graphics
 	void VulkanRenderer::PickPhysicalDevice() {
 		uint32_t deviceCount = 0;
 		vkEnumeratePhysicalDevices(mInstance, &deviceCount, nullptr);
@@ -258,7 +260,9 @@ namespace Chaos
 		vkGetDeviceQueue(mDevice, indices.presentFamily.value(), 0, &mPresentQueue);
 	}
 
+	//Swapchain to be created on creation of renderer and whenever it is invalidated (most commonly on window resize)
 	void VulkanRenderer::CreateSwapChain() {
+		//Getting physical device swapchain support and capabilities
 		SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(mPhysicalDevice);
 
 		VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.Formats);
@@ -270,6 +274,7 @@ namespace Chaos
 			imageCount = swapChainSupport.Capabilities.maxImageCount;
 		}
 
+		//using capbablilites to fill in parameters needed to create the swapchain
 		VkSwapchainCreateInfoKHR createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 		createInfo.surface = mSurface;
@@ -313,6 +318,7 @@ namespace Chaos
 		mSwapchainExtent = extent;
 	}
 
+	//setting up the image views (still images) that will be presented to the surface, created upon renderer construction / creation
 	void VulkanRenderer::CreateImageViews()
 	{
 		mSwapchainImageViews.resize(mSwapchainImages.size());
@@ -342,6 +348,7 @@ namespace Chaos
 		}
 	}
 
+	//specifying a descriptor set layout, done upon renderer creation
 	void VulkanRenderer::CreateDescriptorSetLayout()
 	{
 		VkDescriptorSetLayoutBinding uboLayoutBinding = {};
@@ -371,6 +378,7 @@ namespace Chaos
 		}
 	}
 
+	//Renderpass created on renderer construction
 	void VulkanRenderer::CreateRenderPass()
 	{
 		VkAttachmentDescription colorAttachment = {};
@@ -419,6 +427,7 @@ namespace Chaos
 		}
 	}
 
+	//Graphics pipeline currently only created on construction, currently hardcoded to use one shader. Cannot load a new shader needs to be fixed at a later date
 	void VulkanRenderer::CreateGraphicsPipeline()
 	{
 		auto vertShaderCode = readFile("../chaosengine/shaders/vert.spv");
@@ -543,6 +552,7 @@ namespace Chaos
 		vkDestroyShaderModule(mDevice, vertShaderModule, nullptr);
 	}
 
+	//Frame buffers only created on renderer construction
 	void VulkanRenderer::CreateFrameBuffers()
 	{
 		mSwapchainframebuffers.resize(mSwapchainImageViews.size());
@@ -569,6 +579,8 @@ namespace Chaos
 
 	}
 
+	//Creating a command pool to store a list of commands that will be executed on the DrawFrame function. Only created on construction
+	//Cleared each frame after commands have been executed.
 	void VulkanRenderer::CreateCommandPool()
 	{
 		QueueFamilyIndices queueFamilyIndices = FindQueueFamilies(mPhysicalDevice);
@@ -583,6 +595,7 @@ namespace Chaos
 		}
 	}
 
+	//DEPRICATED, TO BE REMOVED. Vulkan image creation is now handled on the VulkanTexture itself. Image and other data stored there aswell
 	void VulkanRenderer::CreateTextureImage(Texture* tex)
 	{
 		int texWidth, texHeight, texChannels;
@@ -644,6 +657,8 @@ namespace Chaos
 		VulkanTexture* loaded = new VulkanTexture(*(VulkanTexture*)tex);
 	}
 
+	//Creating sampler on construction, determines how the image loaded should be modified from the raw data.
+	//May at somepoint want to have multiple samplers depending on the desired effect for an image.
 	void VulkanRenderer::CreateTextureSampler()
 	{
 		VkSamplerCreateInfo samplerInfo = {};
@@ -667,6 +682,7 @@ namespace Chaos
 		}
 	}
 
+	//Creating a buffer to load vertex data into, cleared and loaded into each time a draw command is written, created on rendeder construction
 	void VulkanRenderer::CreateVertexBuffers()
 	{
 		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
@@ -694,6 +710,8 @@ namespace Chaos
 		mVertexBuffersMemory.push_back(vertexBufferMemory);
 	}
 
+	//Creating an index buffer, stores list of indicies that point to locations in the vertex buffer to render, cleared and loaded to when a new command is written
+	//created on renderer construction
 	void VulkanRenderer::CreateIndexBuffers()
 	{
 		VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
@@ -734,9 +752,13 @@ namespace Chaos
 			CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, mUniformBuffers[i], mUniformBuffersMemory[i]);
 		}
 	}
+
+	//Creating a pool to contain all the descriptor sets
+	//SHOULD BE CALLED ON SCENE LOAD NOT EACH FRAME
 	void VulkanRenderer::CreateDescriptorPool()
 	{
-		uint32_t numOfSets = 1000;
+		uint32_t numOfSets = 1000;	//Allowing for a max of 1000 textures currently per scene.
+		//This value could be changed when the scene is loaded for optimisation, however memory footprint for a descriptor set is small
 
 		std::array<VkDescriptorPoolSize, 2> poolSizes = {};
 		poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -810,6 +832,7 @@ namespace Chaos
 		}
 	}
 
+	//Helper for finding the right memory type 
 	uint32_t VulkanRenderer::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags props)
 	{
 		VkPhysicalDeviceMemoryProperties memProperties;
@@ -826,6 +849,7 @@ namespace Chaos
 		return NULL;
 	}
 
+	//Creating command buffers each frame, loads vertex, index and texture data from mRenderQueue and records commands to draw.
 	void VulkanRenderer::CreateCommandBuffers()
 	{
 		mCommandBuffers.resize(mSwapchainframebuffers.size());
@@ -836,6 +860,7 @@ namespace Chaos
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		allocInfo.commandBufferCount = (uint32_t)mCommandBuffers.size();
 
+		//TO BE MOVED TO ON SCENE LOAD FUNC
 		if (mDescriptorSets.size() > 0)
 		{
 			vkFreeDescriptorSets(mDevice, mDescriptorPool, (uint32_t)mDescriptorSets.size(), mDescriptorSets.data());
@@ -867,6 +892,8 @@ namespace Chaos
 
 			vkCmdBeginRenderPass(mCommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 			vkCmdBindPipeline(mCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline);
+
+			//Itterates through RenderQueue and records commands, drawing all objects of the same texture together.
 			for (int x = 0; x < mRenderQueue.size(); ++x)
 			{
 				//Clearing lists before next draw call
@@ -980,6 +1007,7 @@ namespace Chaos
 		EndSingleTimeCommands(commandBuffer);
 	}
 
+	//Helper function used for copying buffer to image using single time commands
 	void VulkanRenderer::CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
 	{
 		VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
@@ -1013,6 +1041,7 @@ namespace Chaos
 		EndSingleTimeCommands(commandBuffer);
 	}
 
+	//Helper func that begins a single time command, allocates a command to the pool and starts recording
 	VkCommandBuffer VulkanRenderer::BeginSingleTimeCommands()
 	{
 		VkCommandBufferAllocateInfo allocInfo = {};
@@ -1033,6 +1062,7 @@ namespace Chaos
 		return commandBuffer;
 	}
 
+	//Helper function that ends a single time command. Does not check to see if one was started yet.
 	void VulkanRenderer::EndSingleTimeCommands(VkCommandBuffer commandBuffer)
 	{
 		vkEndCommandBuffer(commandBuffer);
@@ -1048,6 +1078,7 @@ namespace Chaos
 		vkFreeCommandBuffers(mDevice, mCommandPool, 1, &commandBuffer);
 	}
 
+	//Creates and binds an image to an image memory
 	void VulkanRenderer::CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
 	{
 		VkImageCreateInfo imageInfo = {};
@@ -1083,6 +1114,7 @@ namespace Chaos
 		vkBindImageMemory(mDevice, image, imageMemory, 0);
 	}
 
+	//Translates the image format, used to make sending the image data to the GPU more performant
 	void VulkanRenderer::TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
 	{
 		VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
@@ -1141,6 +1173,7 @@ namespace Chaos
 		EndSingleTimeCommands(commandBuffer);
 	}
 
+	//Creates the image for the provided image and returns it. Called from inside VulkanTexture. Move in future.
 	VkImageView VulkanRenderer::CreateImageView(VkImage image, VkFormat format)
 	{
 		VkImageViewCreateInfo viewInfo = {};
@@ -1162,6 +1195,7 @@ namespace Chaos
 		return imageView;
 	}
 
+	//Called once the swapchain is invalidated. Destroys all elements needed for swapchain creation
 	void VulkanRenderer::CleanUpSwapchain()
 	{
 		for (auto framebuffer : mSwapchainframebuffers)
@@ -1189,6 +1223,7 @@ namespace Chaos
 		vkDestroyDescriptorPool(mDevice, mDescriptorPool, nullptr);
 	}
 
+	//Called once the swapchain is invalidated. Calls all functions needed to destroy and recreate the swapchain
 	void VulkanRenderer::RecreateSwapchain()
 	{
 		vkDeviceWaitIdle(mDevice);
@@ -1207,6 +1242,7 @@ namespace Chaos
 		CreateSyncObjects();
 	}
 
+	//Updates all the UBOs maps memory for them. Resets vectors containing buffer memory and repopulates them
 	void VulkanRenderer::UpdateUniformBuffers()
 	{
 		mUniformBuffers.resize(mRenderQueue.size());
@@ -1225,20 +1261,25 @@ namespace Chaos
 			vkUnmapMemory(mDevice, mUniformBuffersMemory[i]);
 		}
 	}
-
+	
+	//Called from outside the renderer class whenever the user wants to add anything to the render queue
 	void VulkanRenderer::DrawQuad(Vec2* position, Vec2* scale, Texture* texture)
 	{
+		//Creates local vector to store all the verts for the quad using the position and scale given.
 		std::vector<Vertex> verts;
 		verts.push_back(Vertex(Vec2((-1.f * scale->X / 2) + position->X, (-1.f * scale->Y / 2) + position->Y), Vec3(0, 0, 0), Vec2(0.01f, texture->GetTilingFactor())));
 		verts.push_back(Vertex(Vec2((1.f * scale->X / 2) + position->X, (-1.f * scale->Y / 2) + position->Y), Vec3(0, 0, 0), Vec2(texture->GetTilingFactor(), texture->GetTilingFactor())));
 		verts.push_back(Vertex(Vec2((1.f * scale->X / 2) + position->X, (1.f * scale->Y / 2) + position->Y), Vec3(0, 0, 0), Vec2(texture->GetTilingFactor(), 0.01f)));
 		verts.push_back(Vertex(Vec2((-1.f * scale->X / 2) + position->X, (1.f * scale->Y / 2) + position->Y), Vec3(0, 0, 0), Vec2(0.01f, 0.01f)));
 
+		//Stores indcies for the quad (always the same)
 		std::vector<uint32_t> ind = {
 		0,1,2,2,3,0
 		};
 
-		Quad* quad = new Quad(verts, ind, texture);
+		Quad* quad = new Quad(verts, ind, texture); //Creating the primative quad that will be stored in the RenderQueue, passing data
+
+		//If the queue is empty, add a new vector then push the quad to the back of that vector
 		if (mRenderQueue.size() == 0)
 		{
 			mRenderQueue.push_back(std::vector<PrimitiveType*>());
@@ -1246,6 +1287,7 @@ namespace Chaos
 			return;
 		}
 
+		//If the queue is not empty, then itterate through it and try to find a matching texture to sort them into
 		for (auto& i : mRenderQueue)
 		{
 			if (quad->GetTexture()->GetFilePath() == i[0]->GetTexture()->GetFilePath())
@@ -1254,11 +1296,14 @@ namespace Chaos
 				return;
 			}
 		}
+
+		//if neither cases return out of this method, then it must be a new texture and as such it should push a new vector to the back, containing the new quad
 		std::vector<PrimitiveType*> primativeList = { quad };
 		mRenderQueue.push_back(primativeList);
 
 	}
 
+	//Draw called once every game loop to display the data passed to it that loop
 	void VulkanRenderer::DrawFrame()
 	{
 		if (mRenderQueue.size() > 0)
@@ -1292,6 +1337,8 @@ namespace Chaos
 
 			mImagesInFlight[mImageIndex] = mInFlightFences[mCurrentFrame];
 
+			//Adding the command buffers to the submit buffer, if there is an imgui buffer also attach imgui command buffers for drawing UI
+			//Potential change: add check to see if a bool for rendering UI is true, would allow for toggling UI on and off. Could be done at a higher level
 			std::vector<VkCommandBuffer> submitCommandBuffers = { mCommandBuffers[mImageIndex] };
 			if (mImGuiCommandBuffers.size() > 0)
 			{
@@ -1346,15 +1393,15 @@ namespace Chaos
 			}
 
 			mCurrentFrame = (mCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-			vkQueueWaitIdle(mPresentQueue);
+			vkQueueWaitIdle(mPresentQueue);	//Waiting for the queue to be idle before clean up
 
+
+			//Cleaning up resources after rendering a frame
 			vkFreeCommandBuffers(mDevice, mCommandPool, static_cast<uint32_t>(mCommandBuffers.size()), mCommandBuffers.data());
 
 			if (mRenderingGUI)
 			{
 				vkFreeCommandBuffers(mDevice, *mImGuiCommandPool, static_cast<uint32_t>(mImGuiCommandBuffers.size()), mImGuiCommandBuffers.data());
-
-
 				for (auto framebuffer : *mImGuiFrameBuffer) {
 					vkDestroyFramebuffer(mDevice, framebuffer, nullptr);
 				}
@@ -1372,7 +1419,7 @@ namespace Chaos
 				vkFreeMemory(mDevice, mIndexBuffersMemory[i], nullptr);
 			}
 
-			//deleting all pointers before clearing the list
+			//deleting all pointers before clearing the list of rendered objects
 			for (auto& l : mRenderQueue)
 			{
 				for (auto* x : l)
@@ -1391,6 +1438,7 @@ namespace Chaos
 		}
 	}
 
+	//Wait idle for outside of this class, probably not needed
 	bool VulkanRenderer::WaitIdle()
 	{
 		return vkDeviceWaitIdle(mDevice) == VK_SUCCESS;
