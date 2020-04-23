@@ -20,7 +20,7 @@
 
 
 #ifdef CHAOS_DEBUG
-const bool enableValidationLayers = true;
+const bool enableValidationLayers = false;	//change to true if vulkan SDK is installed to recieve validation layer warnings
 #else
 const bool enableValidationLayers = false;
 #endif
@@ -757,7 +757,7 @@ namespace Chaos
 	//SHOULD BE CALLED ON SCENE LOAD NOT EACH FRAME
 	void VulkanRenderer::CreateDescriptorPool()
 	{
-		uint32_t numOfSets = 1000;	//Allowing for a max of 1000 textures currently per scene.
+		uint32_t numOfSets = 100;	//Allowing for a max of 100 textures currently per scene.
 		//This value could be changed when the scene is loaded for optimisation, however memory footprint for a descriptor set is small
 
 		std::array<VkDescriptorPoolSize, 2> poolSizes = {};
@@ -1340,7 +1340,7 @@ namespace Chaos
 			//Adding the command buffers to the submit buffer, if there is an imgui buffer also attach imgui command buffers for drawing UI
 			//Potential change: add check to see if a bool for rendering UI is true, would allow for toggling UI on and off. Could be done at a higher level
 			std::vector<VkCommandBuffer> submitCommandBuffers = { mCommandBuffers[mImageIndex] };
-			if (mImGuiCommandBuffers.size() > 0)
+			if (mImGuiCommandBuffers.size() > 0 && mRenderingGUI)
 			{
 				submitCommandBuffers.push_back(mImGuiCommandBuffers[mImageIndex]);
 			}

@@ -35,7 +35,6 @@ namespace Chaos
 
 	ImGuiLayer::~ImGuiLayer()
 	{
-
 	}
 
 	void ImGuiLayer::OnAttach()
@@ -113,7 +112,6 @@ namespace Chaos
 
 	void ImGuiLayer::Begin()
 	{
-		ImGui_ImplVulkan_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 	}
@@ -157,9 +155,8 @@ namespace Chaos
 	void ImGuiLayer::End()
 	{
 		ImGuiIO& io = ImGui::GetIO();
-		Application& app = Application::Get();
-		io.DisplaySize = ImVec2((float)app.GetWindow().GetWidth(), (float)app.GetWindow().GetHeight());
-		VulkanRenderer& renderer = dynamic_cast<VulkanRenderer&>(app.GetRenderer());
+		io.DisplaySize = ImVec2((float)Application::Get().GetWindow().GetWidth(), (float)Application::Get().GetWindow().GetHeight());
+		VulkanRenderer& renderer = dynamic_cast<VulkanRenderer&>(Application::Get().GetRenderer());
 		//Rendering			   
 		ImGui::Render();
 
