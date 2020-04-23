@@ -2,6 +2,14 @@
 
 Chaos Engine is a vulkan based 2D game engine written in C++ in my spare time, primarily being developed for making roguelikes.
 
+## Getting access
+Clone repository as you normally would. Then use the following git command lines:
+
+<pre><code>git submodule init  
+git pull --recurse 
+</code></pre>
+
+
 ## Support
 Currently only windows x64 is supported, however development is ongoing with multiplatform development in mind with layers of abstraction being implemented.
 
