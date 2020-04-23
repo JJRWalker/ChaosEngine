@@ -1,7 +1,13 @@
 #include "chaospch.h"
 #include "Application.h"
-
+#include <ctime>
+#include <chrono>
+#include "Chaos/DataTypes/Vec2.h"
+#include "Chaos/Input/Input.h"
+#include "Chaos/Renderer/Texture.h"
 #include "Chaos/Renderer/Renderer.h"
+#include "Chaos/Debug/ImGuiLayer.h"
+#include "GLFW/glfw3.h"
 
 namespace Chaos
 {
@@ -17,7 +23,11 @@ namespace Chaos
 		mWindow = std::unique_ptr<Window>(Window::Create());
 		mWindow->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
-		Renderer* vulkan = new Renderer();
+		mRenderer = std::unique_ptr<Renderer>(Renderer::Create());
+
+		guiLayer = new ImGuiLayer();
+
+		PushOverlay(guiLayer);
 	}
 
 	Application::~Application()
@@ -29,10 +39,26 @@ namespace Chaos
 	{
 		while (mRunning)
 		{
+			float time = (float)glfwGetTime();
+			mDeltaTime = time - mTimeLastFrame;
+			mTimeLastFrame = time;
+
+			for (Layer* layer : mLayerStack)			
+				layer->OnUpdate(mDeltaTime);
+			
+
+			guiLayer->Begin();
 			for (Layer* layer : mLayerStack)
-				layer->OnUpdate();
+				layer->OnImGuiRender();
+			
+			guiLayer->End();
 
 			mWindow->OnUpdate();
+			
+			if (mWindow->GetWidth() != 0 && mWindow->GetHeight() != 0)
+			{
+				mRenderer->DrawFrame();
+			}				
 		}
 	}
 
@@ -42,6 +68,11 @@ namespace Chaos
 
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
+
+		if (e.GetEventType() == EventType::WindowResize)
+		{
+			mRenderer->WindowResized();
+		}
 
 		for (auto it = mLayerStack.end(); it != mLayerStack.begin();)
 		{

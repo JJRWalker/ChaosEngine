@@ -10,6 +10,12 @@
     <Filter Include="src\Chaos\Core">
       <UniqueIdentifier>{A2C532C3-8E93-26C9-7727-97EF6394022E}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Chaos\DataTypes">
+      <UniqueIdentifier>{A88C50B4-14EE-2DC2-9D5B-747409BC6481}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Chaos\Debug">
+      <UniqueIdentifier>{00D59729-6C60-05EE-7571-88E2E17B61EE}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\Chaos\Events">
       <UniqueIdentifier>{AEC71C60-9AC0-3BB2-C3F2-2037AF4A1BBE}</UniqueIdentifier>
     </Filter>
@@ -22,23 +28,14 @@
     <Filter Include="src\Platform">
       <UniqueIdentifier>{21CA02E5-0D2D-9289-B6B2-CA3FA2F45D0C}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Platform\Vulkan">
+      <UniqueIdentifier>{81084748-ED69-2456-76D7-6A08E2375B15}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\Platform\Windows">
       <UniqueIdentifier>{5B054582-4794-CE4B-F0B2-E246DC20DFF1}</UniqueIdentifier>
     </Filter>
     <Filter Include="vendor">
       <UniqueIdentifier>{B3738122-9F15-ACF8-88D0-BF4C74113349}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="vendor\Vulkan">
-      <UniqueIdentifier>{D3F918DF-3FBA-9415-08F5-DD927474D9F1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="vendor\Vulkan\include">
-      <UniqueIdentifier>{4644207E-B2B0-DB78-7BA4-73D6E7CFFDE0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="vendor\Vulkan\include\shaderc">
-      <UniqueIdentifier>{2FE75674-9BFF-3D9E-64AC-CD37D083D237}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="vendor\Vulkan\include\vulkan">
-      <UniqueIdentifier>{261B60AE-12D6-4F5A-BB8D-C8A4A7279AEA}</UniqueIdentifier>
     </Filter>
     <Filter Include="vendor\glm">
       <UniqueIdentifier>{829FC5A8-6E57-07F6-D75E-E051C335A2E6}</UniqueIdentifier>
@@ -81,8 +78,23 @@
     <ClInclude Include="src\Chaos\Core\Log.h">
       <Filter>src\Chaos\Core</Filter>
     </ClInclude>
+    <ClInclude Include="src\Chaos\Core\Scene.h">
+      <Filter>src\Chaos\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Core\Time.h">
+      <Filter>src\Chaos\Core</Filter>
+    </ClInclude>
     <ClInclude Include="src\Chaos\Core\Window.h">
       <Filter>src\Chaos\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\DataTypes\Vec2.h">
+      <Filter>src\Chaos\DataTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\DataTypes\Vec3.h">
+      <Filter>src\Chaos\DataTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Debug\ImGuiLayer.h">
+      <Filter>src\Chaos\Debug</Filter>
     </ClInclude>
     <ClInclude Include="src\Chaos\Events\ApplicationEvent.h">
       <Filter>src\Chaos\Events</Filter>
@@ -105,8 +117,29 @@
     <ClInclude Include="src\Chaos\Input\MouseCodes.h">
       <Filter>src\Chaos\Input</Filter>
     </ClInclude>
+    <ClInclude Include="src\Chaos\Renderer\PrimitiveType.h">
+      <Filter>src\Chaos\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Renderer\Quad.h">
+      <Filter>src\Chaos\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src\Chaos\Renderer\Renderer.h">
       <Filter>src\Chaos\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Renderer\RendererAPI.h">
+      <Filter>src\Chaos\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Renderer\Texture.h">
+      <Filter>src\Chaos\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Renderer\Vertex.h">
+      <Filter>src\Chaos\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\Vulkan\VulkanRenderer.h">
+      <Filter>src\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\Vulkan\VulkanTexture.h">
+      <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Windows\WindowsInput.h">
       <Filter>src\Platform\Windows</Filter>
@@ -116,78 +149,6 @@
     </ClInclude>
     <ClInclude Include="src\chaospch.h">
       <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Vulkan\include\shaderc\env.h">
-      <Filter>vendor\Vulkan\include\shaderc</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Vulkan\include\shaderc\shaderc.h">
-      <Filter>vendor\Vulkan\include\shaderc</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Vulkan\include\shaderc\shaderc.hpp">
-      <Filter>vendor\Vulkan\include\shaderc</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Vulkan\include\shaderc\status.h">
-      <Filter>vendor\Vulkan\include\shaderc</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Vulkan\include\shaderc\visibility.h">
-      <Filter>vendor\Vulkan\include\shaderc</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Vulkan\include\vulkan\vk_icd.h">
-      <Filter>vendor\Vulkan\include\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Vulkan\include\vulkan\vk_layer.h">
-      <Filter>vendor\Vulkan\include\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Vulkan\include\vulkan\vk_platform.h">
-      <Filter>vendor\Vulkan\include\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Vulkan\include\vulkan\vk_sdk_platform.h">
-      <Filter>vendor\Vulkan\include\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Vulkan\include\vulkan\vulkan.h">
-      <Filter>vendor\Vulkan\include\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Vulkan\include\vulkan\vulkan.hpp">
-      <Filter>vendor\Vulkan\include\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Vulkan\include\vulkan\vulkan_android.h">
-      <Filter>vendor\Vulkan\include\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Vulkan\include\vulkan\vulkan_core.h">
-      <Filter>vendor\Vulkan\include\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Vulkan\include\vulkan\vulkan_fuchsia.h">
-      <Filter>vendor\Vulkan\include\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Vulkan\include\vulkan\vulkan_ggp.h">
-      <Filter>vendor\Vulkan\include\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Vulkan\include\vulkan\vulkan_ios.h">
-      <Filter>vendor\Vulkan\include\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Vulkan\include\vulkan\vulkan_macos.h">
-      <Filter>vendor\Vulkan\include\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Vulkan\include\vulkan\vulkan_metal.h">
-      <Filter>vendor\Vulkan\include\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Vulkan\include\vulkan\vulkan_vi.h">
-      <Filter>vendor\Vulkan\include\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Vulkan\include\vulkan\vulkan_wayland.h">
-      <Filter>vendor\Vulkan\include\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Vulkan\include\vulkan\vulkan_win32.h">
-      <Filter>vendor\Vulkan\include\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Vulkan\include\vulkan\vulkan_xcb.h">
-      <Filter>vendor\Vulkan\include\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Vulkan\include\vulkan\vulkan_xlib.h">
-      <Filter>vendor\Vulkan\include\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Vulkan\include\vulkan\vulkan_xlib_xrandr.h">
-      <Filter>vendor\Vulkan\include\vulkan</Filter>
     </ClInclude>
     <ClInclude Include="vendor\glm\glm\common.hpp">
       <Filter>vendor\glm\glm</Filter>
@@ -1343,8 +1304,29 @@
     <ClCompile Include="src\Chaos\Core\Log.cpp">
       <Filter>src\Chaos\Core</Filter>
     </ClCompile>
+    <ClCompile Include="src\Chaos\Core\Scene.cpp">
+      <Filter>src\Chaos\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Chaos\Debug\ImGuiBuild.cpp">
+      <Filter>src\Chaos\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Chaos\Debug\ImGuiLayer.cpp">
+      <Filter>src\Chaos\Debug</Filter>
+    </ClCompile>
     <ClCompile Include="src\Chaos\Renderer\Renderer.cpp">
       <Filter>src\Chaos\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Chaos\Renderer\RendererAPI.cpp">
+      <Filter>src\Chaos\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Chaos\Renderer\Texture.cpp">
+      <Filter>src\Chaos\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\Vulkan\VulkanRenderer.cpp">
+      <Filter>src\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\Vulkan\VulkanTexture.cpp">
+      <Filter>src\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
       <Filter>src\Platform\Windows</Filter>

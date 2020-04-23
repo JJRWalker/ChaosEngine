@@ -9,6 +9,7 @@
 
 namespace Chaos
 {
+
 	class Application
 	{
 	public:
@@ -25,15 +26,21 @@ namespace Chaos
 
 		inline static Application& Get() { return *sInstance; }
 		inline Window& GetWindow() { return *mWindow; }
+		inline class Renderer& GetRenderer() { return *mRenderer; }
 
 	private:
 		bool OnWindowClose(WindowCloseEvent& e);
 
 		bool mRunning = true;
 		std::unique_ptr<Window> mWindow;
+		std::unique_ptr<class Renderer> mRenderer;
 
 		LayerStack mLayerStack;
 
+		float mDeltaTime = 0.0f;
+		float mTimeLastFrame = 0.0f;
+
+		class ImGuiLayer* guiLayer;
 
 		static Application* sInstance;
 	};

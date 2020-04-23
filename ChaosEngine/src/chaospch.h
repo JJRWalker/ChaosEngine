@@ -9,6 +9,8 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <optional>
+#include <set>
 #include <unordered_set>
 #include <unordered_map>
 
