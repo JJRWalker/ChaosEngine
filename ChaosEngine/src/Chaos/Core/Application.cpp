@@ -44,12 +44,7 @@ namespace Chaos
 			mTimeLastFrame = time;
 
 			for (Layer* layer : mLayerStack)
-			{
-				LOGCORE_INFO("Time taken to update layer:  {0}", (glfwGetTime() - time) * 1000);
-				layer->OnUpdate(mDeltaTime);
-			}
-				
-			
+				layer->OnUpdate(mDeltaTime);			
 
 			guiLayer->Begin();
 			for (Layer* layer : mLayerStack)
