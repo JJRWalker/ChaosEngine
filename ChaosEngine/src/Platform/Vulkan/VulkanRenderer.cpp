@@ -18,12 +18,15 @@
 #include "Chaos/Renderer/Quad.h"
 #include "Chaos/Renderer/Vertex.h"
 
+#include <thread>
+#include <functional>
 
 #ifdef CHAOS_DEBUG
-const bool enableValidationLayers = false;	//change to true if vulkan SDK is installed to recieve validation layer warnings
+const bool enableValidationLayers = true;	//change to true if vulkan SDK is installed to recieve validation layer warnings
 #else
 const bool enableValidationLayers = false;
 #endif
+
 
 namespace Chaos
 {
@@ -111,8 +114,8 @@ namespace Chaos
 		CreateFrameBuffers();
 		CreateCommandPool();
 		CreateTextureSampler();
-		CreateVertexBuffers();
-		CreateIndexBuffers();
+		//CreateVertexBuffers();
+		//CreateIndexBuffers();
 		CreateUniformBuffers();
 		CreateDescriptorPool();
 		//CreateDescriptorSets();
@@ -526,7 +529,7 @@ namespace Chaos
 		pipelineLayoutInfo.pSetLayouts = &mDescriptorSetLayout;
 
 		if (vkCreatePipelineLayout(mDevice, &pipelineLayoutInfo, nullptr, &mPipelineLayout) != VK_SUCCESS) {
-			throw std::runtime_error("failed to create pipeline layout!");
+			LOGCORE_ERROR("VULKAN: failed to create pipeline layout!");
 		}
 
 		VkGraphicsPipelineCreateInfo pipelineInfo = {};
@@ -544,8 +547,9 @@ namespace Chaos
 		pipelineInfo.subpass = 0;
 		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-		if (vkCreateGraphicsPipelines(mDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &mGraphicsPipeline) != VK_SUCCESS) {
-			throw std::runtime_error("failed to create graphics pipeline!");
+		if (vkCreateGraphicsPipelines(mDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &mGraphicsPipeline) != VK_SUCCESS) 
+		{
+			LOGCORE_ERROR("VULKAN: failed to create graphics pipeline!");
 		}
 
 		vkDestroyShaderModule(mDevice, fragShaderModule, nullptr);
@@ -683,7 +687,7 @@ namespace Chaos
 	}
 
 	//Creating a buffer to load vertex data into, cleared and loaded into each time a draw command is written, created on rendeder construction
-	void VulkanRenderer::CreateVertexBuffers()
+	void VulkanRenderer::CreateVertexBuffers(std::vector<VulkanVertex> vertices, size_t insertIndex)
 	{
 		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 
@@ -706,13 +710,13 @@ namespace Chaos
 		vkDestroyBuffer(mDevice, stagingBuffer, nullptr);
 		vkFreeMemory(mDevice, stagingBufferMemory, nullptr);
 
-		mVertexBuffers.push_back(vertexBuffer);
-		mVertexBuffersMemory.push_back(vertexBufferMemory);
+		mVertexBuffers[insertIndex] = vertexBuffer;
+		mVertexBuffersMemory[insertIndex] = vertexBufferMemory;
 	}
 
 	//Creating an index buffer, stores list of indicies that point to locations in the vertex buffer to render, cleared and loaded to when a new command is written
 	//created on renderer construction
-	void VulkanRenderer::CreateIndexBuffers()
+	void VulkanRenderer::CreateIndexBuffers(std::vector<uint16_t> indices, size_t insertIndex)
 	{
 		VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
 
@@ -735,8 +739,16 @@ namespace Chaos
 		vkDestroyBuffer(mDevice, stagingBuffer, nullptr);
 		vkFreeMemory(mDevice, stagingBufferMemory, nullptr);
 
-		mIndexBuffers.push_back(indexBuffer);
-		mIndexBuffersMemory.push_back(indexBufferMemory);
+
+		mIndexBuffers[insertIndex] = indexBuffer;
+		mIndexBuffersMemory[insertIndex] = indexBufferMemory;
+	}
+
+	void VulkanRenderer::PopulateBuffers(size_t renderQueueIndex)
+	{
+		//updating vertex and index buffers using the indicies and vertcies from the render queue
+		CreateVertexBuffers(mRenderQueue[renderQueueIndex].Vertices, renderQueueIndex);
+		CreateIndexBuffers(mRenderQueue[renderQueueIndex].Indices, renderQueueIndex);
 	}
 
 	//SHOULD BE CALLED ON SCENE LOAD ONCE WE HAVE A MANIFEST OF ALL THE TEXTURES / SHADERS NEEDED IN THE SCENE
@@ -798,7 +810,7 @@ namespace Chaos
 		for (size_t i = 0; i < mRenderQueue.size(); i++)
 		{
 
-			VulkanTexture& texture = *(VulkanTexture*)mRenderQueue[i][0]->GetTexture();
+			VulkanTexture& texture = *(VulkanTexture*)mRenderQueue[i].Texture;
 
 			VkDescriptorBufferInfo bufferInfo = {};
 			bufferInfo.buffer = mUniformBuffers[i];
@@ -852,7 +864,13 @@ namespace Chaos
 	//Creating command buffers each frame, loads vertex, index and texture data from mRenderQueue and records commands to draw.
 	void VulkanRenderer::CreateCommandBuffers()
 	{
+		//Resizing vectors to contain the new buffers
 		mCommandBuffers.resize(mSwapchainframebuffers.size());
+		//Resizing vertex and index buffers by the number to expect times the number of command buffers 
+		mVertexBuffers.resize(mRenderQueue.size() * mCommandBuffers.size());
+		mVertexBuffersMemory.resize(mRenderQueue.size() * mCommandBuffers.size());
+		mIndexBuffers.resize(mRenderQueue.size() * mCommandBuffers.size());
+		mIndexBuffersMemory.resize(mRenderQueue.size() * mCommandBuffers.size());
 
 		VkCommandBufferAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -860,22 +878,45 @@ namespace Chaos
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		allocInfo.commandBufferCount = (uint32_t)mCommandBuffers.size();
 
-		//TO BE MOVED TO ON SCENE LOAD FUNC
-		if (mDescriptorSets.size() > 0)
-		{
-			vkFreeDescriptorSets(mDevice, mDescriptorPool, (uint32_t)mDescriptorSets.size(), mDescriptorSets.data());
-		}
-		CreateDescriptorSets();
 
-		if (vkAllocateCommandBuffers(mDevice, &allocInfo, mCommandBuffers.data()) != VK_SUCCESS) {
+		if (vkAllocateCommandBuffers(mDevice, &allocInfo, mCommandBuffers.data()) != VK_SUCCESS) 
+		{
 			LOGCORE_ERROR("VULKAN: failed to allocate command buffers!");
 			return;
 		}
-		for (size_t i = 0; i < mCommandBuffers.size(); i++) {
+
+		std::vector<std::thread*> threads;
+		threads.resize(mRenderQueue.size());
+		for (size_t x = 0; x < mRenderQueue.size(); ++x)
+		{
+			threads[x] = new std::thread(&VulkanRenderer::PopulateBuffers, this, x);
+		}
+
+
+		for (size_t x = 0; x < threads.size(); ++x)
+		{
+			threads[x]->join();
+			delete threads[x];
+		}
+
+
+		//TO BE MOVED TO ON SCENE LOAD FUNC
+		if (mDescriptorSets.size() != mRenderQueue.size())
+		{
+			if (mDescriptorSets.size() > 0)
+			{
+				vkFreeDescriptorSets(mDevice, mDescriptorPool, (uint32_t)mDescriptorSets.size(), mDescriptorSets.data());
+			}
+			CreateDescriptorSets();
+		}
+
+		for (size_t i = 0; i < mCommandBuffers.size(); i++) 
+		{
 			VkCommandBufferBeginInfo beginInfo = {};
 			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-			if (vkBeginCommandBuffer(mCommandBuffers[i], &beginInfo) != VK_SUCCESS) {
+			if (vkBeginCommandBuffer(mCommandBuffers[i], &beginInfo) != VK_SUCCESS) 
+			{
 				LOGCORE_ERROR("VULKAN: failed to begin recording command buffer!");
 				return;
 			}
@@ -896,32 +937,6 @@ namespace Chaos
 			//Itterates through RenderQueue and records commands, drawing all objects of the same texture together.
 			for (int x = 0; x < mRenderQueue.size(); ++x)
 			{
-				//Clearing lists before next draw call
-				vertices.clear();
-				indices.clear();
-				uint32_t indOffset = 0;
-				for (PrimitiveType* t : mRenderQueue[x])
-				{
-					uint32_t highestInd = 0;
-					for (int y = 0; y < t->GetVertices().size(); ++y)
-					{
-						vertices.push_back({ {t->GetVertices()[y].GetPosition().X, t->GetVertices()[y].GetPosition().Y}, {0,0,0}, {t->GetVertices()[y].GetTexCoord().X, t->GetVertices()[y].GetTexCoord().Y} });
-					}
-					for (int y = 0; y < t->GetIndices().size(); ++y)
-					{
-						indices.push_back((t->GetIndices()[y] + indOffset));
-						if (t->GetIndices()[y] > highestInd)
-						{
-							highestInd = t->GetIndices()[y];
-						}
-					}
-					indOffset += highestInd + 1;
-				}
-
-				//updating vertex and index buffers using the indicies and vertcies from the list of primatives
-				CreateVertexBuffers();
-				CreateIndexBuffers();
-
 				VkBuffer vertexBuffersToBind[] = { mVertexBuffers[x] };
 				VkDeviceSize offsets[] = { 0 };
 				vkCmdBindVertexBuffers(mCommandBuffers[i], 0, 1, vertexBuffersToBind, offsets);
@@ -930,7 +945,8 @@ namespace Chaos
 
 				vkCmdBindDescriptorSets(mCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout, 0, 1, &mDescriptorSets[x], 0, nullptr);
 
-				vkCmdDrawIndexed(mCommandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+				vkCmdDrawIndexed(mCommandBuffers[i], static_cast<uint32_t>(mRenderQueue[x].Indices.size()), 1, 0, 0, 0);
+
 			}
 			vkCmdEndRenderPass(mCommandBuffers[i]);
 			if (vkEndCommandBuffer(mCommandBuffers[i]) != VK_SUCCESS)
@@ -977,7 +993,7 @@ namespace Chaos
 		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 		if (vkCreateBuffer(mDevice, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
-			throw std::runtime_error("failed to create buffer!");
+			LOGCORE_ERROR("failed to create buffer!");
 		}
 
 		VkMemoryRequirements memRequirements;
@@ -1044,6 +1060,7 @@ namespace Chaos
 	//Helper func that begins a single time command, allocates a command to the pool and starts recording
 	VkCommandBuffer VulkanRenderer::BeginSingleTimeCommands()
 	{
+		commandPoolMutex.lock();
 		VkCommandBufferAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -1076,6 +1093,7 @@ namespace Chaos
 		vkQueueWaitIdle(mGraphicsQueue);
 
 		vkFreeCommandBuffers(mDevice, mCommandPool, 1, &commandBuffer);
+		commandPoolMutex.unlock();
 	}
 
 	//Creates and binds an image to an image memory
@@ -1266,41 +1284,40 @@ namespace Chaos
 	void VulkanRenderer::DrawQuad(Vec2* position, Vec2* scale, Texture* texture)
 	{
 		//Creates local vector to store all the verts for the quad using the position and scale given.
-		std::vector<Vertex> verts;
-		verts.push_back(Vertex(Vec2((-1.f * scale->X / 2) + position->X, (-1.f * scale->Y / 2) + position->Y), Vec3(0, 0, 0), Vec2(0.01f, texture->GetTilingFactor())));
-		verts.push_back(Vertex(Vec2((1.f * scale->X / 2) + position->X, (-1.f * scale->Y / 2) + position->Y), Vec3(0, 0, 0), Vec2(texture->GetTilingFactor(), texture->GetTilingFactor())));
-		verts.push_back(Vertex(Vec2((1.f * scale->X / 2) + position->X, (1.f * scale->Y / 2) + position->Y), Vec3(0, 0, 0), Vec2(texture->GetTilingFactor(), 0.01f)));
-		verts.push_back(Vertex(Vec2((-1.f * scale->X / 2) + position->X, (1.f * scale->Y / 2) + position->Y), Vec3(0, 0, 0), Vec2(0.01f, 0.01f)));
+		std::vector<VulkanVertex> verts;
+		verts.push_back(VulkanVertex{ Vec2((-1.f * scale->X / 2) + position->X, (-1.f * scale->Y / 2) + position->Y), Vec3(0, 0, 0), Vec2(0.01f, texture->GetTilingFactor()) });
+		verts.push_back(VulkanVertex{ Vec2((1.f * scale->X / 2) + position->X, (-1.f * scale->Y / 2) + position->Y), Vec3(0, 0, 0), Vec2(texture->GetTilingFactor(), texture->GetTilingFactor()) });
+		verts.push_back(VulkanVertex{ Vec2((1.f * scale->X / 2) + position->X, (1.f * scale->Y / 2) + position->Y), Vec3(0, 0, 0), Vec2(texture->GetTilingFactor(), 0.01f) });
+		verts.push_back(VulkanVertex{ Vec2((-1.f * scale->X / 2) + position->X, (1.f * scale->Y / 2) + position->Y), Vec3(0, 0, 0), Vec2(0.01f, 0.01f) });
 
-		//Stores indcies for the quad (always the same)
-		std::vector<uint32_t> ind = {
-		0,1,2,2,3,0
+		std::vector<uint16_t> ind = {
+			0,1,2,2,3,0
 		};
-
-		Quad* quad = new Quad(verts, ind, texture); //Creating the primative quad that will be stored in the RenderQueue, passing data
-
-		//If the queue is empty, add a new vector then push the quad to the back of that vector
-		if (mRenderQueue.size() == 0)
+	
+		for (auto& d : mRenderQueue)
 		{
-			mRenderQueue.push_back(std::vector<PrimitiveType*>());
-			mRenderQueue[0].push_back(quad);
-			return;
-		}
-
-		//If the queue is not empty, then itterate through it and try to find a matching texture to sort them into
-		for (auto& i : mRenderQueue)
-		{
-			if (quad->GetTexture()->GetFilePath() == i[0]->GetTexture()->GetFilePath())
+			if (d.Texture->GetFilePath() == texture->GetFilePath())
 			{
-				i.push_back(quad);
+				uint16_t highestInd = 0;
+				for (int i = 0; i < mRenderQueue[mRenderQueue.size() - 1].Indices.size(); ++i)
+				{
+					if (mRenderQueue[mRenderQueue.size() - 1].Indices[i] > highestInd)
+					{
+						highestInd = mRenderQueue[mRenderQueue.size() - 1].Indices[i];
+					}
+				}
+				for (int i = 0; i < ind.size(); ++i)
+				{
+					ind[i] += highestInd + 1;
+				}
+				d.Indices.insert(d.Indices.begin(), ind.begin(), ind.end());
+				d.Vertices.insert(d.Vertices.begin(), verts.begin(), verts.end());
 				return;
 			}
 		}
 
-		//if neither cases return out of this method, then it must be a new texture and as such it should push a new vector to the back, containing the new quad
-		std::vector<PrimitiveType*> primativeList = { quad };
-		mRenderQueue.push_back(primativeList);
-
+		RenderData data = { verts, ind, texture };
+		mRenderQueue.push_back(data);
 	}
 
 	//Draw called once every game loop to display the data passed to it that loop
@@ -1420,15 +1437,9 @@ namespace Chaos
 			}
 
 			//deleting all pointers before clearing the list of rendered objects
-			for (auto& l : mRenderQueue)
-			{
-				for (auto* x : l)
-				{
-					delete x;
-				}
-				l.clear();
-			}
-
+			mRenderQueue.clear();
+			mIndicies.clear();
+			mVertices.clear();
 			mIndexBuffers.clear();
 			mIndexBuffersMemory.clear();
 			mVertexBuffers.clear();
@@ -1436,6 +1447,7 @@ namespace Chaos
 			mImGuiCommandBuffers.clear();
 			mRenderQueue.clear();
 		}
+
 	}
 
 	//Wait idle for outside of this class, probably not needed

@@ -10,15 +10,16 @@
 #include <array>
 
 #include "Chaos/DataTypes/Vec3.h"
+#include "Chaos/DataTypes/Vec2.h"
 #include "Platform/Vulkan/VulkanTexture.h"
 #include "Chaos/Renderer/PrimitiveType.h"
 
 namespace Chaos
 {
 	struct VulkanVertex {
-		glm::vec2 pos;
-		glm::vec3 color;
-		glm::vec2 texCoord;
+		Vec2 pos;
+		Vec3 color;
+		Vec2 texCoord;
 
 		static VkVertexInputBindingDescription GetBindingDescriptions() {
 			VkVertexInputBindingDescription bindingDescription = {};
@@ -49,6 +50,12 @@ namespace Chaos
 
 			return attributeDescriptions;
 		}
+	};
+
+	struct RenderData {
+		std::vector<VulkanVertex> Vertices;
+		std::vector<uint16_t> Indices;
+		Texture* Texture;
 	};
 
 	struct UniformBufferObject {
@@ -91,22 +98,9 @@ namespace Chaos
 		//VULKAN TEMP
 	private:
 
-		std::vector<std::vector<PrimitiveType*>> mRenderQueue;
-
-		std::vector<VulkanVertex> vertices = {
-			{{-0.4f, -0.4f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-			{{0.4f, -0.4f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-			{{0.4f , 0.4f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-			{{-0.4f, 0.4f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
-
-		};
-
-		std::vector<uint16_t> indices = {
-			0,1,2,2,3,0
-		};
+		std::vector<RenderData> mRenderQueue;
 
 		const glm::vec4 mClearColor = { 0.0f,0.0f, 0.03f, 1.0f };
-
 
 		VkSampler textureSampler;
 
@@ -130,8 +124,9 @@ namespace Chaos
 		void CreateCommandPool();
 		void CreateTextureImage(Texture* tex);
 		void CreateTextureSampler();
-		void CreateVertexBuffers();
-		void CreateIndexBuffers();
+		void CreateVertexBuffers(std::vector<VulkanVertex> vertices, size_t insertIndex);
+		void CreateIndexBuffers(std::vector<uint16_t> indices, size_t insertIndex);
+		void PopulateBuffers(size_t renderQueueIndex);
 		void CreateUniformBuffers();
 		void CreateDescriptorPool();
 		void CreateDescriptorSets();
@@ -174,6 +169,9 @@ namespace Chaos
 		void SetImGuiFramebuffer(std::vector<VkFramebuffer>* buffer) { mImGuiFrameBuffer = buffer; }
 
 		//Vars
+		std::vector<std::vector<VulkanVertex>> mVertices;
+		std::vector<std::vector<uint16_t>> mIndicies;
+
 		const int MAX_FRAMES_IN_FLIGHT = 2;
 		bool mFramebufferResized = false;
 		bool mRenderingGUI = false;
@@ -195,6 +193,7 @@ namespace Chaos
 
 		VkPipeline mGraphicsPipeline;
 
+		std::mutex commandPoolMutex;
 		VkCommandPool mCommandPool;
 		VkCommandPool* mImGuiCommandPool = VK_NULL_HANDLE;
 		std::vector<VkCommandBuffer> mCommandBuffers;

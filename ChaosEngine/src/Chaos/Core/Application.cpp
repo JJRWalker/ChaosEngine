@@ -43,8 +43,12 @@ namespace Chaos
 			mDeltaTime = time - mTimeLastFrame;
 			mTimeLastFrame = time;
 
-			for (Layer* layer : mLayerStack)			
+			for (Layer* layer : mLayerStack)
+			{
+				LOGCORE_INFO("Time taken to update layer:  {0}", (glfwGetTime() - time) * 1000);
 				layer->OnUpdate(mDeltaTime);
+			}
+				
 			
 
 			guiLayer->Begin();
@@ -53,12 +57,12 @@ namespace Chaos
 			
 			guiLayer->End();
 
+			//LOGCORE_INFO("Time to renderframe: {0} FPS: {1}", mDeltaTime, 1 / mDeltaTime);
+
 			mWindow->OnUpdate();
 			
-			if (mWindow->GetWidth() != 0 && mWindow->GetHeight() != 0)
-			{
-				mRenderer->DrawFrame();
-			}				
+
+			mRenderer->DrawFrame();			
 		}
 	}
 
