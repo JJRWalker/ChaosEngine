@@ -1290,6 +1290,7 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp">
       <Filter>vendor\glm\glm</Filter>
     </ClInclude>
+    <ClInclude Include="src\Chaos\Debug\Timer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chaos\Core\Application.cpp">

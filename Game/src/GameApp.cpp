@@ -20,8 +20,12 @@ public:
 	float x = 0;
 	float y = 0;
 
+	Chaos::Renderer& renderer = Chaos::Application::Get().GetRenderer();
+
 	void OnUpdate(float deltaTime) override
 	{
+		
+
 		if (Chaos::Input::IsKeyPressed(KEY_W))
 		{
 			yDir = 1;
@@ -50,20 +54,23 @@ public:
 		x += xDir * (moveSpeed * deltaTime);
 		y += yDir * (moveSpeed * deltaTime);
 
-		//Stress test
+		//Stress test 
 		/*
 		for (int x = 0; x < 20; ++x)
-		{
+		{			
 			for (int y = 0; y < 20; ++y)
-				Chaos::Application::Get().GetRenderer().DrawQuad(new Chaos::Vec2(x - 20, y - 20), new Chaos::Vec2(1.f, 1.f), floor);
+			{
+				Chaos::Timer timer("GameApp: StressTest");
+				renderer.DrawQuad(new Chaos::Vec2(x - 20, y - 20), new Chaos::Vec2(1.f, 1.f), floor);
+			}
 		}
 		*/
 
-		Chaos::Application::Get().GetRenderer().DrawQuad(new Chaos::Vec2(0.f, 0.f), new Chaos::Vec2(20.f, 20.f), floor);
-		Chaos::Application::Get().GetRenderer().DrawQuad(new Chaos::Vec2(4.f, 0.f), new Chaos::Vec2(1.f, 1.f), test);
-		Chaos::Application::Get().GetRenderer().DrawQuad(new Chaos::Vec2(3.f, 0.f), new Chaos::Vec2(1.f, 1.f), test);
-		Chaos::Application::Get().GetRenderer().DrawQuad(new Chaos::Vec2(2.f, 0.f), new Chaos::Vec2(1.f, 1.f), test2);
-		Chaos::Application::Get().GetRenderer().DrawQuad(new Chaos::Vec2(x, y), new Chaos::Vec2(1.f, 1.f), player);
+		renderer.DrawQuad(new Chaos::Vec2(0.f, 0.f), new Chaos::Vec2(20.f, 20.f), floor);
+		renderer.DrawQuad(new Chaos::Vec2(4.f, 0.f), new Chaos::Vec2(1.f, 1.f), test);
+		renderer.DrawQuad(new Chaos::Vec2(3.f, 0.f), new Chaos::Vec2(1.f, 1.f), test);
+		renderer.DrawQuad(new Chaos::Vec2(2.f, 0.f), new Chaos::Vec2(1.f, 1.f), test2);
+		renderer.DrawQuad(new Chaos::Vec2(x, y), new Chaos::Vec2(1.f, 1.f), player);
 	}
 
 	void OnEvent(Chaos::Event& event) override

@@ -153,6 +153,7 @@
     <ClInclude Include="src\Chaos\DataTypes\Vec2.h" />
     <ClInclude Include="src\Chaos\DataTypes\Vec3.h" />
     <ClInclude Include="src\Chaos\Debug\ImGuiLayer.h" />
+    <ClInclude Include="src\Chaos\Debug\Timer.h" />
     <ClInclude Include="src\Chaos\Events\ApplicationEvent.h" />
     <ClInclude Include="src\Chaos\Events\Event.h" />
     <ClInclude Include="src\Chaos\Events\KeyEvent.h" />

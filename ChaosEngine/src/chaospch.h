@@ -17,6 +17,7 @@
 
 //CHAOS HEADERS
 #include "Chaos/Core/Log.h"
+#include "Chaos/Debug/Timer.h"
 
 #ifdef CHAOS_PLATFORM_WINDOWS
 	#include <Windows.h>

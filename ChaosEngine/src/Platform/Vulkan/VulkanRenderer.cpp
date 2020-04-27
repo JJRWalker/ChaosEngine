@@ -22,7 +22,7 @@
 #include <functional>
 
 #ifdef CHAOS_DEBUG
-const bool enableValidationLayers = true;	//change to true if vulkan SDK is installed to recieve validation layer warnings
+const bool enableValidationLayers = false;	//change to true if vulkan SDK is installed to recieve validation layer warnings
 #else
 const bool enableValidationLayers = false;
 #endif
