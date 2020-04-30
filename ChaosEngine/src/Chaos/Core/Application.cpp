@@ -9,6 +9,7 @@
 #include "Chaos/Debug/ImGuiLayer.h"
 #include "GLFW/glfw3.h"
 
+//inspired by The Cherno's Game engine series, however has and will continue to diverge
 namespace Chaos
 {
 	Application* Application::sInstance = nullptr;

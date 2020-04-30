@@ -1281,14 +1281,14 @@ namespace Chaos
 	}
 	
 	//Called from outside the renderer class whenever the user wants to add anything to the render queue
-	void VulkanRenderer::DrawQuad(Vec2* position, Vec2* scale, Texture* texture)
+	void VulkanRenderer::DrawQuad(Vec2& position, Vec2& scale, Texture* texture)
 	{
 		//Creates local vector to store all the verts for the quad using the position and scale given.
 		std::vector<VulkanVertex> verts;
-		verts.push_back(VulkanVertex{ Vec2((-1.f * scale->X / 2) + position->X, (-1.f * scale->Y / 2) + position->Y), Vec3(0, 0, 0), Vec2(0.01f, texture->GetTilingFactor()) });
-		verts.push_back(VulkanVertex{ Vec2((1.f * scale->X / 2) + position->X, (-1.f * scale->Y / 2) + position->Y), Vec3(0, 0, 0), Vec2(texture->GetTilingFactor(), texture->GetTilingFactor()) });
-		verts.push_back(VulkanVertex{ Vec2((1.f * scale->X / 2) + position->X, (1.f * scale->Y / 2) + position->Y), Vec3(0, 0, 0), Vec2(texture->GetTilingFactor(), 0.01f) });
-		verts.push_back(VulkanVertex{ Vec2((-1.f * scale->X / 2) + position->X, (1.f * scale->Y / 2) + position->Y), Vec3(0, 0, 0), Vec2(0.01f, 0.01f) });
+		verts.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), Vec3(20, 0, 0), Vec2(0.01f, texture->GetTilingFactor()) });
+		verts.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), Vec3(20, 0, 0), Vec2(texture->GetTilingFactor(), texture->GetTilingFactor()) });
+		verts.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), Vec3(20, 0, 0), Vec2(texture->GetTilingFactor(), 0.01f) });
+		verts.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), Vec3(20, 0, 0), Vec2(0.01f, 0.01f) });
 
 		std::vector<uint16_t> ind = {
 			0,1,2,2,3,0

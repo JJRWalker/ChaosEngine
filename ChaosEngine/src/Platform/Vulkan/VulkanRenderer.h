@@ -91,7 +91,7 @@ namespace Chaos
 		VulkanRenderer();
 		~VulkanRenderer();
 
-		virtual void DrawQuad(Vec2* position, Vec2* scale, Texture* texture) override;
+		virtual void DrawQuad(Vec2& position, Vec2& scale, Texture* texture) override;
 		virtual void DrawFrame() override;
 		virtual bool WaitIdle() override;
 		virtual void WindowResized() override { mFramebufferResized = true; }

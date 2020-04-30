@@ -66,11 +66,11 @@ public:
 		}
 		*/
 
-		renderer.DrawQuad(new Chaos::Vec2(0.f, 0.f), new Chaos::Vec2(20.f, 20.f), floor);
-		renderer.DrawQuad(new Chaos::Vec2(4.f, 0.f), new Chaos::Vec2(1.f, 1.f), test);
-		renderer.DrawQuad(new Chaos::Vec2(3.f, 0.f), new Chaos::Vec2(1.f, 1.f), test);
-		renderer.DrawQuad(new Chaos::Vec2(2.f, 0.f), new Chaos::Vec2(1.f, 1.f), test2);
-		renderer.DrawQuad(new Chaos::Vec2(x, y), new Chaos::Vec2(1.f, 1.f), player);
+		renderer.DrawQuad(Chaos::Vec2(0.f, 0.f), Chaos::Vec2(20.f, 20.f), floor);
+		renderer.DrawQuad(Chaos::Vec2(4.f, 0.f), Chaos::Vec2(1.f, 1.f), test);
+		renderer.DrawQuad(Chaos::Vec2(3.f, 0.f), Chaos::Vec2(1.f, 1.f), test);
+		renderer.DrawQuad(Chaos::Vec2(2.f, 0.f), Chaos::Vec2(1.f, 1.f), test2);
+		renderer.DrawQuad(Chaos::Vec2(x, y), Chaos::Vec2(1.f, 1.f), player);
 	}
 
 	void OnEvent(Chaos::Event& event) override
