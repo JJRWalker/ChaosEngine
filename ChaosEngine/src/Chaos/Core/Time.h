@@ -3,6 +3,8 @@
 #include <ctime>
 #include <chrono>
 
+//NOT CURRENTLY USED
+//will be implemented if a more advanced delta time is needed as currently it would just be a wrapper around a float
 namespace Chaos
 {
 	class TimeStep

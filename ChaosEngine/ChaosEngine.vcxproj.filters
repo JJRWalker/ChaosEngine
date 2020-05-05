@@ -1291,6 +1291,7 @@
       <Filter>vendor\glm\glm</Filter>
     </ClInclude>
     <ClInclude Include="src\Chaos\Debug\Timer.h" />
+    <ClInclude Include="src\Chaos\DataTypes\Vec4.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chaos\Core\Application.cpp">

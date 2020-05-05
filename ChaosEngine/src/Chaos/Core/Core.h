@@ -26,6 +26,7 @@
 
 namespace Chaos
 {
+	//Method that takes in any type and returns a shared pointer for that type.
 	template<typename T>
 	using Ref = std::shared_ptr<T>;
 	template<typename T, typename ... Args>

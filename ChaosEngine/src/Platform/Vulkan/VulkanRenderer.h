@@ -11,6 +11,7 @@
 
 #include "Chaos/DataTypes/Vec3.h"
 #include "Chaos/DataTypes/Vec2.h"
+#include "Chaos/DataTypes/Vec4.h"
 #include "Platform/Vulkan/VulkanTexture.h"
 #include "Chaos/Renderer/PrimitiveType.h"
 
@@ -18,7 +19,7 @@ namespace Chaos
 {
 	struct VulkanVertex {
 		Vec2 pos;
-		Vec3 color;
+		Vec4 color;
 		Vec2 texCoord;
 
 		static VkVertexInputBindingDescription GetBindingDescriptions() {
@@ -92,8 +93,8 @@ namespace Chaos
 		~VulkanRenderer();
 
 		virtual void DrawQuad(Vec2& position, Vec2& scale, Texture* texture) override;
+		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec4& colour, Texture* texture) override;
 		virtual void DrawFrame() override;
-		virtual bool WaitIdle() override;
 		virtual void WindowResized() override { mFramebufferResized = true; }
 		//VULKAN TEMP
 	private:

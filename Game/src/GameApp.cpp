@@ -16,6 +16,7 @@ public:
 	Chaos::Texture* floor = Chaos::Texture::Create("../Game/textures/Floor.jpg", 20);
 	Chaos::Texture* test = Chaos::Texture::Create("../Game/textures/test.png", 1);
 	Chaos::Texture* big = Chaos::Texture::Create("../Game/textures/big-texture.png", 1);
+	Chaos::Texture* blank = Chaos::Texture::Create("", 1);
 	Chaos::Texture* test2 = Chaos::Texture::Create("../Game/textures/test2.png", 1);
 	float x = 0;
 	float y = 0;
@@ -66,11 +67,12 @@ public:
 		}
 		*/
 
-		renderer.DrawQuad(Chaos::Vec2(0.f, 0.f), Chaos::Vec2(20.f, 20.f), floor);
-		renderer.DrawQuad(Chaos::Vec2(4.f, 0.f), Chaos::Vec2(1.f, 1.f), test);
-		renderer.DrawQuad(Chaos::Vec2(3.f, 0.f), Chaos::Vec2(1.f, 1.f), test);
-		renderer.DrawQuad(Chaos::Vec2(2.f, 0.f), Chaos::Vec2(1.f, 1.f), test2);
-		renderer.DrawQuad(Chaos::Vec2(x, y), Chaos::Vec2(1.f, 1.f), player);
+		renderer.DrawQuad(Chaos::Vec2(0.f, 0.f), Chaos::Vec2(20.f, 20.f),Chaos::Vec4(0.1,0.1,0.4,1), floor);
+		renderer.DrawQuad(Chaos::Vec2(4.f, 0.f), Chaos::Vec2(1.f, 1.f), blank);
+		renderer.DrawQuad(Chaos::Vec2(3.f, 0.5f), Chaos::Vec2(1.f, 1.f), Chaos::Vec4(0.7, 0.7, 0.1, 0.4), blank);
+		renderer.DrawQuad(Chaos::Vec2(3.f, 0.f), Chaos::Vec2(1.f, 1.f), Chaos::Vec4(0.1,1,0.1,1), blank);
+		//renderer.DrawQuad(Chaos::Vec2(2.f, 0.f), Chaos::Vec2(1.f, 1.f), test2);
+		renderer.DrawQuad(Chaos::Vec2(x, y), Chaos::Vec2(1.f, 1.f), Chaos::Vec4(1, 0.9, 0.9, 1), player);
 	}
 
 	void OnEvent(Chaos::Event& event) override

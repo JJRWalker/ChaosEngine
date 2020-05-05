@@ -3,6 +3,8 @@
 #include "Chaos/Renderer/PrimitiveType.h"
 #include "Chaos/Renderer/Texture.h"
 
+//NO LONGER USED IN RENDERER, HOWEVER MAY BE USED LATER ON
+
 namespace Chaos
 {
 	class Quad : public PrimitiveType

@@ -22,7 +22,7 @@
 #include <functional>
 
 #ifdef CHAOS_DEBUG
-const bool enableValidationLayers = false;	//change to true if vulkan SDK is installed to recieve validation layer warnings
+const bool enableValidationLayers = true;	//change to true if vulkan SDK is installed to recieve validation layer warnings
 #else
 const bool enableValidationLayers = false;
 #endif
@@ -1285,15 +1285,54 @@ namespace Chaos
 	{
 		//Creates local vector to store all the verts for the quad using the position and scale given.
 		std::vector<VulkanVertex> verts;
-		verts.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), Vec3(20, 0, 0), Vec2(0.01f, texture->GetTilingFactor()) });
-		verts.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), Vec3(20, 0, 0), Vec2(texture->GetTilingFactor(), texture->GetTilingFactor()) });
-		verts.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), Vec3(20, 0, 0), Vec2(texture->GetTilingFactor(), 0.01f) });
-		verts.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), Vec3(20, 0, 0), Vec2(0.01f, 0.01f) });
+		verts.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), Vec4(1, 1, 1, 1), Vec2(0.01f, texture->GetTilingFactor()) });
+		verts.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), Vec4(1, 1, 1, 1), Vec2(texture->GetTilingFactor(), texture->GetTilingFactor()) });
+		verts.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), Vec4(1, 1, 1, 1), Vec2(texture->GetTilingFactor(), 0.01f) });
+		verts.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), Vec4(1, 1, 1, 1), Vec2(0.01f, 0.01f) });
 
 		std::vector<uint16_t> ind = {
 			0,1,2,2,3,0
 		};
 	
+		for (auto& d : mRenderQueue)
+		{
+			if (d.Texture->GetFilePath() == texture->GetFilePath())
+			{
+				uint16_t highestInd = 0;
+				for (int i = 0; i < mRenderQueue[mRenderQueue.size() - 1].Indices.size(); ++i)
+				{
+					if (mRenderQueue[mRenderQueue.size() - 1].Indices[i] > highestInd)
+					{
+						highestInd = mRenderQueue[mRenderQueue.size() - 1].Indices[i];
+					}
+				}
+				for (int i = 0; i < ind.size(); ++i)
+				{
+					ind[i] += highestInd + 1;
+				}
+				d.Indices.insert(d.Indices.begin(), ind.begin(), ind.end());
+				d.Vertices.insert(d.Vertices.begin(), verts.begin(), verts.end());
+				return;
+			}
+		}
+
+		RenderData data = { verts, ind, texture };
+		mRenderQueue.push_back(data);
+	}
+
+	void VulkanRenderer::DrawQuad(Vec2& position, Vec2& scale, Vec4& colour, Texture* texture)
+	{
+		//Creates local vector to store all the verts for the quad using the position and scale given.
+		std::vector<VulkanVertex> verts;
+		verts.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, texture->GetTilingFactor()) });
+		verts.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(texture->GetTilingFactor(), texture->GetTilingFactor()) });
+		verts.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y),colour, Vec2(texture->GetTilingFactor(), 0.01f) });
+		verts.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, 0.01f) });
+
+		std::vector<uint16_t> ind = {
+			0,1,2,2,3,0
+		};
+
 		for (auto& d : mRenderQueue)
 		{
 			if (d.Texture->GetFilePath() == texture->GetFilePath())
@@ -1448,12 +1487,6 @@ namespace Chaos
 			mRenderQueue.clear();
 		}
 
-	}
-
-	//Wait idle for outside of this class, probably not needed
-	bool VulkanRenderer::WaitIdle()
-	{
-		return vkDeviceWaitIdle(mDevice) == VK_SUCCESS;
 	}
 
 	VkSurfaceFormatKHR VulkanRenderer::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
