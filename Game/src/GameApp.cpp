@@ -12,12 +12,12 @@ public:
 	float moveSpeed = 1.f;
 	int xDir = 0;
 	int yDir = 0;
-	Chaos::Texture* player = Chaos::Texture::Create("../Game/textures/sprite-test.png", 1);
-	Chaos::Texture* floor = Chaos::Texture::Create("../Game/textures/Floor.jpg", 20);
-	Chaos::Texture* test = Chaos::Texture::Create("../Game/textures/test.png", 1);
-	Chaos::Texture* big = Chaos::Texture::Create("../Game/textures/big-texture.png", 1);
-	Chaos::Texture* blank = Chaos::Texture::Create("", 1);
-	Chaos::Texture* test2 = Chaos::Texture::Create("../Game/textures/test2.png", 1);
+	Chaos::Ref<Chaos::Texture> player = Chaos::Texture::Create("../Game/textures/sprite-test.png", 1);
+	Chaos::Ref<Chaos::Texture> floor = Chaos::Texture::Create("../Game/textures/Floor.jpg", 20);
+	Chaos::Ref<Chaos::Texture> test = Chaos::Texture::Create("../Game/textures/test.png", 1);
+	//Chaos::Ref<Chaos::Texture> big = Chaos::Texture::Create("../Game/textures/big-texture.png", 1);
+	Chaos::Ref<Chaos::Texture> blank = Chaos::Texture::Create("", 1);
+	Chaos::Ref<Chaos::Texture> test2 = Chaos::Texture::Create("../Game/textures/test2.png", 1);
 	float x = 0;
 	float y = 0;
 
@@ -61,8 +61,8 @@ public:
 		{			
 			for (int y = 0; y < 20; ++y)
 			{
-				Chaos::Timer timer("GameApp: StressTest");
-				renderer.DrawQuad(new Chaos::Vec2(x - 20, y - 20), new Chaos::Vec2(1.f, 1.f), floor);
+				//Chaos::Timer timer("GameApp: StressTest");
+				renderer.DrawQuad(Chaos::Vec2(x - 20, y - 20), Chaos::Vec2(1.f, 1.f), floor);
 			}
 		}
 		*/

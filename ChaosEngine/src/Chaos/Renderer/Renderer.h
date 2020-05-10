@@ -17,8 +17,8 @@ namespace Chaos
 
 		static Renderer* Create();
 
-		virtual void DrawQuad(Vec2& position, Vec2& scale, Texture* texture) = 0;
-		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec4& colour, Texture* texture)  = 0;
+		virtual void DrawQuad(Vec2& position, Vec2& scale, Ref<Texture> texture) = 0;
+		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec4& colour, Ref<Texture> texture)  = 0;
 		virtual void DrawFrame() = 0;
 		virtual void WindowResized() = 0;
 

@@ -21,6 +21,7 @@ namespace Chaos
 		Vec2 pos;
 		Vec4 color;
 		Vec2 texCoord;
+		float texIndex;
 
 		static VkVertexInputBindingDescription GetBindingDescriptions() {
 			VkVertexInputBindingDescription bindingDescription = {};
@@ -31,8 +32,8 @@ namespace Chaos
 			return bindingDescription;
 		}
 
-		static std::array<VkVertexInputAttributeDescription, 3> GetAttributeDescriptions() {
-			std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions = {};
+		static std::array<VkVertexInputAttributeDescription, 4> GetAttributeDescriptions() {
+			std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions = {};
 
 			attributeDescriptions[0].binding = 0;
 			attributeDescriptions[0].location = 0;
@@ -49,14 +50,36 @@ namespace Chaos
 			attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
 			attributeDescriptions[2].offset = offsetof(VulkanVertex, texCoord);
 
+			attributeDescriptions[3].binding = 0;
+			attributeDescriptions[3].location = 3;
+			attributeDescriptions[3].format = VK_FORMAT_R32G32_SFLOAT;
+			attributeDescriptions[3].offset = offsetof(VulkanVertex, texIndex);
+
 			return attributeDescriptions;
 		}
+	};
+
+	enum class BufferType {	Static, Dynamic};
+
+	struct Buffer
+	{
+		VkBuffer VertexBuffer;
+		VkDeviceMemory VertexBufferMemory;
+		VkBuffer IndexBuffer;
+		VkDeviceMemory IndexBufferMemory;
+		uint64_t VertexCount = 0;
+		uint64_t IndexCount = 0;
+		uint16_t HighestInd = 0;
+		BufferType Type;
+		std::vector<Ref<VulkanTexture>> TexturesToBind;
+		Ref<VkDescriptorSet> DescriptorSet;
+		int TexturesLoaded = 0;
 	};
 
 	struct RenderData {
 		std::vector<VulkanVertex> Vertices;
 		std::vector<uint16_t> Indices;
-		Texture* Texture;
+		Ref<VulkanTexture> Texture;
 	};
 
 	struct UniformBufferObject {
@@ -92,18 +115,14 @@ namespace Chaos
 		VulkanRenderer();
 		~VulkanRenderer();
 
-		virtual void DrawQuad(Vec2& position, Vec2& scale, Texture* texture) override;
-		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec4& colour, Texture* texture) override;
+		virtual void DrawQuad(Vec2& position, Vec2& scale, Ref<Texture> texture) override;
+		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec4& colour, Ref<Texture> texture) override;
 		virtual void DrawFrame() override;
 		virtual void WindowResized() override { mFramebufferResized = true; }
 		//VULKAN TEMP
 	private:
-
-		std::vector<RenderData> mRenderQueue;
-
-		const glm::vec4 mClearColor = { 0.0f,0.0f, 0.03f, 1.0f };
-
-		VkSampler textureSampler;
+		const glm::vec4 CLEAR_COLOR = { 0.0f,0.0f, 0.03f, 1.0f };
+		const int MAX_FRAMES_IN_FLIGHT = 2;
 
 		//Funcs
 		VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
@@ -125,12 +144,11 @@ namespace Chaos
 		void CreateCommandPool();
 		void CreateTextureImage(Texture* tex);
 		void CreateTextureSampler();
-		void CreateVertexBuffers(std::vector<VulkanVertex> vertices, size_t insertIndex);
-		void CreateIndexBuffers(std::vector<uint16_t> indices, size_t insertIndex);
+		void CreateIndexedBuffer(std::vector<VulkanVertex> vertices, std::vector<uint16_t> indices, BufferType type, size_t insertIndex);
 		void PopulateBuffers(size_t renderQueueIndex);
 		void CreateUniformBuffers();
 		void CreateDescriptorPool();
-		void CreateDescriptorSets();
+		void CreateDescriptorSet();
 		void CreateCommandBuffers();
 		void CreateSyncObjects();
 
@@ -170,10 +188,13 @@ namespace Chaos
 		void SetImGuiFramebuffer(std::vector<VkFramebuffer>* buffer) { mImGuiFrameBuffer = buffer; }
 
 		//Vars
-		std::vector<std::vector<VulkanVertex>> mVertices;
-		std::vector<std::vector<uint16_t>> mIndicies;
+		std::vector<RenderData> mRenderQueue;
 
-		const int MAX_FRAMES_IN_FLIGHT = 2;
+		std::vector<Ref<VulkanTexture>> mTexturesToBind;
+		int mTextureArrayCount = 0;
+
+		VkSampler textureSampler;
+
 		bool mFramebufferResized = false;
 		bool mRenderingGUI = false;
 		size_t mCurrentFrame = 0;
@@ -202,10 +223,7 @@ namespace Chaos
 
 		std::vector<VkFramebuffer>* mImGuiFrameBuffer;
 
-		std::vector<VkBuffer> mVertexBuffers;
-		std::vector<VkDeviceMemory> mVertexBuffersMemory;
-		std::vector<VkBuffer> mIndexBuffers;
-		std::vector<VkDeviceMemory> mIndexBuffersMemory;
+		std::vector<Buffer> mBuffers;
 
 		VkDescriptorPool mDescriptorPool;
 		std::vector<VkDescriptorSet> mDescriptorSets;
