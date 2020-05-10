@@ -93,7 +93,13 @@
     <ClInclude Include="src\Chaos\DataTypes\Vec3.h">
       <Filter>src\Chaos\DataTypes</Filter>
     </ClInclude>
+    <ClInclude Include="src\Chaos\DataTypes\Vec4.h">
+      <Filter>src\Chaos\DataTypes</Filter>
+    </ClInclude>
     <ClInclude Include="src\Chaos\Debug\ImGuiLayer.h">
+      <Filter>src\Chaos\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Debug\Timer.h">
       <Filter>src\Chaos\Debug</Filter>
     </ClInclude>
     <ClInclude Include="src\Chaos\Events\ApplicationEvent.h">
@@ -1290,8 +1296,6 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp">
       <Filter>vendor\glm\glm</Filter>
     </ClInclude>
-    <ClInclude Include="src\Chaos\Debug\Timer.h" />
-    <ClInclude Include="src\Chaos\DataTypes\Vec4.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chaos\Core\Application.cpp">

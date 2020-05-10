@@ -1,7 +1,7 @@
 #pragma once
 #include "Chaos/Renderer/Renderer.h"
 
-#include <Vulkan/Include/vulkan/vulkan.h>
+#include <Vulkan/vulkan.h>
 
 #define GLM_FORCE_RADIANS
 #include <GLM/glm/glm.hpp>

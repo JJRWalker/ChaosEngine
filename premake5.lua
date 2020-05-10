@@ -58,7 +58,8 @@ project "ChaosEngine"
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.GLM}",
         "%{IncludeDir.ImGUI}",
-        "%{IncludeDir.STB}"
+        "%{IncludeDir.STB}",
+        "%{IncludeDir.Vulkan}"
     }
 
     links
