@@ -47,6 +47,7 @@ namespace Chaos
 			for (Layer* layer : mLayerStack)
 				layer->OnUpdate(mDeltaTime);			
 
+			//Currently causes black screen to be rendered over the top of the main render, need to change how the pipeline and descriptor sets are handled by Vulkan/ImGui
 			guiLayer->Begin();
 			for (Layer* layer : mLayerStack)
 				layer->OnImGuiRender();

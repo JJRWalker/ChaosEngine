@@ -72,7 +72,7 @@ namespace Chaos
 		uint16_t HighestInd = 0;
 		BufferType Type;
 		std::vector<Ref<VulkanTexture>> TexturesToBind;
-		Ref<VkDescriptorSet> DescriptorSet;
+		int DescriptorIndex = 0;
 		int TexturesLoaded = 0;
 	};
 
@@ -123,6 +123,8 @@ namespace Chaos
 	private:
 		const glm::vec4 CLEAR_COLOR = { 0.0f,0.0f, 0.03f, 1.0f };
 		const int MAX_FRAMES_IN_FLIGHT = 2;
+		const int MAX_OBJECTS_PER_DRAW = 10000;
+		const int MAX_TEXTURES_PER_DRAW = 31;
 
 		//Funcs
 		VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
@@ -145,6 +147,7 @@ namespace Chaos
 		void CreateTextureImage(Texture* tex);
 		void CreateTextureSampler();
 		void CreateIndexedBuffer(std::vector<VulkanVertex> vertices, std::vector<uint16_t> indices, BufferType type, size_t insertIndex);
+		void CreateAndClearBuffers(size_t insertIndex);
 		void PopulateBuffers(size_t renderQueueIndex);
 		void CreateUniformBuffers();
 		void CreateDescriptorPool();
@@ -189,9 +192,12 @@ namespace Chaos
 
 		//Vars
 		std::vector<RenderData> mRenderQueue;
+		std::vector<VulkanVertex> mVertices;
+		std::vector<uint16_t> mIndices;
 
 		std::vector<Ref<VulkanTexture>> mTexturesToBind;
-		int mTextureArrayCount = 0;
+		int mRenderCount = 0;
+		uint16_t mIndOffset = 0;
 
 		VkSampler textureSampler;
 
@@ -247,5 +253,8 @@ namespace Chaos
 
 		const std::vector<const char*> mValidationLayers = { "VK_LAYER_KHRONOS_validation" };
 		const std::vector<const char*> mDeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+
+		//DEBUG VARS
+		int mTotalQuadsDrawn;
 	};
 }

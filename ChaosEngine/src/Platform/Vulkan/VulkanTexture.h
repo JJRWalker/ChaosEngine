@@ -12,9 +12,10 @@ namespace Chaos
 		VulkanTexture(VulkanTexture& copy);
 
 		virtual ~VulkanTexture() {
-			free(mPixelData);
-			delete mPixelData;
-			delete mFilePath;
+			//Causes crash on close if data is deleted
+			//free(mPixelData);
+			//delete mPixelData;
+			//delete mFilePath;
 		}
 
 		virtual void SetData(void* data, uint32_t size) {};

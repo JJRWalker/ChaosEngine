@@ -119,8 +119,8 @@ namespace Chaos
 	void ImGuiLayer::OnImGuiRender()
 	{
 		static bool show = false ;
-		//ImGui::ShowDemoWindow(&show);
-
+		//ImGui::ShowDemoWindow(&show);-
+		VulkanRenderer& renderer = dynamic_cast<VulkanRenderer&>(Application::Get().GetRenderer());
 		// FIXME-VIEWPORT: Select a default viewport
 		const float DISTANCE = 10.0f;
 		static int corner = 0;
@@ -137,6 +137,8 @@ namespace Chaos
 		if (ImGui::Begin("FPS counter", &show, (corner != -1 ? ImGuiWindowFlags_NoMove : 0) | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
 		{
 			ImGui::Text("FPS: %f", 1 / mTime);
+			ImGui::Text("Quads: %d", renderer.mTotalQuadsDrawn);
+			ImGui::Text("Draw calls: %d", renderer.mBuffers.size());
 
 			if (ImGui::BeginPopupContextWindow())
 			{
