@@ -56,7 +56,7 @@ public:
 		y += yDir * (moveSpeed * deltaTime);
 
 		//Stress test 
-		
+		/*
 		for (int x = 0; x < 100; ++x)
 		{			
 			for (int y = 0; y < 100; ++y)
@@ -65,14 +65,15 @@ public:
 				renderer.DrawQuad(Chaos::Vec2(x - 20, y - 20), Chaos::Vec2(1.f, 1.f), floor);
 			}
 		}
+		*/
 		
 
-		//renderer.DrawQuad(Chaos::Vec2(0.f, 0.f), Chaos::Vec2(20.f, 20.f), floor);
-		//renderer.DrawQuad(Chaos::Vec2(4.f, 0.f), Chaos::Vec2(1.f, 1.f), blank);
-		//renderer.DrawQuad(Chaos::Vec2(3.f, 0.5f), Chaos::Vec2(1.f, 1.f), Chaos::Vec4(0.7, 0.7, 0.1, 0.4), blank);
+		renderer.DrawQuad(Chaos::Vec2(0.f, 0.f), Chaos::Vec2(20.f, 20.f), floor);
+		renderer.DrawQuad(Chaos::Vec2(4.f, 0.f), Chaos::Vec2(1.f, 1.f), blank);
+		renderer.DrawQuad(Chaos::Vec2(3.f, 0.5f), Chaos::Vec2(1.f, 1.f), Chaos::Vec4(0.7, 0.7, 0.1, 0.4), blank);
 		//renderer.DrawQuad(Chaos::Vec2(3.f, 0.f), Chaos::Vec2(1.f, 1.f), Chaos::Vec4(0.1,1,0.1,1), blank);
 		//renderer.DrawQuad(Chaos::Vec2(2.f, 0.f), Chaos::Vec2(1.f, 1.f), test2);
-		//renderer.DrawQuad(Chaos::Vec2(x, y), Chaos::Vec2(1.f, 1.f), player);
+		renderer.DrawQuad(Chaos::Vec2(x, y), Chaos::Vec2(1.f, 1.f), Chaos::Vec4(1.0, 0.1, 0.1, 0.9), player);
 	}
 
 	void OnEvent(Chaos::Event& event) override

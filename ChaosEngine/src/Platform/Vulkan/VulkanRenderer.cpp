@@ -501,8 +501,8 @@ namespace Chaos
 		colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
 		colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 		colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
-		colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-		colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+		colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+		colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 		colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
 		colorBlendAttachment.blendEnable = VK_TRUE;
 
@@ -1318,7 +1318,7 @@ namespace Chaos
 		//Creates local vector to store all the verts for the quad using the position and scale given.
 		mVertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, texture->GetTilingFactor()), imageIndex });
 		mVertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(texture->GetTilingFactor(), texture->GetTilingFactor()), imageIndex });
-		mVertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y),colour, Vec2(texture->GetTilingFactor(), 0.01f), imageIndex });
+		mVertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, Vec2(texture->GetTilingFactor(), 0.01f), imageIndex });
 		mVertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, 0.01f), imageIndex });
 
 		mIndices.push_back(0 + mIndOffset);
@@ -1360,7 +1360,7 @@ namespace Chaos
 		//Creates local vector to store all the verts for the quad using the position and scale given.
 		mVertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, texture->GetTilingFactor()), imageIndex });
 		mVertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(texture->GetTilingFactor(), texture->GetTilingFactor()), imageIndex });
-		mVertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y),colour, Vec2(texture->GetTilingFactor(), 0.01f), imageIndex });
+		mVertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, Vec2(texture->GetTilingFactor(), 0.01f), imageIndex });
 		mVertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, 0.01f), imageIndex });
 
 		mIndices.push_back(0 + mIndOffset);

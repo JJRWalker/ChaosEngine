@@ -91,7 +91,7 @@ namespace Chaos
 		ImGui_ImplVulkan_CreateFontsTexture(commandBuffer);
 		renderer.EndSingleTimeCommands(commandBuffer);
 
-		clear = { 0.0f, 0.0f, 0.0f, 0.f };
+		clear = { 0.0f, 0.0f, 0.0f, 0.0f };
 	}
 
 	void ImGuiLayer::OnDetach()
@@ -138,7 +138,7 @@ namespace Chaos
 		{
 			ImGui::Text("FPS: %f", 1 / mTime);
 			ImGui::Text("Quads: %d", renderer.mTotalQuadsDrawn);
-			ImGui::Text("Draw calls: %d", renderer.mBuffers.size());
+			ImGui::Text("Draw calls: %d", renderer.mBuffers.size() + 1);
 
 			if (ImGui::BeginPopupContextWindow())
 			{
@@ -221,7 +221,10 @@ namespace Chaos
 
 			vkBeginCommandBuffer(mCommandBuffers[i], &beginInfo);
 
+			vkCmdBindPipeline(mCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer.mGraphicsPipeline);
 			vkCmdBeginRenderPass(mCommandBuffers[i], &renderpassinfo, VK_SUBPASS_CONTENTS_INLINE);
+			
+
 
 			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), mCommandBuffers[i]);
 
