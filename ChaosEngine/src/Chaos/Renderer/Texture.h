@@ -21,8 +21,7 @@ namespace Chaos
 		virtual int GetSize() const = 0;
 		virtual void* GetData() const = 0;
 		inline virtual void SetData(void* data) = 0;
-		inline virtual float GetTilingFactor() const = 0;	//TODO move tiling factor to the object that is being rendered rather than the texture
 
-		static Ref<Texture> Create(const char* path, float tilingFactor);
+		static Ref<Texture> Create(const char* path);
 	};
 }

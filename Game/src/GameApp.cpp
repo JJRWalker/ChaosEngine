@@ -12,12 +12,12 @@ public:
 	float moveSpeed = 1.f;
 	int xDir = 0;
 	int yDir = 0;
-	Chaos::Ref<Chaos::Texture> player = Chaos::Texture::Create("../Game/textures/sprite-test.png", 1);
-	Chaos::Ref<Chaos::Texture> floor = Chaos::Texture::Create("../Game/textures/Floor.jpg", 20);
-	Chaos::Ref<Chaos::Texture> test = Chaos::Texture::Create("../Game/textures/test.png", 1);
+	Chaos::Ref<Chaos::Texture> player = Chaos::Texture::Create("../Game/textures/sprite-test.png");
+	Chaos::Ref<Chaos::Texture> floor = Chaos::Texture::Create("../Game/textures/Floor.jpg");
+	Chaos::Ref<Chaos::Texture> test = Chaos::Texture::Create("../Game/textures/test.png");
 	//Chaos::Ref<Chaos::Texture> big = Chaos::Texture::Create("../Game/textures/big-texture.png", 1);
-	Chaos::Ref<Chaos::Texture> blank = Chaos::Texture::Create("", 1);
-	Chaos::Ref<Chaos::Texture> test2 = Chaos::Texture::Create("../Game/textures/test2.png", 1);
+	Chaos::Ref<Chaos::Texture> blank = Chaos::Texture::Create("");
+	Chaos::Ref<Chaos::Texture> test2 = Chaos::Texture::Create("../Game/textures/test2.png");
 	float x = 0;
 	float y = 0;
 
@@ -68,12 +68,13 @@ public:
 		*/
 		
 
-		renderer.DrawQuad(Chaos::Vec2(0.f, 0.f), Chaos::Vec2(20.f, 20.f), floor);
+		renderer.DrawQuad(Chaos::Vec2(0.f, 0.f), Chaos::Vec2(20.f, 20.f), floor, 30);
+		renderer.DrawQuad(Chaos::Vec2(0.f, 0.f), Chaos::Vec2(1.f, 1.f), floor);
 		renderer.DrawQuad(Chaos::Vec2(4.f, 0.f), Chaos::Vec2(1.f, 1.f), blank);
-		renderer.DrawQuad(Chaos::Vec2(3.f, 0.5f), Chaos::Vec2(1.f, 1.f), Chaos::Vec4(0.7, 0.7, 0.1, 0.4), blank);
+		renderer.DrawQuad(Chaos::Vec2(3.f, 0.5f), Chaos::Vec2(1.f, 1.f), Chaos::Vec4(0.7f, 0.7f, 0.1f, 0.4f), blank);
 		//renderer.DrawQuad(Chaos::Vec2(3.f, 0.f), Chaos::Vec2(1.f, 1.f), Chaos::Vec4(0.1,1,0.1,1), blank);
 		//renderer.DrawQuad(Chaos::Vec2(2.f, 0.f), Chaos::Vec2(1.f, 1.f), test2);
-		renderer.DrawQuad(Chaos::Vec2(x, y), Chaos::Vec2(1.f, 1.f), Chaos::Vec4(1.0, 0.1, 0.1, 0.9), player);
+		renderer.DrawQuad(Chaos::Vec2(x, y), Chaos::Vec2(1.f, 1.f), Chaos::Vec4(1.0f, 0.1f, 0.1f, 0.9f), player);
 	}
 
 	void OnEvent(Chaos::Event& event) override

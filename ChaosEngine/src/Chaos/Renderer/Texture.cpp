@@ -7,12 +7,12 @@
 namespace Chaos
 {
 
-		Ref<Texture> Texture::Create(const char* path, float tilingFactor)
+		Ref<Texture> Texture::Create(const char* path)
 		{
 			switch (Renderer::GetAPI())
 			{
 			case RendererAPI::API::None: LOGCORE_ERROR("Render API not supported!"); return nullptr;
-			case RendererAPI::API::Vulkan: return CreateRef<VulkanTexture>(path, tilingFactor);
+			case RendererAPI::API::Vulkan: return CreateRef<VulkanTexture>(path);
 			}
 			LOGCORE_ERROR("Render API not found");
 			return nullptr;

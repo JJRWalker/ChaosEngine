@@ -7,7 +7,7 @@
 
 namespace Chaos
 {
-	VulkanTexture::VulkanTexture(const char* filePath, float tilingFactor) : mFilePath(filePath), mTilingFactor(tilingFactor)
+	VulkanTexture::VulkanTexture(const char* filePath) : mFilePath(filePath)
 	{
 		int texWidth, texHeight, texChannels;
 		VulkanRenderer& renderer = dynamic_cast<VulkanRenderer&>(Application::Get().GetRenderer());
@@ -59,7 +59,6 @@ namespace Chaos
 	VulkanTexture::VulkanTexture(VulkanTexture& copy)
 	{
 		mFilePath = copy.GetFilePath();
-		mTilingFactor = copy.GetTilingFactor();
 		mWidth = copy.GetWidth();
 		mHeight = copy.GetHeight();
 		mSize = copy.GetSize();

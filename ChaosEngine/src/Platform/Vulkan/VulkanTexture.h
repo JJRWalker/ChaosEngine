@@ -8,7 +8,7 @@ namespace Chaos
 	{
 
 	public:
-		VulkanTexture(const char* filePath, float tilingFactor);
+		VulkanTexture(const char* filePath);
 		VulkanTexture(VulkanTexture& copy);
 
 		virtual ~VulkanTexture() {
@@ -44,7 +44,6 @@ namespace Chaos
 			mPixelData = image; }
 
 		inline virtual void* GetData() const override { return mPixelData; }
-		inline virtual float GetTilingFactor() const override { return mTilingFactor; }
 		
 		VkImage& GetImage() { return mImage; }
 		VkDeviceMemory& GetImageMemory() { return mImageMemory; }
@@ -54,7 +53,6 @@ namespace Chaos
 	private: 
 		mutable const char* mFilePath;
 		void* mPixelData;
-		float mTilingFactor = 1;
 		uint32_t mWidth = 0;
 		uint32_t mHeight = 0;
 		int mSize;

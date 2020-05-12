@@ -221,7 +221,7 @@ namespace Chaos
 
 			vkBeginCommandBuffer(mCommandBuffers[i], &beginInfo);
 
-			vkCmdBindPipeline(mCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer.mGraphicsPipeline);
+			//vkCmdBindPipeline(mCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer.mGraphicsPipeline);
 			vkCmdBeginRenderPass(mCommandBuffers[i], &renderpassinfo, VK_SUBPASS_CONTENTS_INLINE);
 			
 

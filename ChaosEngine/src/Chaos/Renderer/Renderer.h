@@ -19,6 +19,8 @@ namespace Chaos
 
 		virtual void DrawQuad(Vec2& position, Vec2& scale, Ref<Texture> texture) = 0;
 		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec4& colour, Ref<Texture> texture)  = 0;
+		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec4& colour, Ref<Texture> texture, float tilingFactor) = 0;
+		virtual void DrawQuad(Vec2& position, Vec2& scale, Ref<Texture> texture, float tilingFactor) = 0;
 		virtual void DrawFrame() = 0;
 		virtual void WindowResized() = 0;
 

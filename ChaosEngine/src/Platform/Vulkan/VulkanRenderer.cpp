@@ -855,7 +855,7 @@ namespace Chaos
 			descriptorWrites[1].dstBinding = 1;
 			descriptorWrites[1].dstArrayElement = 0;
 			descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			descriptorWrites[1].descriptorCount = mBuffers[i].TexturesToBind.size();
+			descriptorWrites[1].descriptorCount = (uint32_t)mBuffers[i].TexturesToBind.size();
 			descriptorWrites[1].pImageInfo = imageInfo.data();
 
 			vkUpdateDescriptorSets(mDevice, 2, descriptorWrites, 0, nullptr);
@@ -1305,20 +1305,20 @@ namespace Chaos
 		
 		Vec4 colour = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-		float imageIndex = mTexturesToBind.size();
+		float imageIndex = (float)mTexturesToBind.size();
 		for (size_t i = 0; i < mTexturesToBind.size(); ++i)
 		{
 			if (mTexturesToBind[i].get()->GetFilePath() == texture.get()->GetFilePath())
 			{
-				imageIndex = i;
+				imageIndex = (float)i;
 				break;
 			}
 		}
 
 		//Creates local vector to store all the verts for the quad using the position and scale given.
-		mVertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, texture->GetTilingFactor()), imageIndex });
-		mVertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(texture->GetTilingFactor(), texture->GetTilingFactor()), imageIndex });
-		mVertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, Vec2(texture->GetTilingFactor(), 0.01f), imageIndex });
+		mVertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, 1.0f), imageIndex });
+		mVertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(1.0f, 1.0f), imageIndex });
+		mVertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, Vec2(1.0f, 0.01f), imageIndex });
 		mVertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, 0.01f), imageIndex });
 
 		mIndices.push_back(0 + mIndOffset);
@@ -1347,20 +1347,106 @@ namespace Chaos
 
 	void VulkanRenderer::DrawQuad(Vec2& position, Vec2& scale, Vec4& colour, Ref<Texture> texture)
 	{
-		float imageIndex = mTexturesToBind.size();
+		float imageIndex = (float)mTexturesToBind.size();
 		for (size_t i = 0; i < mTexturesToBind.size(); ++i)
 		{
 			if (mTexturesToBind[i].get()->GetFilePath() == texture.get()->GetFilePath())
 			{
-				imageIndex = i;
+				imageIndex = (float)i;
 				break;
 			}
 		}
 
 		//Creates local vector to store all the verts for the quad using the position and scale given.
-		mVertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, texture->GetTilingFactor()), imageIndex });
-		mVertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(texture->GetTilingFactor(), texture->GetTilingFactor()), imageIndex });
-		mVertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, Vec2(texture->GetTilingFactor(), 0.01f), imageIndex });
+		mVertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, 1.0f), imageIndex });
+		mVertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(1.0f, 1.0f), imageIndex });
+		mVertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, Vec2(1.0f, 0.01f), imageIndex });
+		mVertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, 0.01f), imageIndex });
+
+		mIndices.push_back(0 + mIndOffset);
+		mIndices.push_back(1 + mIndOffset);
+		mIndices.push_back(2 + mIndOffset);
+		mIndices.push_back(2 + mIndOffset);
+		mIndices.push_back(3 + mIndOffset);
+		mIndices.push_back(0 + mIndOffset);
+
+		mIndOffset += 4;
+
+		if (imageIndex == mTexturesToBind.size())
+		{
+			mTexturesToBind.push_back((Ref<VulkanTexture>&)texture);
+		}
+
+		mRenderCount++;
+
+		if (mTexturesToBind.size() == MAX_TEXTURES_PER_DRAW || mRenderCount == MAX_OBJECTS_PER_DRAW)
+		{
+			mBuffers.resize(mBuffers.size() + 1);
+			CreateAndClearBuffers(mBuffers.size() - 1);
+		}
+		mTotalQuadsDrawn++;
+	}
+
+	void VulkanRenderer::DrawQuad(Vec2& position, Vec2& scale, Vec4& colour, Ref<Texture> texture, float tilingFactor)
+	{
+		float imageIndex = (float)mTexturesToBind.size();
+		for (size_t i = 0; i < mTexturesToBind.size(); ++i)
+		{
+			if (mTexturesToBind[i].get()->GetFilePath() == texture.get()->GetFilePath())
+			{
+				imageIndex = (float)i;
+				break;
+			}
+		}
+
+		//Creates local vector to store all the verts for the quad using the position and scale given.
+		mVertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, tilingFactor), imageIndex });
+		mVertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(tilingFactor, tilingFactor), imageIndex });
+		mVertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, Vec2(tilingFactor, 0.01f), imageIndex });
+		mVertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, 0.01f), imageIndex });
+
+		mIndices.push_back(0 + mIndOffset);
+		mIndices.push_back(1 + mIndOffset);
+		mIndices.push_back(2 + mIndOffset);
+		mIndices.push_back(2 + mIndOffset);
+		mIndices.push_back(3 + mIndOffset);
+		mIndices.push_back(0 + mIndOffset);
+
+		mIndOffset += 4;
+
+		if (imageIndex == mTexturesToBind.size())
+		{
+			mTexturesToBind.push_back((Ref<VulkanTexture>&)texture);
+		}
+
+		mRenderCount++;
+
+		if (mTexturesToBind.size() == MAX_TEXTURES_PER_DRAW || mRenderCount == MAX_OBJECTS_PER_DRAW)
+		{
+			mBuffers.resize(mBuffers.size() + 1);
+			CreateAndClearBuffers(mBuffers.size() - 1);
+		}
+		mTotalQuadsDrawn++;
+	}
+
+	void VulkanRenderer::DrawQuad(Vec2& position, Vec2& scale, Ref<Texture> texture, float tilingFactor)
+	{
+		Vec4 colour = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+		float imageIndex = (float)mTexturesToBind.size();
+		for (size_t i = 0; i < mTexturesToBind.size(); ++i)
+		{
+			if (mTexturesToBind[i].get()->GetFilePath() == texture.get()->GetFilePath())
+			{
+				imageIndex = (float)i;
+				break;
+			}
+		}
+
+		//Creates local vector to store all the verts for the quad using the position and scale given.
+		mVertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, tilingFactor), imageIndex });
+		mVertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(tilingFactor, tilingFactor), imageIndex });
+		mVertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, Vec2(tilingFactor, 0.01f), imageIndex });
 		mVertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, 0.01f), imageIndex });
 
 		mIndices.push_back(0 + mIndOffset);

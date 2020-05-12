@@ -72,8 +72,8 @@ namespace Chaos
 		uint16_t HighestInd = 0;
 		BufferType Type;
 		std::vector<Ref<VulkanTexture>> TexturesToBind;
-		int DescriptorIndex = 0;
-		int TexturesLoaded = 0;
+		size_t DescriptorIndex = 0;
+		size_t TexturesLoaded = 0;
 	};
 
 	struct RenderData {
@@ -117,6 +117,8 @@ namespace Chaos
 
 		virtual void DrawQuad(Vec2& position, Vec2& scale, Ref<Texture> texture) override;
 		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec4& colour, Ref<Texture> texture) override;
+		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec4& colour, Ref<Texture> texture, float tilingFactor) override;
+		virtual void DrawQuad(Vec2& position, Vec2& scale, Ref<Texture> texture, float tilingFactor) override;
 		virtual void DrawFrame() override;
 		virtual void WindowResized() override { mFramebufferResized = true; }
 		//VULKAN TEMP
