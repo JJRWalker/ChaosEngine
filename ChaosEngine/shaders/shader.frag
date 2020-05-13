@@ -10,5 +10,7 @@ layout(location = 2) in float fragImgIndex;
 layout(location = 0) out vec4 outColor;
 
 void main() {
-    outColor = fragColor * texture(texSampler[int(fragImgIndex)], fragTexCoord);
+    vec4 textureColor = texture(texSampler[int(fragImgIndex)], fragTexCoord);
+    outColor = vec4(fragColor.xyz * textureColor.xyz, textureColor.w);
+    outColor =  (fragColor.w) * outColor;
 }

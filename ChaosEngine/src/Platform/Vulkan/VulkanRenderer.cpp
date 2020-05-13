@@ -18,6 +18,8 @@
 #include "Chaos/Renderer/Quad.h"
 #include "Chaos/Renderer/Vertex.h"
 
+#include "Chaos/Components/Camera.h"
+
 #include <thread>
 #include <functional>
 
@@ -1288,9 +1290,14 @@ namespace Chaos
 		{
 			UniformBufferObject ubo = {};
 			//ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-			//ubo.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-			ubo.proj = glm::ortho(-5.0f * (float)mSwapchainExtent.width / (float)mSwapchainExtent.height, 5.0f * (float)mSwapchainExtent.width / (float)mSwapchainExtent.height, 5.0f, -5.0f, -5.0f, 5.0f); //glm::perspective(glm::radians(45.0f), (float)swapchainExtent.width / (float)swapchainExtent.height, 0.1f, 1000.0f);
-			//ubo.proj[1][1] *= -1;
+			//ubo.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+			//ubo.proj = glm::ortho(-5.0f * (float)mSwapchainExtent.width / (float)mSwapchainExtent.height, 5.0f * (float)mSwapchainExtent.width / (float)mSwapchainExtent.height, 5.0f, -5.0f, -5.0f, 5.0f); //glm::perspective(glm::radians(45.0f), (float)swapchainExtent.width / (float)swapchainExtent.height, 0.1f, 1000.0f);
+			ubo.view = glm::lookAt(glm::vec3(Application::Get().GetCamera().GetPosition().X, Application::Get().GetCamera().GetPosition().Y, Application::Get().GetCamera().GetPosition().Z + 1),
+				glm::vec3(Application::Get().GetCamera().GetPosition().X, Application::Get().GetCamera().GetPosition().Y, Application::Get().GetCamera().GetPosition().Z), glm::vec3(0.0f, 1.0f, 0.0f));
+			ubo.proj = glm::ortho(Application::Get().GetCamera().GetBounds().X * (float)mSwapchainExtent.width / (float)mSwapchainExtent.height, 
+				Application::Get().GetCamera().GetBounds().Y * (float)mSwapchainExtent.width / (float)mSwapchainExtent.height, 
+				Application::Get().GetCamera().GetBounds().Z, Application::Get().GetCamera().GetBounds().W, -5.0f, 5.0f);
+			ubo.proj[1][1] *= -1;
 
 			void* data;
 			vkMapMemory(mDevice, mUniformBuffersMemory[i], 0, sizeof(ubo), 0, &data);

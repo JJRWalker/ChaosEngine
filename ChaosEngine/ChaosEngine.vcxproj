@@ -141,6 +141,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\Chaos.h" />
+    <ClInclude Include="src\Chaos\Components\Camera.h" />
     <ClInclude Include="src\Chaos\Core\Application.h" />
     <ClInclude Include="src\Chaos\Core\Core.h" />
     <ClInclude Include="src\Chaos\Core\EntryPoint.h" />

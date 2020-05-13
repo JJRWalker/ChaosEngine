@@ -1,7 +1,7 @@
 
 #include <Chaos.h>
 #include <Chaos/Events/KeyEvent.h>
-
+#include <Chaos/Components/Camera.h>
 
 class ExampleLayer : public Chaos::Layer
 {
@@ -21,7 +21,13 @@ public:
 	float x = 0;
 	float y = 0;
 
+	Chaos::Camera* cam1 = new Chaos::Camera();
+	Chaos::Camera* cam2 = new Chaos::Camera();
+
 	Chaos::Renderer& renderer = Chaos::Application::Get().GetRenderer();
+
+	bool pressed = false;
+	bool switched = false;
 
 	void OnUpdate(float deltaTime) override
 	{
@@ -52,6 +58,25 @@ public:
 		{
 			xDir = 0;
 		}
+
+		if (Chaos::Input::IsKeyPressed(KEY_E) && pressed == false)
+		{
+			if (switched)
+			{
+				Chaos::Application::Get().SetMainCamera(*cam1);
+				switched = false;
+			}
+			else
+			{
+				Chaos::Application::Get().SetMainCamera(*cam2);
+				switched = true;
+			}
+			pressed = true;
+		}
+		else if (Chaos::Input::IsKeyReleased(KEY_E) && pressed == true)
+		{
+			pressed = false;
+		}
 		x += xDir * (moveSpeed * deltaTime);
 		y += yDir * (moveSpeed * deltaTime);
 
@@ -74,7 +99,9 @@ public:
 		renderer.DrawQuad(Chaos::Vec2(3.f, 0.5f), Chaos::Vec2(1.f, 1.f), Chaos::Vec4(0.7f, 0.7f, 0.1f, 0.4f), blank);
 		//renderer.DrawQuad(Chaos::Vec2(3.f, 0.f), Chaos::Vec2(1.f, 1.f), Chaos::Vec4(0.1,1,0.1,1), blank);
 		//renderer.DrawQuad(Chaos::Vec2(2.f, 0.f), Chaos::Vec2(1.f, 1.f), test2);
-		renderer.DrawQuad(Chaos::Vec2(x, y), Chaos::Vec2(1.f, 1.f), Chaos::Vec4(1.0f, 0.1f, 0.1f, 0.9f), player);
+		renderer.DrawQuad(Chaos::Vec2(0, 0), Chaos::Vec2(1.f, 1.f), Chaos::Vec4(1.0f, 0.1f, 0.1f, 0.9f), player);
+
+		Chaos::Application::Get().GetCamera().SetPosition(Chaos::Vec3( x, y, 0.f));
 	}
 
 	void OnEvent(Chaos::Event& event) override

@@ -5,7 +5,7 @@
 #include "Chaos/Events/Event.h"
 #include "Chaos/Events/ApplicationEvent.h"
 #include "Chaos/Core/LayerStack.h"
-
+#include "Chaos/Components/Camera.h"
 
 namespace Chaos
 {
@@ -27,6 +27,8 @@ namespace Chaos
 		inline static Application& Get() { return *sInstance; }
 		inline Window& GetWindow() { return *mWindow; }
 		inline class Renderer& GetRenderer() { return *mRenderer; }
+		inline class Camera& GetCamera() { return *mMainCamera; }
+		inline void SetMainCamera(Camera& camera) { mMainCamera = &camera; }
 
 	private:
 		bool OnWindowClose(WindowCloseEvent& e);
@@ -34,6 +36,7 @@ namespace Chaos
 		bool mRunning = true;
 		std::unique_ptr<Window> mWindow;
 		std::unique_ptr<class Renderer> mRenderer;
+		Camera* mMainCamera;
 
 		LayerStack mLayerStack;
 
