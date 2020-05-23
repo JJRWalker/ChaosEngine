@@ -595,68 +595,6 @@ namespace Chaos
 		}
 	}
 
-	//DEPRICATED, TO BE REMOVED. Vulkan image creation is now handled on the VulkanTexture itself. Image and other data stored there aswell
-	void VulkanRenderer::CreateTextureImage(Texture* tex)
-	{
-		int texWidth, texHeight, texChannels;
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingBufferMemory;
-		VkImage image;
-		VkDeviceMemory memory;
-		VkImageView view;
-		//if the texture does not have data, load data, otherwise use pixel data stored on the texture object
-		if (tex->GetData() == NULL)
-		{
-			if (!std::filesystem::exists(tex->GetFilePath()))
-			{
-				LOGCORE_WARN("VULKAN: could not open file {0}", tex->GetFilePath());
-				tex->SetFilePath("../Game/textures/blank.png");
-			}
-
-			stbi_uc* pixels = stbi_load(tex->GetFilePath(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-			VkDeviceSize imageSize = texWidth * texHeight * 4;
-
-			if (!pixels) {
-				LOGCORE_ERROR("VULKAN: failed to load texture image!");
-			}
-
-			CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
-
-			void* data;
-			vkMapMemory(mDevice, stagingBufferMemory, 0, imageSize, 0, &data);
-			memcpy(data, pixels, static_cast<size_t>(imageSize));
-			vkUnmapMemory(mDevice, stagingBufferMemory);
-
-			stbi_image_free(pixels);
-		}
-		else
-		{
-			texWidth = tex->GetWidth();
-			texHeight = tex->GetHeight();
-			VkDeviceSize imageSize = texWidth * texHeight * 4;
-
-			CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
-
-			void* data;
-			vkMapMemory(mDevice, stagingBufferMemory, 0, imageSize, 0, &data);
-			memcpy(data, tex->GetData(), static_cast<size_t>(imageSize));
-			vkUnmapMemory(mDevice, stagingBufferMemory);
-		}
-
-		CreateImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, image, memory);
-
-		TransitionImageLayout(image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		CopyBufferToImage(stagingBuffer, image, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
-		TransitionImageLayout(image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-		vkDestroyBuffer(mDevice, stagingBuffer, nullptr);
-		vkFreeMemory(mDevice, stagingBufferMemory, nullptr);
-
-		view = CreateImageView(image, VK_FORMAT_R8G8B8A8_SRGB);
-
-		VulkanTexture* loaded = new VulkanTexture(*(VulkanTexture*)tex);
-	}
-
 	//Creating sampler on construction, determines how the image loaded should be modified from the raw data.
 	//May at somepoint want to have multiple samplers depending on the desired effect for an image.
 	void VulkanRenderer::CreateTextureSampler()
@@ -1292,12 +1230,10 @@ namespace Chaos
 			//ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 			//ubo.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 			//ubo.proj = glm::ortho(-5.0f * (float)mSwapchainExtent.width / (float)mSwapchainExtent.height, 5.0f * (float)mSwapchainExtent.width / (float)mSwapchainExtent.height, 5.0f, -5.0f, -5.0f, 5.0f); //glm::perspective(glm::radians(45.0f), (float)swapchainExtent.width / (float)swapchainExtent.height, 0.1f, 1000.0f);
-			ubo.view = glm::lookAt(glm::vec3(Application::Get().GetCamera().GetPosition().X, Application::Get().GetCamera().GetPosition().Y, Application::Get().GetCamera().GetPosition().Z + 1),
-				glm::vec3(Application::Get().GetCamera().GetPosition().X, Application::Get().GetCamera().GetPosition().Y, Application::Get().GetCamera().GetPosition().Z), glm::vec3(0.0f, 1.0f, 0.0f));
-			ubo.proj = glm::ortho(Application::Get().GetCamera().GetBounds().X * (float)mSwapchainExtent.width / (float)mSwapchainExtent.height, 
-				Application::Get().GetCamera().GetBounds().Y * (float)mSwapchainExtent.width / (float)mSwapchainExtent.height, 
-				Application::Get().GetCamera().GetBounds().Z, Application::Get().GetCamera().GetBounds().W, -5.0f, 5.0f);
-			ubo.proj[1][1] *= -1;
+
+
+			ubo.view = Application::Get().GetCamera().GetView();
+			ubo.proj = Application::Get().GetCamera().GetProjection();
 
 			void* data;
 			vkMapMemory(mDevice, mUniformBuffersMemory[i], 0, sizeof(ubo), 0, &data);

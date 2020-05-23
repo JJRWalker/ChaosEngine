@@ -1344,5 +1344,6 @@
     <ClCompile Include="src\chaospch.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Chaos\Components\Camera.cpp" />
   </ItemGroup>
 </Project>

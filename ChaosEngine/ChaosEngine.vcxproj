@@ -556,6 +556,7 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Chaos\Components\Camera.cpp" />
     <ClCompile Include="src\Chaos\Core\Application.cpp" />
     <ClCompile Include="src\Chaos\Core\Layer.cpp" />
     <ClCompile Include="src\Chaos\Core\LayerStack.cpp" />

@@ -146,7 +146,6 @@ namespace Chaos
 		void CreateGraphicsPipeline();
 		void CreateFrameBuffers();
 		void CreateCommandPool();
-		void CreateTextureImage(Texture* tex);
 		void CreateTextureSampler();
 		void CreateIndexedBuffer(std::vector<VulkanVertex> vertices, std::vector<uint16_t> indices, BufferType type, size_t insertIndex);
 		void CreateAndClearBuffers(size_t insertIndex);
