@@ -20,8 +20,10 @@ As previously stated it is currently vulkan based using GLFW windows, this howev
 Features currently implemented:
 * Logging
 * Input Polling
-* Basic Rendering
+* Batch Rendering
 * Textures and texture mapping
+* Sub Textures (allows for the use of sprite sheets)
+* Debug GUI (using ImGui, currently causes some issues on certain hardware, see note below) 
 
 ## Next steps
 * Scene system (will also help optimise renderer)
