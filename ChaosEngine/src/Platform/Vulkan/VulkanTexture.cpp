@@ -7,8 +7,9 @@
 
 namespace Chaos
 {
-	VulkanTexture::VulkanTexture(const char* filePath, float tilingFactor) : mFilePath(filePath), mTilingFactor(tilingFactor)
+	VulkanTexture::VulkanTexture(const char* filePath) : mFilePath(filePath)
 	{
+		void* pixelData;
 		int texWidth, texHeight, texChannels;
 		VulkanRenderer& renderer = dynamic_cast<VulkanRenderer&>(Application::Get().GetRenderer());
 		VkBuffer stagingBuffer;
@@ -17,36 +18,45 @@ namespace Chaos
 		if (!std::filesystem::exists(mFilePath))
 		{
 			LOGCORE_WARN("TEXTURE: could not open file '{0}' Loading blank", filePath);
-			mFilePath = "../Game/textures/blank.png";
+			mFilePath = "";
+			//0xffffffff (1 pixel of white image data) 
+			uint32_t data = 0xffffffff;
+			mSize = 4;
+			mWidth = 1;
+			mHeight = 1;
+			pixelData = malloc(static_cast<size_t>(mSize));
+			memcpy(pixelData, &data, mSize);
+		}
+		else
+		{
+			stbi_uc* pixels = stbi_load(mFilePath, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+			mSize = texWidth * texHeight * 4;
+			mWidth = texWidth;
+			mHeight = texHeight;
+
+			pixelData = malloc(static_cast<size_t>(mSize));
+
+			if (!pixels) {
+				LOGCORE_ERROR("TEXTURE: failed to load texture image!");
+			}
+
+			memcpy(pixelData, pixels, static_cast<size_t>(mSize));
 		}
 
-		stbi_uc* pixels = stbi_load(mFilePath, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-		mSize = texWidth * texHeight * 4;
-		mWidth = texWidth;
-		mHeight = texHeight;
-
-		mPixelData = malloc(static_cast<size_t>(mSize));
-
-		if (!pixels) {
-			LOGCORE_ERROR("TEXTURE: failed to load texture image!");
-		}
-
-		memcpy(mPixelData, pixels, static_cast<size_t>(mSize));
-
-		VkDeviceSize imageSize = texWidth * texHeight * 4;
+		VkDeviceSize imageSize = mWidth * mHeight * 4;
 
 		renderer.CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
 		void* data;
 		vkMapMemory(renderer.mDevice, stagingBufferMemory, 0, imageSize, 0, &data);
-		memcpy(data, mPixelData, static_cast<size_t>(imageSize));
+		memcpy(data, pixelData, static_cast<size_t>(imageSize));
 		vkUnmapMemory(renderer.mDevice, stagingBufferMemory);
 
 
-		renderer.CreateImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mImage, mImageMemory);
+		renderer.CreateImage(mWidth, mHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mImage, mImageMemory);
 
 		renderer.TransitionImageLayout(mImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		renderer.CopyBufferToImage(stagingBuffer, mImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+		renderer.CopyBufferToImage(stagingBuffer, mImage, static_cast<uint32_t>(mWidth), static_cast<uint32_t>(mHeight));
 		renderer.TransitionImageLayout(mImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 		vkDestroyBuffer(renderer.mDevice, stagingBuffer, nullptr);
@@ -54,14 +64,14 @@ namespace Chaos
 
 		mImageView = renderer.CreateImageView(mImage, VK_FORMAT_R8G8B8A8_SRGB);
 
-		delete mPixelData;
+		delete pixelData;
 	}
 	VulkanTexture::VulkanTexture(VulkanTexture& copy)
 	{
 		mFilePath = copy.GetFilePath();
-		mTilingFactor = copy.GetTilingFactor();
 		mWidth = copy.GetWidth();
 		mHeight = copy.GetHeight();
 		mSize = copy.GetSize();
 	}
+
 }

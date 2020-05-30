@@ -11,6 +11,7 @@
 #include "Chaos/Core/Time.h"
 
 #include "Chaos/DataTypes/Vec2.h"
+#include "Chaos/DataTypes/Vec4.h"
 
 #include "Chaos/Renderer/Renderer.h"
 #include "Chaos/Renderer/Texture.h"

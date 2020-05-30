@@ -6,9 +6,11 @@
 #include "Chaos/Input/Input.h"
 #include "Chaos/Renderer/Texture.h"
 #include "Chaos/Renderer/Renderer.h"
+#include "Chaos/Components/Camera.h"
 #include "Chaos/Debug/ImGuiLayer.h"
 #include "GLFW/glfw3.h"
 
+//inspired by The Cherno's Game engine series, however has and will continue to diverge
 namespace Chaos
 {
 	Application* Application::sInstance = nullptr;
@@ -46,11 +48,12 @@ namespace Chaos
 			for (Layer* layer : mLayerStack)
 				layer->OnUpdate(mDeltaTime);			
 
-			guiLayer->Begin();
-			for (Layer* layer : mLayerStack)
-				layer->OnImGuiRender();
+			//Currently causes black screen to be rendered over the top of the main render, need to change how the pipeline and descriptor sets are handled by Vulkan/ImGui
+			//guiLayer->Begin();
+			//for (Layer* layer : mLayerStack)
+				//layer->OnImGuiRender();
 			
-			guiLayer->End();
+			//guiLayer->End();
 
 			//LOGCORE_INFO("Time to renderframe: {0} FPS: {1}", mDeltaTime, 1 / mDeltaTime);
 

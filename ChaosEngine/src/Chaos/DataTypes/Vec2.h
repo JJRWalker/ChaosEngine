@@ -7,6 +7,8 @@ namespace Chaos
 	public:
 		Vec2(float x, float y)
 			: X(x), Y(y){};
+		Vec2() { X = 0; Y = 0; }
+		static Vec2 Zero() { return Vec2(0.0f, 0.0f); }
 
 	public:
 		float X, Y;

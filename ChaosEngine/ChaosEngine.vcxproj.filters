@@ -93,7 +93,13 @@
     <ClInclude Include="src\Chaos\DataTypes\Vec3.h">
       <Filter>src\Chaos\DataTypes</Filter>
     </ClInclude>
+    <ClInclude Include="src\Chaos\DataTypes\Vec4.h">
+      <Filter>src\Chaos\DataTypes</Filter>
+    </ClInclude>
     <ClInclude Include="src\Chaos\Debug\ImGuiLayer.h">
+      <Filter>src\Chaos\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Debug\Timer.h">
       <Filter>src\Chaos\Debug</Filter>
     </ClInclude>
     <ClInclude Include="src\Chaos\Events\ApplicationEvent.h">
@@ -1290,7 +1296,9 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp">
       <Filter>vendor\glm\glm</Filter>
     </ClInclude>
-    <ClInclude Include="src\Chaos\Debug\Timer.h" />
+    <ClInclude Include="src\Chaos\Components\Camera.h" />
+    <ClInclude Include="src\Chaos\Renderer\SubTexture.h" />
+    <ClInclude Include="src\Platform\Vulkan\VulkanSubTexture.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chaos\Core\Application.cpp">
@@ -1338,5 +1346,8 @@
     <ClCompile Include="src\chaospch.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Chaos\Components\Camera.cpp" />
+    <ClCompile Include="src\Chaos\Renderer\SubTexture.cpp" />
+    <ClCompile Include="src\Platform\Vulkan\VulkanSubTexture.cpp" />
   </ItemGroup>
 </Project>

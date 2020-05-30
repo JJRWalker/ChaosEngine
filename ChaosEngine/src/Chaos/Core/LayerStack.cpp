@@ -18,6 +18,7 @@ namespace Chaos
 		}
 	}
 
+	//On attach handled in application, however unsure if there would ever be a scenario where I'd want to push a layer but not call it's on attach function
 	void LayerStack::PushLayer(Layer* layer)
 	{
 		mLayers.emplace(mLayers.begin() + mLayerInsertIndex, layer);

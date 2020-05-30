@@ -2,6 +2,8 @@
 #include "Chaos/DataTypes/Vec3.h"
 #include "Chaos/DataTypes/Vec2.h"
 
+//generic data type for renderer vertex, could be used later on when implementing other rendering APIs or to draw UI elements along with PrimativeType
+
 namespace Chaos
 {
 	class Vertex
