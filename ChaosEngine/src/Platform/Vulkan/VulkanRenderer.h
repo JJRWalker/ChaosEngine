@@ -76,12 +76,6 @@ namespace Chaos
 		size_t TexturesLoaded = 0;
 	};
 
-	struct RenderData {
-		std::vector<VulkanVertex> Vertices;
-		std::vector<uint16_t> Indices;
-		Ref<VulkanTexture> Texture;
-	};
-
 	struct UniformBufferObject {
 		alignas(16) glm::mat4 model;
 		alignas(16) glm::mat4 view;
@@ -119,10 +113,13 @@ namespace Chaos
 		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec4& colour, Ref<Texture> texture) override;
 		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec4& colour, Ref<Texture> texture, float tilingFactor) override;
 		virtual void DrawQuad(Vec2& position, Vec2& scale, Ref<Texture> texture, float tilingFactor) override;
+		virtual void DrawQuad(Vec2& position, Vec2& scale, Ref<SubTexture> subTexture) override;
 		virtual void DrawFrame() override;
 		virtual void WindowResized() override { mFramebufferResized = true; }
+		bool HasTexture(const char* filePath, Ref<Texture> outTexture) override; //Takes in a file path and a texture, returns true and sets the ref of inputted texture if one exists
 		//VULKAN TEMP
 	private:
+		//constants
 		const glm::vec4 CLEAR_COLOR = { 0.0f,0.0f, 0.03f, 1.0f };
 		const int MAX_FRAMES_IN_FLIGHT = 2;
 		const int MAX_OBJECTS_PER_DRAW = 10000;
@@ -149,7 +146,6 @@ namespace Chaos
 		void CreateTextureSampler();
 		void CreateIndexedBuffer(std::vector<VulkanVertex> vertices, std::vector<uint16_t> indices, BufferType type, size_t insertIndex);
 		void CreateAndClearBuffers(size_t insertIndex);
-		void PopulateBuffers(size_t renderQueueIndex);
 		void CreateUniformBuffers();
 		void CreateDescriptorPool();
 		void CreateDescriptorSet();
@@ -161,6 +157,7 @@ namespace Chaos
 
 		void UpdateUniformBuffers();
 
+		//Helper functions
 		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
@@ -170,29 +167,35 @@ namespace Chaos
 		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags props);
 		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
 
+		//VALIDATION
 		std::vector<const char*> GetRequiredExtensions();
 		bool CheckValidationLayerSupport();
 		static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
 
+		//SHADER LOADING
 		static std::vector<char> readFile(const std::string& filename);
-
 		VkShaderModule CreateShaderModule(const std::vector<char>& code);
+
+		//IMAGE
 		void CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
 		VkImageView CreateImageView(VkImage image, VkFormat format);
 		void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 
+		//BUFFER 
 		void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 		void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+
+		//COMMANDS
 		VkCommandBuffer  BeginSingleTimeCommands();
 		void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
 
+		//IMGUI
 		void SetImGuiCommandBuffer(std::vector<VkCommandBuffer> mCommandBuffers) { mImGuiCommandBuffers = mCommandBuffers; }
 		void SetImGuiCommandPool(VkCommandPool* pool) { mImGuiCommandPool = pool; }
 		void SetImGuiFramebuffer(std::vector<VkFramebuffer>* buffer) { mImGuiFrameBuffer = buffer; }
 
-		//Vars
-		std::vector<RenderData> mRenderQueue;
+		//Variables
 		std::vector<VulkanVertex> mVertices;
 		std::vector<uint16_t> mIndices;
 

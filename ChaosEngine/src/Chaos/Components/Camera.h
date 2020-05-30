@@ -4,11 +4,12 @@
 #include "Chaos/DataTypes/Vec3.h"
 
 #define GLM_FORCE_RADIANS
-#include <GLM/glm/glm.hpp>
+#include <GLM/glm/glm.hpp>	//Potentially create my own mat4 so glm is not required here
 
-
+//Currently only an orthagraphic camera is supported, doesn't make much sense to use a perspective camera at this time in 2D development
 namespace Chaos
 {
+	//Eventually this class will inherit from a Component interface so it can be attached to a game object a la unity
 	class Camera
 	{
 	public:
@@ -25,6 +26,7 @@ namespace Chaos
 
 		glm::mat4 GetProjection() { return mProjection; }
 		glm::mat4 GetView() { return mView; }
+
 	private:
 		void Recalculate();
 

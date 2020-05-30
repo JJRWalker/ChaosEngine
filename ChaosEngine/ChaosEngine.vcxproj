@@ -167,9 +167,11 @@
     <ClInclude Include="src\Chaos\Renderer\Quad.h" />
     <ClInclude Include="src\Chaos\Renderer\Renderer.h" />
     <ClInclude Include="src\Chaos\Renderer\RendererAPI.h" />
+    <ClInclude Include="src\Chaos\Renderer\SubTexture.h" />
     <ClInclude Include="src\Chaos\Renderer\Texture.h" />
     <ClInclude Include="src\Chaos\Renderer\Vertex.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanRenderer.h" />
+    <ClInclude Include="src\Platform\Vulkan\VulkanSubTexture.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanTexture.h" />
     <ClInclude Include="src\Platform\Windows\WindowsInput.h" />
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h" />
@@ -566,8 +568,10 @@
     <ClCompile Include="src\Chaos\Debug\ImGuiLayer.cpp" />
     <ClCompile Include="src\Chaos\Renderer\Renderer.cpp" />
     <ClCompile Include="src\Chaos\Renderer\RendererAPI.cpp" />
+    <ClCompile Include="src\Chaos\Renderer\SubTexture.cpp" />
     <ClCompile Include="src\Chaos\Renderer\Texture.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanRenderer.cpp" />
+    <ClCompile Include="src\Platform\Vulkan\VulkanSubTexture.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanTexture.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />

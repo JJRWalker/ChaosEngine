@@ -25,8 +25,6 @@ namespace Chaos
 		mWindow = std::unique_ptr<Window>(Window::Create());
 		mWindow->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
-		mMainCamera = new Camera();
-
 		mRenderer = std::unique_ptr<Renderer>(Renderer::Create());
 
 		guiLayer = new ImGuiLayer();

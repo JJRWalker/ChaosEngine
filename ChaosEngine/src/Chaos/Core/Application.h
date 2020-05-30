@@ -27,8 +27,7 @@ namespace Chaos
 		inline static Application& Get() { return *sInstance; }
 		inline Window& GetWindow() { return *mWindow; }
 		inline class Renderer& GetRenderer() { return *mRenderer; }
-		inline class Camera& GetCamera() { return *mMainCamera; }
-		inline void SetMainCamera(Camera& camera) { mMainCamera = &camera; }
+		inline Camera& GetMainCamera() { return mMainCamera; }
 
 	private:
 		bool OnWindowClose(WindowCloseEvent& e);
@@ -36,7 +35,7 @@ namespace Chaos
 		bool mRunning = true;
 		std::unique_ptr<Window> mWindow;
 		std::unique_ptr<class Renderer> mRenderer;
-		Camera* mMainCamera;
+		Camera& mMainCamera = Camera();
 
 		LayerStack mLayerStack;
 
