@@ -34,4 +34,4 @@ Features currently implemented:
 * Maths functions (Vector maths / randomisation helpers)
 
 ## Known Issues
-* Rendering ImGui causes a blank screen to be rendered over the top of game primatives being rendered to screen, UI is still displayed. Only appears to affect some systems after a recent graphics driver update
+* Rendering ImGui causes a blank screen to be rendered over the top of game primatives being rendered to screen, UI is still displayed. Only appears to affect some systems after a recent graphics driver update. Unfortunately I lack the variety of hardware to test this.
