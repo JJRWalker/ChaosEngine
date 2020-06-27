@@ -6,6 +6,8 @@
 #include "Chaos/Core/Layer.h"
 #include "Chaos/Core/Log.h"
 
+#include "Chaos/Core/Scene.h"
+
 #include "Chaos/Input/Input.h"
 
 #include "Chaos/Core/Time.h"
@@ -15,6 +17,7 @@
 
 #include "Chaos/Renderer/Renderer.h"
 #include "Chaos/Renderer/Texture.h"
+
 
 
 //===ENTRY=POINT=====================

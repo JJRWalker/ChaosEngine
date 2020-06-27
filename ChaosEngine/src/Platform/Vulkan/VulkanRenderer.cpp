@@ -18,7 +18,7 @@
 #include "Chaos/Renderer/Quad.h"
 #include "Chaos/Renderer/Vertex.h"
 
-#include "Chaos/Components/Camera.h"
+#include "Chaos/Entity/Components/Camera.h"
 
 #include <thread>
 #include <functional>

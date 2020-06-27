@@ -1296,9 +1296,12 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp">
       <Filter>vendor\glm\glm</Filter>
     </ClInclude>
-    <ClInclude Include="src\Chaos\Components\Camera.h" />
     <ClInclude Include="src\Chaos\Renderer\SubTexture.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanSubTexture.h" />
+    <ClInclude Include="src\Chaos\Entity\Components\Camera.h" />
+    <ClInclude Include="src\Chaos\Entity\Entity.h" />
+    <ClInclude Include="src\Chaos\Entity\Component.h" />
+    <ClInclude Include="src\Chaos\Entity\Components\Transform.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chaos\Core\Application.cpp">
@@ -1346,8 +1349,9 @@
     <ClCompile Include="src\chaospch.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\Chaos\Components\Camera.cpp" />
     <ClCompile Include="src\Chaos\Renderer\SubTexture.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanSubTexture.cpp" />
+    <ClCompile Include="src\Chaos\Entity\Components\Camera.cpp" />
+    <ClCompile Include="src\Chaos\Entity\Components\Transform.cpp" />
   </ItemGroup>
 </Project>

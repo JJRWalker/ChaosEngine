@@ -141,7 +141,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\Chaos.h" />
-    <ClInclude Include="src\Chaos\Components\Camera.h" />
+    <ClInclude Include="src\Chaos\Entity\Component.h" />
+    <ClInclude Include="src\Chaos\Entity\Components\Camera.h" />
     <ClInclude Include="src\Chaos\Core\Application.h" />
     <ClInclude Include="src\Chaos\Core\Core.h" />
     <ClInclude Include="src\Chaos\Core\EntryPoint.h" />
@@ -156,6 +157,8 @@
     <ClInclude Include="src\Chaos\DataTypes\Vec4.h" />
     <ClInclude Include="src\Chaos\Debug\ImGuiLayer.h" />
     <ClInclude Include="src\Chaos\Debug\Timer.h" />
+    <ClInclude Include="src\Chaos\Entity\Components\Transform.h" />
+    <ClInclude Include="src\Chaos\Entity\Entity.h" />
     <ClInclude Include="src\Chaos\Events\ApplicationEvent.h" />
     <ClInclude Include="src\Chaos\Events\Event.h" />
     <ClInclude Include="src\Chaos\Events\KeyEvent.h" />
@@ -558,7 +561,7 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Chaos\Components\Camera.cpp" />
+    <ClCompile Include="src\Chaos\Entity\Components\Camera.cpp" />
     <ClCompile Include="src\Chaos\Core\Application.cpp" />
     <ClCompile Include="src\Chaos\Core\Layer.cpp" />
     <ClCompile Include="src\Chaos\Core\LayerStack.cpp" />
@@ -566,6 +569,7 @@
     <ClCompile Include="src\Chaos\Core\Scene.cpp" />
     <ClCompile Include="src\Chaos\Debug\ImGuiBuild.cpp" />
     <ClCompile Include="src\Chaos\Debug\ImGuiLayer.cpp" />
+    <ClCompile Include="src\Chaos\Entity\Components\Transform.cpp" />
     <ClCompile Include="src\Chaos\Renderer\Renderer.cpp" />
     <ClCompile Include="src\Chaos\Renderer\RendererAPI.cpp" />
     <ClCompile Include="src\Chaos\Renderer\SubTexture.cpp" />

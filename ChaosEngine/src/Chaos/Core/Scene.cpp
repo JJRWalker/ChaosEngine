@@ -3,8 +3,5 @@
 
 namespace Chaos
 {
-	void Scene::StartScene()
-	{
 
-	}
 }

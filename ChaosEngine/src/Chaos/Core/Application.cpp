@@ -6,7 +6,7 @@
 #include "Chaos/Input/Input.h"
 #include "Chaos/Renderer/Texture.h"
 #include "Chaos/Renderer/Renderer.h"
-#include "Chaos/Components/Camera.h"
+#include "Chaos/Entity/Components/Camera.h"
 #include "Chaos/Debug/ImGuiLayer.h"
 #include "GLFW/glfw3.h"
 
@@ -57,10 +57,9 @@ namespace Chaos
 
 			//LOGCORE_INFO("Time to renderframe: {0} FPS: {1}", mDeltaTime, 1 / mDeltaTime);
 
-			mWindow->OnUpdate();
-			
+			mWindow->OnUpdate();			
 
-			mRenderer->DrawFrame();			
+			mRenderer->DrawFrame();	
 		}
 	}
 

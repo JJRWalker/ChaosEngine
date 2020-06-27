@@ -5,7 +5,7 @@
 #include "Chaos/Events/Event.h"
 #include "Chaos/Events/ApplicationEvent.h"
 #include "Chaos/Core/LayerStack.h"
-#include "Chaos/Components/Camera.h"
+#include "Chaos/Entity/Components/Camera.h"
 
 namespace Chaos
 {
