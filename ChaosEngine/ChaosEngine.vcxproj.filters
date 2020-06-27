@@ -1302,6 +1302,7 @@
     <ClInclude Include="src\Chaos\Entity\Entity.h" />
     <ClInclude Include="src\Chaos\Entity\Component.h" />
     <ClInclude Include="src\Chaos\Entity\Components\Transform.h" />
+    <ClInclude Include="src\Chaos\Entity\Components\Render.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chaos\Core\Application.cpp">
@@ -1353,5 +1354,6 @@
     <ClCompile Include="src\Platform\Vulkan\VulkanSubTexture.cpp" />
     <ClCompile Include="src\Chaos\Entity\Components\Camera.cpp" />
     <ClCompile Include="src\Chaos\Entity\Components\Transform.cpp" />
+    <ClCompile Include="src\Chaos\Entity\Components\Render.cpp" />
   </ItemGroup>
 </Project>

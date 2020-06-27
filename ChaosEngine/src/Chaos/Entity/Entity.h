@@ -1,6 +1,7 @@
 #pragma once
 #include "chaospch.h"
 #include "Component.h"
+#include "Components/Transform.h"	//Only components included are those that do not have a reference to their owner
 
 namespace Chaos
 {
@@ -35,7 +36,8 @@ namespace Chaos
 		{
 			if (std::is_base_of<Component, T>::value)
 			{
-				mComponents.push_back(CreateRef<T>());
+				Ref<T> component = CreateRef<T>(this);
+				mComponents.push_back(component);
 			}
 			else
 			{
@@ -46,12 +48,12 @@ namespace Chaos
 		template<typename T>
 		Ref<T> GetComponent()
 		{
-			for (auto& c : mComponents)
+			for (auto c : mComponents)
 			{
 				Ref<T> component = std::dynamic_pointer_cast<T>(c);
 				if (component != nullptr)
 				{					 
-					return *component.get();
+					return component;
 				}
 			}
 			LOGCORE_ERROR("Failed to get component on entity {0} ID: {1} returning nullptr!", mName, mEntityID);
@@ -64,12 +66,33 @@ namespace Chaos
 		{
 			if (std::is_base_of<Component, T>::value)
 			{
-				for (auto& c : mComponents)
+				for (auto c : mComponents)
 				{
 					Ref<T> component = std::dynamic_pointer_cast<T>(c);	//this will return a nullptr if the cast was not possible
 					if (component != nullptr)
 					{
-						outComponent = *component.get();
+						outComponent = *component;
+						return true;
+					}
+				}
+				LOGCORE_WARN("Component could not be found on Entity: {1} ID: {2}", mName, mEntityID);
+				return false;
+			}
+			LOGCORE_WARN("Component given to template TryGetComponent() is not derived from type component");
+			return false;
+		}
+
+		template<typename T>
+		bool TryGetComponent(Ref<T> outComponent)
+		{
+			if (std::is_base_of<Component, T>::value)
+			{
+				for (auto c : mComponents)
+				{
+					Ref<T> component = std::dynamic_pointer_cast<T>(c);	//this will return a nullptr if the cast was not possible
+					if (component != nullptr)
+					{
+						outComponent = component;
 						return true;
 					}
 				}
@@ -82,9 +105,11 @@ namespace Chaos
 
 		const char* GetName() {};
 		size_t GetEntityID() {};
+		Ref<Transform> GetTransform() { return mTransform; }
 
 	private:
 		size_t mEntityID;
+		Ref<Transform> mTransform = CreateRef<Transform>();	
 		const char* mName;
 		std::vector<Ref<Component>> mComponents;
 	};

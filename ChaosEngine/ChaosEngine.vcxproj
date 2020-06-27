@@ -157,6 +157,7 @@
     <ClInclude Include="src\Chaos\DataTypes\Vec4.h" />
     <ClInclude Include="src\Chaos\Debug\ImGuiLayer.h" />
     <ClInclude Include="src\Chaos\Debug\Timer.h" />
+    <ClInclude Include="src\Chaos\Entity\Components\Render.h" />
     <ClInclude Include="src\Chaos\Entity\Components\Transform.h" />
     <ClInclude Include="src\Chaos\Entity\Entity.h" />
     <ClInclude Include="src\Chaos\Events\ApplicationEvent.h" />
@@ -569,6 +570,7 @@
     <ClCompile Include="src\Chaos\Core\Scene.cpp" />
     <ClCompile Include="src\Chaos\Debug\ImGuiBuild.cpp" />
     <ClCompile Include="src\Chaos\Debug\ImGuiLayer.cpp" />
+    <ClCompile Include="src\Chaos\Entity\Components\Render.cpp" />
     <ClCompile Include="src\Chaos\Entity\Components\Transform.cpp" />
     <ClCompile Include="src\Chaos\Renderer\Renderer.cpp" />
     <ClCompile Include="src\Chaos\Renderer\RendererAPI.cpp" />
