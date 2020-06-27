@@ -1,10 +1,36 @@
 
 #include <Chaos.h>
 #include <Chaos/Events/KeyEvent.h>
-#include <Chaos/Components/Camera.h>
+#include <Chaos/Entity/Components/Camera.h>
+#include <Chaos/Entity/Entity.h>
+#include <Chaos/Entity/Components/Transform.h>
 
 
 //NOTE: this is a quick and dirty implementation to test functionality, not representitive of the product
+
+class GameScene : public Chaos::Scene
+{
+public:
+	GameScene()
+	{
+		StartScene();
+	}
+
+	void StartScene() override
+	{
+		entites.push_back(Chaos::Entity());
+	}
+
+	void Update() override
+	{
+		for (auto& entity : entites)
+		{
+			entity.Update();
+		}
+	}
+private:
+	std::vector<Chaos::Entity> entites;
+};
 
 class ExampleLayer : public Chaos::Layer
 {
@@ -23,8 +49,12 @@ public:
 	Chaos::Ref<Chaos::Texture> test = Chaos::Texture::Create("../Game/textures/test.png");
 	Chaos::Ref<Chaos::Texture> blank = Chaos::Texture::Create("");
 	Chaos::Ref<Chaos::Texture> test2 = Chaos::Texture::Create("../Game/textures/test2.png");
+	Chaos::Entity entity;
 	float x = 0;
 	float y = 0;
+
+	//scene
+	GameScene scene;	//SCENE SHOULD NOT BE IN LAYERS, LAYERS SHOULD BE IN SCENES
 
 	//reference to renderer to be abstracted
 	Chaos::Renderer& renderer = Chaos::Application::Get().GetRenderer();
@@ -87,11 +117,22 @@ public:
 
 		//Camera movement example (not fully implemented)
 		Chaos::Application::Get().GetMainCamera().SetPosition(Chaos::Vec3( x, y, 0.f));	// moves camera based on directional input from W A S D keys 
+
+		//Entity test
+		//LOGTRACE(entity.GetTransform().Position().X);
+		//entity.GetTransform().Position().X += 10 * deltaTime;
+		Chaos::Transform t;
+		if (entity.TryGetComponent<Chaos::Transform>(t))
+		{
+			LOGTRACE(t.Position.X);
+		}
+		scene.Update();
 	}
 
 	void OnAttach() override
 	{
 		//Stuff to do on start goes here
+		entity.AddComponent<Chaos::Transform>();
 	}
 
 	void OnEvent(Chaos::Event& event) override
@@ -105,7 +146,7 @@ class GameApp : public Chaos::Application
 public:
 	GameApp()
 	{
-		PushLayer(new ExampleLayer());
+		PushLayer(new ExampleLayer());		
 	}
 
 	~GameApp()
@@ -114,6 +155,8 @@ public:
 	}
 
 };
+
+
 
 Chaos::Application* Chaos::CreateApplication()
 {
