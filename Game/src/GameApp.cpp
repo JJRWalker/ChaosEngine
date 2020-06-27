@@ -4,25 +4,34 @@
 #include <Chaos/Entity/Components/Camera.h>
 #include <Chaos/Entity/Entity.h>
 #include <Chaos/Entity/Components/Transform.h>
+#include <Chaos/Entity/Components/Render.h>
 
 
 //NOTE: this is a quick and dirty implementation to test functionality, not representitive of the product
 
+//NOTE: This is just an example of how I imagine this goes on behind the scenes, not in use
 class GameScene : public Chaos::Scene
 {
 public:
 	GameScene()
 	{
-		StartScene();
 	}
 
 	void StartScene() override
 	{
-		entites.push_back(Chaos::Entity());
+		for (int i = 0; i < 10; ++i)
+		{
+			entites.push_back(Chaos::Entity());
+			entites[i].AddComponent<Chaos::Render>();
+		}
 	}
 
 	void Update() override
 	{
+		for (auto& entity : entites)
+		{
+			entity.GetTransform()->Position().Y += 0.01f;
+		}
 		for (auto& entity : entites)
 		{
 			entity.Update();
@@ -49,7 +58,10 @@ public:
 	Chaos::Ref<Chaos::Texture> test = Chaos::Texture::Create("../Game/textures/test.png");
 	Chaos::Ref<Chaos::Texture> blank = Chaos::Texture::Create("");
 	Chaos::Ref<Chaos::Texture> test2 = Chaos::Texture::Create("../Game/textures/test2.png");
+	//Test entity
 	Chaos::Entity entity;
+	Chaos::Entity entity2;
+
 	float x = 0;
 	float y = 0;
 
@@ -119,20 +131,23 @@ public:
 		Chaos::Application::Get().GetMainCamera().SetPosition(Chaos::Vec3( x, y, 0.f));	// moves camera based on directional input from W A S D keys 
 
 		//Entity test
-		//LOGTRACE(entity.GetTransform().Position().X);
-		//entity.GetTransform().Position().X += 10 * deltaTime;
-		Chaos::Transform t;
-		if (entity.TryGetComponent<Chaos::Transform>(t))
-		{
-			LOGTRACE(t.Position.X);
-		}
-		scene.Update();
+		entity.GetTransform()->Position() = Chaos::Vec2(x,y); //changes the entity's position to be the same as the cameras. Changing this changes where the Render component renders the entity 
+		entity2.GetTransform()->Position().Y += 0.1f * deltaTime;
+		entity.Update();
+		entity2.Update();
+		//scene.Update();
 	}
 
 	void OnAttach() override
 	{
 		//Stuff to do on start goes here
-		entity.AddComponent<Chaos::Transform>();
+		//Adding component to entity example
+		entity.AddComponent<Chaos::Render>();
+		entity.GetComponent<Chaos::Render>()->SetTexture(test);	//setting the texture for the render component (defaults to blank) 
+		entity2.AddComponent<Chaos::Render>();
+		entity2.GetComponent<Chaos::Render>()->SetTexture(player);	//setting the texture for the render component (defaults to blank) 
+		//scene.StartScene();
+
 	}
 
 	void OnEvent(Chaos::Event& event) override
