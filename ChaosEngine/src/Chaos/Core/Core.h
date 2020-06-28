@@ -26,9 +26,9 @@
 
 namespace Chaos
 {
-	//Method that takes in any type and returns a shared pointer for that type.
+	//Function that takes in any type and returns a shared pointer for that type.
 	template<typename T>
-	using Ref = std::shared_ptr<T>;
+	using Ref = std::shared_ptr<T>;	//Anything that includes the core.h will be able to use type Ref in place of std::shared_ptr
 	template<typename T, typename ... Args>
 	constexpr Ref<T> CreateRef(Args&& ... args)
 	{

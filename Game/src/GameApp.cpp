@@ -62,6 +62,8 @@ public:
 	Chaos::Entity entity;
 	Chaos::Entity entity2;
 
+	Chaos::Render* render;
+
 	float x = 0;
 	float y = 0;
 
@@ -146,6 +148,14 @@ public:
 		entity.GetComponent<Chaos::Render>()->SetTexture(test);	//setting the texture for the render component (defaults to blank) 
 		entity2.AddComponent<Chaos::Render>();
 		entity2.GetComponent<Chaos::Render>()->SetTexture(player);	//setting the texture for the render component (defaults to blank) 
+		render = entity.GetComponent <Chaos::Render> ();
+		Chaos::Render& refrender = Chaos::Render();
+		if (entity2.TryGetComponent(refrender))
+		{
+			LOGINFO("Got render component from entity");
+			refrender.SetTexture(test);
+		}
+		render->SetTexture(player);
 		//scene.StartScene();
 
 	}

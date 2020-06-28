@@ -16,6 +16,6 @@ namespace Chaos
 
 	void Render::Destroy() const
 	{
-		delete mEntity;
+		 
 	}
 }

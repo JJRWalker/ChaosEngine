@@ -15,6 +15,8 @@ namespace Chaos
 		Render(Entity* owner) : mEntity(owner)
 		{
 		}
+		Render() {};
+
 		// Inherited via Component
 		virtual void Start() const override;
 		virtual void Update() const override;
