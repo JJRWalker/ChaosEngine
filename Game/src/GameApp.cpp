@@ -1,10 +1,6 @@
 
 #include <Chaos.h>
 #include <Chaos/Events/KeyEvent.h>
-#include <Chaos/Entity/Components/Camera.h>
-#include <Chaos/Entity/Entity.h>
-#include <Chaos/Entity/Components/Transform.h>
-#include <Chaos/Entity/Components/Render.h>
 
 
 //NOTE: this is a quick and dirty implementation to test functionality, not representitive of the product
@@ -56,7 +52,7 @@ public:
 	Chaos::Ref<Chaos::SubTexture> playersub = Chaos::SubTexture::Create(player, Chaos::Vec2(1, 1), Chaos::Vec2(160, 160));
 	Chaos::Ref<Chaos::Texture> floor = Chaos::Texture::Create("../Game/textures/Floor.jpg");
 	Chaos::Ref<Chaos::Texture> test = Chaos::Texture::Create("../Game/textures/test.png");
-	Chaos::Ref<Chaos::Texture> blank = Chaos::Texture::Create("");
+	Chaos::Ref<Chaos::Texture> blank = Chaos::Texture::Create();
 	Chaos::Ref<Chaos::Texture> test2 = Chaos::Texture::Create("../Game/textures/test2.png");
 	//Test entity
 	Chaos::Entity entity;

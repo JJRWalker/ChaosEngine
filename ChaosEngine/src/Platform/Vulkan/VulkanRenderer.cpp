@@ -43,7 +43,7 @@ namespace Chaos
 
 		CleanUpSwapchain();
 
-		vkDestroySampler(mDevice, textureSampler, nullptr);
+		vkDestroySampler(mDevice, mTextureSampler, nullptr);
 
 		vkDestroyDescriptorSetLayout(mDevice, mDescriptorSetLayout, nullptr);
 
@@ -516,7 +516,7 @@ namespace Chaos
 		createInfo.imageColorSpace = surfaceFormat.colorSpace;
 		createInfo.imageExtent = extent;
 		createInfo.imageArrayLayers = 1;
-		createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+		createInfo.imageUsage = VK_IMAGE_USAGE_SAMPLED_BIT; //VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 		QueueFamilyIndices indices = FindQueueFamilies(mPhysicalDevice);
 		uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };
@@ -845,7 +845,7 @@ namespace Chaos
 		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
 		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 
-		if (vkCreateSampler(mDevice, &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS)
+		if (vkCreateSampler(mDevice, &samplerInfo, nullptr, &mTextureSampler) != VK_SUCCESS)
 		{
 			LOGCORE_ERROR("VULKAN: failed to create texture sampler!");
 		}
@@ -1000,7 +1000,7 @@ namespace Chaos
 				//Change to the indexed buffer at i
 				imageInfo[imageIndex].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 				imageInfo[imageIndex].imageView = mBuffers[i].TexturesToBind[imageIndex].get()->GetImageView();
-				imageInfo[imageIndex].sampler = textureSampler;
+				imageInfo[imageIndex].sampler = mTextureSampler;
 			}
 
 			VkWriteDescriptorSet descriptorWrites[2];

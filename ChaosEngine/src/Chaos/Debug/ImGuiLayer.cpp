@@ -133,7 +133,7 @@ namespace Chaos
 			ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
 			ImGui::SetNextWindowViewport(viewport->ID);
 		}
-		ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
+		//ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
 		if (ImGui::Begin("FPS counter", &show, (corner != -1 ? ImGuiWindowFlags_NoMove : 0) | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
 		{
 			ImGui::Text("FPS: %f", 1 / mTime);
@@ -152,6 +152,11 @@ namespace Chaos
 			}
 		}
 		ImGui::End();
+		
+		//VIEWPORT RENDER, currently Imgui saves images to the same swapchainimageveiws so it renders itself again if it is on top, need to create new image views for ImGUI
+		//ImGui::Begin("viewport");		
+		//ImGui::Image((ImTextureID)ImGui_ImplVulkan_AddTexture(renderer.mTextureSampler, renderer.mSwapchainImageViews[renderer.mCurrentFrame], VK_IMAGE_LAYOUT_UNDEFINED), { 1280, 720}, ImVec2{ 0, -1 }, ImVec2{ 1, 0 });
+		//ImGui::End();
 	}
 
 	void ImGuiLayer::End()

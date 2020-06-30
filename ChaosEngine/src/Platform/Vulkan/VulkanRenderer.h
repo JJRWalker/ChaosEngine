@@ -203,7 +203,7 @@ namespace Chaos
 		int mRenderCount = 0;
 		uint16_t mIndOffset = 0;
 
-		VkSampler textureSampler;
+		VkSampler mTextureSampler;
 
 		bool mFramebufferResized = false;
 		bool mRenderingGUI = false;
@@ -254,6 +254,10 @@ namespace Chaos
 		uint32_t mImageIndex = 0;
 		VkFormat mSwapchainImageFormat;
 		VkExtent2D mSwapchainExtent;
+
+		//for viewport
+		VkImage mRenderedFrame;
+		VkImageView mRenderedFrameView;
 
 		const std::vector<const char*> mValidationLayers = { "VK_LAYER_KHRONOS_validation" };
 		const std::vector<const char*> mDeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };

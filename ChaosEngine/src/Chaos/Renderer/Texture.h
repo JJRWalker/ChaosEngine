@@ -20,5 +20,9 @@ namespace Chaos
 		virtual int GetSize() const = 0;
 
 		static Ref<Texture> Create(const char* path);
+		static Ref<Texture> Create();
+		static Ref<Texture> GetBlank();
+	private:
+		static Ref<Texture> mBlankTexture;
 	};
 }

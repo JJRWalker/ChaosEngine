@@ -25,6 +25,6 @@ namespace Chaos
 		void SetTexture(Ref<Texture> tex) { mTexture = tex; }
 	private:
 		Entity* mEntity = nullptr;
-		Ref<Texture> mTexture = Texture::Create("");	//Setting default texture (loads blank)
+		Ref<Texture> mTexture = Texture::GetBlank();	//Setting default texture (loads blank)
 	};
 }

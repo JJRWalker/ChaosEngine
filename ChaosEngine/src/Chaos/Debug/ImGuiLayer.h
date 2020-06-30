@@ -22,9 +22,18 @@ namespace Chaos
 		void End();
 	private:
 		void VulkanInit();
+		void CreateSwapChain();
+		void CreateImageViews();
 		
 	private:
 		float mTime = 0.0f;
+
+		uint32_t id = 0;
+
+		VkSwapchainKHR mSwapchain;
+		std::vector<VkImage> mSwapchainImages;
+		std::vector<VkImageView> mSwapchainImageViews;
+		
 
 		VkDescriptorPool mDescriptorPool;
 		VkDescriptorSetLayout mDescriptorSetLayout;

@@ -8,6 +8,7 @@ namespace Chaos
 	{
 
 	public:
+		VulkanTexture();
 		VulkanTexture(const char* filePath);
 		VulkanTexture(VulkanTexture& copy);
 
