@@ -1,10 +1,13 @@
 #pragma once
 #include "Chaos/Core/Layer.h"
+#include "Chaos/Core/Window.h"
+
 #include "Vulkan/Include/vulkan/vulkan.h"
 #include <imgui.h>
 
 namespace Chaos
 {
+	class Renderer;
 	class ImGuiLayer : public Layer
 	{
 
@@ -22,18 +25,16 @@ namespace Chaos
 		void End();
 	private:
 		void VulkanInit();
-		void CreateSwapChain();
-		void CreateImageViews();
+		void VulkanDraw();
 		
 	private:
 		float mTime = 0.0f;
 
-		uint32_t id = 0;
+		Renderer* mRenderer;
+		Window* mWindow;
 
-		VkSwapchainKHR mSwapchain;
 		std::vector<VkImage> mSwapchainImages;
 		std::vector<VkImageView> mSwapchainImageViews;
-		
 
 		VkDescriptorPool mDescriptorPool;
 		VkDescriptorSetLayout mDescriptorSetLayout;

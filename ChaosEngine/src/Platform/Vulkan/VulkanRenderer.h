@@ -107,6 +107,7 @@ namespace Chaos
 
 	public:
 		VulkanRenderer();
+		VulkanRenderer(Window* window);
 		~VulkanRenderer();
 
 		virtual void DrawQuad(Vec2& position, Vec2& scale, Ref<Texture> texture) override;
@@ -190,14 +191,11 @@ namespace Chaos
 		VkCommandBuffer  BeginSingleTimeCommands();
 		void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
 
-		//IMGUI
-		void SetImGuiCommandBuffer(std::vector<VkCommandBuffer> mCommandBuffers) { mImGuiCommandBuffers = mCommandBuffers; }
-		void SetImGuiCommandPool(VkCommandPool* pool) { mImGuiCommandPool = pool; }
-		void SetImGuiFramebuffer(std::vector<VkFramebuffer>* buffer) { mImGuiFrameBuffer = buffer; }
-
 		//Variables
 		std::vector<VulkanVertex> mVertices;
 		std::vector<uint16_t> mIndices;
+
+		Window* mWindow;
 
 		std::vector<Ref<VulkanTexture>> mTexturesToBind;
 		int mRenderCount = 0;
@@ -227,11 +225,14 @@ namespace Chaos
 
 		std::mutex commandPoolMutex;
 		VkCommandPool mCommandPool;
-		VkCommandPool* mImGuiCommandPool = VK_NULL_HANDLE;
 		std::vector<VkCommandBuffer> mCommandBuffers;
-		std::vector<VkCommandBuffer> mImGuiCommandBuffers;
 
-		std::vector<VkFramebuffer>* mImGuiFrameBuffer;
+		VkSwapchainKHR mImGuiSwapchain;
+		VkCommandPool mImGuiCommandPool = VK_NULL_HANDLE;
+		std::vector<VkCommandBuffer> mImGuiCommandBuffers;
+		std::vector<VkFramebuffer> mImGuiFrameBuffer;
+		std::vector<VkImage> mImGuiImages;
+		std::vector<VkImageView> mImGuiImageViews;
 
 		std::vector<Buffer> mBuffers;
 
@@ -254,10 +255,6 @@ namespace Chaos
 		uint32_t mImageIndex = 0;
 		VkFormat mSwapchainImageFormat;
 		VkExtent2D mSwapchainExtent;
-
-		//for viewport
-		VkImage mRenderedFrame;
-		VkImageView mRenderedFrameView;
 
 		const std::vector<const char*> mValidationLayers = { "VK_LAYER_KHRONOS_validation" };
 		const std::vector<const char*> mDeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };

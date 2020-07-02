@@ -23,6 +23,7 @@
 #include <thread>
 #include <functional>
 
+
 #ifdef CHAOS_DEBUG
 const bool enableValidationLayers = false;	//change to true if vulkan SDK is installed to recieve validation layer warnings
 #else
@@ -32,8 +33,16 @@ const bool enableValidationLayers = false;
 
 namespace Chaos
 {
+	//if no window is passed use the default one (on application)
 	VulkanRenderer::VulkanRenderer()
 	{
+		mWindow = &Application::Get().GetWindow();
+		InitVulkan();
+	}
+	//if window passed use that instead
+	VulkanRenderer::VulkanRenderer(Window* window) 
+	{
+		mWindow = window;
 		InitVulkan();
 	}
 
@@ -67,7 +76,7 @@ namespace Chaos
 
 		if (mRenderingGUI)
 		{
-			vkResetCommandPool(mDevice, *mImGuiCommandPool, 0);
+			vkResetCommandPool(mDevice, mImGuiCommandPool, 0);
 		}
 
 		vkDestroyDevice(mDevice, nullptr);
@@ -78,6 +87,8 @@ namespace Chaos
 
 		vkDestroySurfaceKHR(mInstance, mSurface, nullptr);
 		vkDestroyInstance(mInstance, nullptr);
+
+		delete mWindow;
 	}
 
 	//Called from outside the renderer class whenever the user wants to add anything to the render queue
@@ -416,7 +427,7 @@ namespace Chaos
 
 	//Creating a platform angostic object to display on using window library in use, needs to be changed to use precompiler macros when porting to other systems
 	void VulkanRenderer::CreateSurface() {
-		if (glfwCreateWindowSurface(mInstance, (GLFWwindow*)Application::Get().GetWindow().GetNativeWindow(), nullptr, &mSurface) != VK_SUCCESS) {
+		if (glfwCreateWindowSurface(mInstance, (GLFWwindow*)mWindow->GetNativeWindow(), nullptr, &mSurface) != VK_SUCCESS) {
 			LOGCORE_ERROR("VULKAN: failed to create window surface!");
 		}
 	}
@@ -516,7 +527,7 @@ namespace Chaos
 		createInfo.imageColorSpace = surfaceFormat.colorSpace;
 		createInfo.imageExtent = extent;
 		createInfo.imageArrayLayers = 1;
-		createInfo.imageUsage = VK_IMAGE_USAGE_SAMPLED_BIT; //VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+		createInfo.imageUsage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT; //VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 		QueueFamilyIndices indices = FindQueueFamilies(mPhysicalDevice);
 		uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };
@@ -545,6 +556,9 @@ namespace Chaos
 		vkGetSwapchainImagesKHR(mDevice, mSwapchain, &imageCount, nullptr);
 		mSwapchainImages.resize(imageCount);
 		vkGetSwapchainImagesKHR(mDevice, mSwapchain, &imageCount, mSwapchainImages.data());
+		mImGuiImages.resize(imageCount);
+		vkGetSwapchainImagesKHR(mDevice, mSwapchain, &imageCount, mImGuiImages.data());
+
 
 		mSwapchainImageFormat = surfaceFormat.format;
 		mSwapchainExtent = extent;
@@ -554,6 +568,7 @@ namespace Chaos
 	void VulkanRenderer::CreateImageViews()
 	{
 		mSwapchainImageViews.resize(mSwapchainImages.size());
+		mImGuiImageViews.resize(mImGuiImages.size());
 		for (size_t i = 0; i < mSwapchainImages.size(); ++i)
 		{
 			mSwapchainImageViews[i] = CreateImageView(mSwapchainImages[i], mSwapchainImageFormat);
@@ -575,6 +590,28 @@ namespace Chaos
 			createInfo.subresourceRange.layerCount = 1;
 
 			if (vkCreateImageView(mDevice, &createInfo, nullptr, &mSwapchainImageViews[i]) != VK_SUCCESS) {
+				LOGCORE_ERROR("VULKAN: failed to create image views!");
+			}
+
+			mImGuiImageViews[i] = CreateImageView(mImGuiImages[i], mSwapchainImageFormat);
+			VkImageViewCreateInfo imguiviewsCreateInfo = {};
+			imguiviewsCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+			imguiviewsCreateInfo.image = mImGuiImages[i];
+			imguiviewsCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+			imguiviewsCreateInfo.format = mSwapchainImageFormat;
+
+			imguiviewsCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+			imguiviewsCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+			imguiviewsCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+			imguiviewsCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+			imguiviewsCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			imguiviewsCreateInfo.subresourceRange.baseMipLevel = 0;
+			imguiviewsCreateInfo.subresourceRange.levelCount = 1;
+			imguiviewsCreateInfo.subresourceRange.baseArrayLayer = 0;
+			imguiviewsCreateInfo.subresourceRange.layerCount = 1;
+
+			if (vkCreateImageView(mDevice, &imguiviewsCreateInfo, nullptr, &mImGuiImageViews[i]) != VK_SUCCESS) {
 				LOGCORE_ERROR("VULKAN: failed to create image views!");
 			}
 		}
@@ -1130,7 +1167,6 @@ namespace Chaos
 				vkCmdBindDescriptorSets(mCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout, 0, 1, &mDescriptorSets[mBuffers[x].DescriptorIndex], 0, nullptr);
 
 				vkCmdDrawIndexed(mCommandBuffers[i], static_cast<uint32_t>(mBuffers[x].IndexCount), 1, 0, 0, 0);
-
 			}
 			vkCmdEndRenderPass(mCommandBuffers[i]);
 			if (vkEndCommandBuffer(mCommandBuffers[i]) != VK_SUCCESS)
@@ -1477,10 +1513,8 @@ namespace Chaos
 		if (mBuffers.size() > 0)
 		{
 			//DRAW
-			mWaitingOnFences = true;
 			vkWaitForFences(mDevice, 1, &mInFlightFences[mCurrentFrame], VK_TRUE, UINT64_MAX);
 			vkResetFences(mDevice, 1, &mInFlightFences[mCurrentFrame]);
-			mWaitingOnFences = false;
 
 			VkResult result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mImageAvailableSemaphores[mCurrentFrame], VK_NULL_HANDLE, &mImageIndex);
 
@@ -1563,15 +1597,15 @@ namespace Chaos
 
 			mCurrentFrame = (mCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 			vkQueueWaitIdle(mPresentQueue);	//Waiting for the queue to be idle before clean up
-
+			vkDeviceWaitIdle(mDevice);
 
 			//Cleaning up resources after rendering a frame
 			vkFreeCommandBuffers(mDevice, mCommandPool, static_cast<uint32_t>(mCommandBuffers.size()), mCommandBuffers.data());
 
 			if (mRenderingGUI)
 			{
-				vkFreeCommandBuffers(mDevice, *mImGuiCommandPool, static_cast<uint32_t>(mImGuiCommandBuffers.size()), mImGuiCommandBuffers.data());
-				for (auto framebuffer : *mImGuiFrameBuffer) {
+				vkFreeCommandBuffers(mDevice, mImGuiCommandPool, static_cast<uint32_t>(mImGuiCommandBuffers.size()), mImGuiCommandBuffers.data());
+				for (auto framebuffer : mImGuiFrameBuffer) {
 					vkDestroyFramebuffer(mDevice, framebuffer, nullptr);
 				}
 			}
@@ -1620,7 +1654,7 @@ namespace Chaos
 		}
 		else
 		{
-			VkExtent2D actualExtent = { Application::Get().GetWindow().GetWidth(),Application::Get().GetWindow().GetHeight() };
+			VkExtent2D actualExtent = { mWindow->GetWidth(), mWindow->GetHeight() };
 
 			actualExtent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width));
 			actualExtent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height));

@@ -5,6 +5,7 @@
 #include "Chaos/DataTypes/Vec4.h"
 #include "Texture.h"
 #include "SubTexture.h"
+#include "Chaos/Core/Window.h"
 
 namespace Chaos
 {
@@ -17,6 +18,7 @@ namespace Chaos
 		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 
 		static Renderer* Create();
+		static Renderer* Create(Window* window);
 
 		virtual void DrawQuad(Vec2& position, Vec2& scale, Ref<Texture> texture) = 0;
 		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec4& colour, Ref<Texture> texture)  = 0;

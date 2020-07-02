@@ -9,7 +9,7 @@
 
 namespace Chaos
 {
-
+	class Renderer;
 	class Application
 	{
 	public:
@@ -34,7 +34,7 @@ namespace Chaos
 
 		bool mRunning = true;
 		std::unique_ptr<Window> mWindow;
-		std::unique_ptr<class Renderer> mRenderer;
+		std::unique_ptr<Renderer> mRenderer;
 		Camera& mMainCamera = Camera();
 
 		LayerStack mLayerStack;

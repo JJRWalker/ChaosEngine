@@ -119,7 +119,7 @@ namespace Chaos
 	void ImGuiLayer::OnImGuiRender()
 	{
 		static bool show = false ;
-		//ImGui::ShowDemoWindow(&show);-
+		ImGui::ShowDemoWindow(&show);
 		VulkanRenderer& renderer = dynamic_cast<VulkanRenderer&>(Application::Get().GetRenderer());
 		// FIXME-VIEWPORT: Select a default viewport
 		const float DISTANCE = 10.0f;
@@ -133,7 +133,7 @@ namespace Chaos
 			ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
 			ImGui::SetNextWindowViewport(viewport->ID);
 		}
-		//ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
+		ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
 		if (ImGui::Begin("FPS counter", &show, (corner != -1 ? ImGuiWindowFlags_NoMove : 0) | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
 		{
 			ImGui::Text("FPS: %f", 1 / mTime);
@@ -154,9 +154,10 @@ namespace Chaos
 		ImGui::End();
 		
 		//VIEWPORT RENDER, currently Imgui saves images to the same swapchainimageveiws so it renders itself again if it is on top, need to create new image views for ImGUI
-		//ImGui::Begin("viewport");		
-		//ImGui::Image((ImTextureID)ImGui_ImplVulkan_AddTexture(renderer.mTextureSampler, renderer.mSwapchainImageViews[renderer.mCurrentFrame], VK_IMAGE_LAYOUT_UNDEFINED), { 1280, 720}, ImVec2{ 0, -1 }, ImVec2{ 1, 0 });
-		//ImGui::End();
+		ImGui::Begin("viewport");		
+		ImTextureID id = (ImTextureID)ImGui_ImplVulkan_AddTexture(renderer.mTextureSampler, renderer.mSwapchainImageViews[renderer.mCurrentFrame], VK_IMAGE_LAYOUT_UNDEFINED);
+		ImGui::Image(id, { 1280, 720}, ImVec2{ 0, -1 }, ImVec2{ 1, 0 });
+		ImGui::End();
 	}
 
 	void ImGuiLayer::End()
@@ -175,10 +176,8 @@ namespace Chaos
 			glfwMakeContextCurrent(backup_current_context);
 		}
 
-		uint32_t mImageIndex = renderer.mImageIndex;
-
 		//Create command bufferr
-		mCommandBuffers.resize(renderer.mSwapchainImageViews.size());
+		mCommandBuffers.resize(renderer.mImGuiImageViews.size());
 
 		VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
 		commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -187,13 +186,13 @@ namespace Chaos
 		commandBufferAllocateInfo.commandBufferCount = (uint32_t)mCommandBuffers.size();
 		vkAllocateCommandBuffers(renderer.mDevice, &commandBufferAllocateInfo, mCommandBuffers.data());
 
-		frameBuffers.resize(renderer.mSwapchainImageViews.size());
+		renderer.mImGuiFrameBuffer.resize(renderer.mImGuiImageViews.size());
 
 		//Create frame buffers
-		for (size_t i = 0; i < renderer.mSwapchainImageViews.size(); ++i)
+		for (size_t i = 0; i < renderer.mImGuiImageViews.size(); ++i)
 		{
 			VkImageView attachments[] = {
-				renderer.mSwapchainImageViews[i]
+				renderer.mImGuiImageViews[i]
 			};
 			VkFramebufferCreateInfo framebufferInfo = {};
 			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -204,7 +203,7 @@ namespace Chaos
 			framebufferInfo.height = renderer.mSwapchainExtent.height;
 			framebufferInfo.layers = 1;
 
-			if (vkCreateFramebuffer(renderer.mDevice, &framebufferInfo, nullptr, &frameBuffers[i]) != VK_SUCCESS)
+			if (vkCreateFramebuffer(renderer.mDevice, &framebufferInfo, nullptr, &renderer.mImGuiFrameBuffer[i]) != VK_SUCCESS)
 			{
 				LOGCORE_ERROR("IMGUI: failed to create framebuffer!");
 			}
@@ -218,7 +217,7 @@ namespace Chaos
 			VkRenderPassBeginInfo renderpassinfo = {};
 			renderpassinfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 			renderpassinfo.renderPass = renderpass;
-			renderpassinfo.framebuffer = frameBuffers[i];
+			renderpassinfo.framebuffer = renderer.mImGuiFrameBuffer[i];
 			renderpassinfo.renderArea.extent.width = renderer.mSwapchainExtent.width;
 			renderpassinfo.renderArea.extent.height = renderer.mSwapchainExtent.height;
 			renderpassinfo.clearValueCount = 1;
@@ -226,19 +225,17 @@ namespace Chaos
 
 			vkBeginCommandBuffer(mCommandBuffers[i], &beginInfo);
 
-			//vkCmdBindPipeline(mCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer.mGraphicsPipeline);
+			vkCmdBindPipeline(mCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer.mGraphicsPipeline);
 			vkCmdBeginRenderPass(mCommandBuffers[i], &renderpassinfo, VK_SUBPASS_CONTENTS_INLINE);
-			
-
 
 			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), mCommandBuffers[i]);
 
 			vkCmdEndRenderPass(mCommandBuffers[i]);
 			vkEndCommandBuffer(mCommandBuffers[i]);
 		}
-		renderer.SetImGuiCommandBuffer(mCommandBuffers);	
-		renderer.SetImGuiCommandPool(&commandPool);
-		renderer.SetImGuiFramebuffer(&frameBuffers);
+		renderer.mImGuiCommandBuffers = mCommandBuffers;	
+		renderer.mImGuiCommandPool = commandPool;
+		//renderer.mImGuiFrameBuffer = frameBuffers;
 		renderer.mRenderingGUI = true;
 	}
 
