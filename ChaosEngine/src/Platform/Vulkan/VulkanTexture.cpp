@@ -8,10 +8,10 @@
 namespace Chaos
 {
 	//Defualt constructor, if not given a path it will return a texture containing 1 pixel of white
-	VulkanTexture::VulkanTexture()
+	VulkanTexture::VulkanTexture() :  mRenderer(dynamic_cast<VulkanRenderer&>(Application::Get().GetRenderer()))
 	{
+		VulkanRenderer& mRenderer = dynamic_cast<VulkanRenderer&>(Application::Get().GetRenderer());
 		void* pixelData;
-		VulkanRenderer& renderer = dynamic_cast<VulkanRenderer&>(Application::Get().GetRenderer());
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
 
@@ -26,34 +26,33 @@ namespace Chaos
 
 		VkDeviceSize imageSize = mWidth * mHeight * 4;
 
-		renderer.CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+		mRenderer.CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
 		void* data;
-		vkMapMemory(renderer.mDevice, stagingBufferMemory, 0, imageSize, 0, &data);
+		vkMapMemory(mRenderer.mDevice, stagingBufferMemory, 0, imageSize, 0, &data);
 		memcpy(data, pixelData, static_cast<size_t>(imageSize));
-		vkUnmapMemory(renderer.mDevice, stagingBufferMemory);
+		vkUnmapMemory(mRenderer.mDevice, stagingBufferMemory);
 
 
-		renderer.CreateImage(mWidth, mHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mImage, mImageMemory);
+		mRenderer.CreateImage(mWidth, mHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mImage, mImageMemory);
 
-		renderer.TransitionImageLayout(mImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		renderer.CopyBufferToImage(stagingBuffer, mImage, static_cast<uint32_t>(mWidth), static_cast<uint32_t>(mHeight));
-		renderer.TransitionImageLayout(mImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		mRenderer.TransitionImageLayout(mImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		mRenderer.CopyBufferToImage(stagingBuffer, mImage, static_cast<uint32_t>(mWidth), static_cast<uint32_t>(mHeight));
+		mRenderer.TransitionImageLayout(mImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-		vkDestroyBuffer(renderer.mDevice, stagingBuffer, nullptr);
-		vkFreeMemory(renderer.mDevice, stagingBufferMemory, nullptr);
+		vkDestroyBuffer(mRenderer.mDevice, stagingBuffer, nullptr);
+		vkFreeMemory(mRenderer.mDevice, stagingBufferMemory, nullptr);
 
-		mImageView = renderer.CreateImageView(mImage, VK_FORMAT_R8G8B8A8_SRGB);
+		mImageView = mRenderer.CreateImageView(mImage, VK_FORMAT_R8G8B8A8_SRGB);
 
 		delete pixelData;
 	}
 
 	//Constructor if given a path, will create a blank texture of 1 white pixel if the file does not exist
-	VulkanTexture::VulkanTexture(const char* filePath) : mFilePath(filePath)
+	VulkanTexture::VulkanTexture(const char* filePath) : mFilePath(filePath), mRenderer(dynamic_cast<VulkanRenderer&>(Application::Get().GetRenderer()))
 	{
 		void* pixelData;
 		int texWidth, texHeight, texChannels;
-		VulkanRenderer& renderer = dynamic_cast<VulkanRenderer&>(Application::Get().GetRenderer());
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
 
@@ -87,33 +86,37 @@ namespace Chaos
 
 		VkDeviceSize imageSize = mWidth * mHeight * 4;
 
-		renderer.CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+		mRenderer.CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
 		void* data;
-		vkMapMemory(renderer.mDevice, stagingBufferMemory, 0, imageSize, 0, &data);
+		vkMapMemory(mRenderer.mDevice, stagingBufferMemory, 0, imageSize, 0, &data);
 		memcpy(data, pixelData, static_cast<size_t>(imageSize));
-		vkUnmapMemory(renderer.mDevice, stagingBufferMemory);
+		vkUnmapMemory(mRenderer.mDevice, stagingBufferMemory);
 
 
-		renderer.CreateImage(mWidth, mHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mImage, mImageMemory);
+		mRenderer.CreateImage(mWidth, mHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mImage, mImageMemory);
 
-		renderer.TransitionImageLayout(mImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		renderer.CopyBufferToImage(stagingBuffer, mImage, static_cast<uint32_t>(mWidth), static_cast<uint32_t>(mHeight));
-		renderer.TransitionImageLayout(mImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		mRenderer.TransitionImageLayout(mImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		mRenderer.CopyBufferToImage(stagingBuffer, mImage, static_cast<uint32_t>(mWidth), static_cast<uint32_t>(mHeight));
+		mRenderer.TransitionImageLayout(mImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-		vkDestroyBuffer(renderer.mDevice, stagingBuffer, nullptr);
-		vkFreeMemory(renderer.mDevice, stagingBufferMemory, nullptr);
+		vkDestroyBuffer(mRenderer.mDevice, stagingBuffer, nullptr);
+		vkFreeMemory(mRenderer.mDevice, stagingBufferMemory, nullptr);
 
-		mImageView = renderer.CreateImageView(mImage, VK_FORMAT_R8G8B8A8_SRGB);
+		mImageView = mRenderer.CreateImageView(mImage, VK_FORMAT_R8G8B8A8_SRGB);
 
 		delete pixelData;
 	}
-	VulkanTexture::VulkanTexture(VulkanTexture& copy)
+
+	VulkanTexture::~VulkanTexture()
 	{
-		mFilePath = copy.GetFilePath();
-		mWidth = copy.GetWidth();
-		mHeight = copy.GetHeight();
-		mSize = copy.GetSize();
+		//TODO: Need to destroy all textures before the renderer is destroyed, right now it'll just ignore this if the renderer is null
+		if (mRenderer.mDevice)
+		{
+			vkDestroyImageView(mRenderer.mDevice, mImageView, nullptr);
+			vkDestroyImage(mRenderer.mDevice, mImage, nullptr);
+			vkFreeMemory(mRenderer.mDevice, mImageMemory, nullptr);
+		}
 	}
 
 }

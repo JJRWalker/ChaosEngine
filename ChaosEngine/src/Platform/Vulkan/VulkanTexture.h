@@ -4,15 +4,15 @@
 
 namespace Chaos
 {
+	class VulkanRenderer;
 	class VulkanTexture : public Texture
 	{
 
 	public:
 		VulkanTexture();
 		VulkanTexture(const char* filePath);
-		VulkanTexture(VulkanTexture& copy);
 
-		virtual ~VulkanTexture() {};
+		virtual ~VulkanTexture();
 
 		virtual void SetFilePath(const char* path) const override { mFilePath = path; }
 		virtual const char* GetFilePath() const override { return mFilePath; }
@@ -34,9 +34,10 @@ namespace Chaos
 		uint32_t mWidth = 0;
 		uint32_t mHeight = 0;
 		int mSize;
-		int mIndex;
 		VkImage mImage;
 		VkDeviceMemory mImageMemory;
 		VkImageView mImageView;
+		//reference to the renderer we created the texture on
+		VulkanRenderer& mRenderer;
 	};
 }

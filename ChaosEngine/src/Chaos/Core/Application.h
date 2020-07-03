@@ -9,7 +9,7 @@
 
 namespace Chaos
 {
-	class Renderer;
+
 	class Application
 	{
 	public:
@@ -19,6 +19,7 @@ namespace Chaos
 
 		void Run();
 		void OnEvent(Event& e);	
+		void Close() { mRunning = false; }
 
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* overlay);
@@ -34,7 +35,7 @@ namespace Chaos
 
 		bool mRunning = true;
 		std::unique_ptr<Window> mWindow;
-		std::unique_ptr<Renderer> mRenderer;
+		std::unique_ptr<class Renderer> mRenderer;
 		Camera& mMainCamera = Camera();
 
 		LayerStack mLayerStack;

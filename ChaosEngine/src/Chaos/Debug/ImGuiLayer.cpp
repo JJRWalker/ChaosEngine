@@ -92,6 +92,7 @@ namespace Chaos
 		renderer.EndSingleTimeCommands(commandBuffer);
 
 		clear = { 0.0f, 0.0f, 0.0f, 0.0f };
+		mVeiwportImageId = (ImTextureID)ImGui_ImplVulkan_AddTexture(renderer.mTextureSampler, renderer.mRenderedFrameViews[renderer.mCurrentFrame], VK_IMAGE_LAYOUT_UNDEFINED);
 	}
 
 	void ImGuiLayer::OnDetach()
@@ -118,13 +119,83 @@ namespace Chaos
 
 	void ImGuiLayer::OnImGuiRender()
 	{
+		// Note: Switch this to true to enable dockspace
+		static bool dockspaceOpen = true;
+		static bool opt_fullscreen_persistant = true;
+		bool opt_fullscreen = opt_fullscreen_persistant;
+		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+
+		// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
+		// because it would be confusing to have two docking targets within each others.
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+		if (opt_fullscreen)
+		{
+			ImGuiViewport* viewport = ImGui::GetMainViewport();
+			ImGui::SetNextWindowPos(viewport->Pos);
+			ImGui::SetNextWindowSize(viewport->Size);
+			ImGui::SetNextWindowViewport(viewport->ID);
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+			window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+			window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+		}
+
+		// When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
+		if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+			window_flags |= ImGuiWindowFlags_NoBackground;
+
+		// Important: note that we proceed even if Begin() returns false (aka window is collapsed).
+		// This is because we want to keep our DockSpace() active. If a DockSpace() is inactive, 
+		// all active windows docked into it will lose their parent and become undocked.
+		// We cannot preserve the docking relationship between an active window and an inactive docking, otherwise 
+		// any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+		ImGui::Begin("DockSpace Demo", &dockspaceOpen, window_flags);
+		ImGui::PopStyleVar();
+
+		if (opt_fullscreen)
+			ImGui::PopStyleVar(2);
+
+		// DockSpace
+		ImGuiIO& io = ImGui::GetIO();
+		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+		{
+			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+		}
+
+		if (ImGui::BeginMenuBar())
+		{
+			if (ImGui::BeginMenu("File"))
+			{
+				// Disabling fullscreen would allow the window to be moved to the front of other windows, 
+				// which we can't undo at the moment without finer window depth/z control.
+				//ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen_persistant);
+
+				if (ImGui::MenuItem("Exit")) Chaos::Application::Get().Close();
+				ImGui::EndMenu();
+			}
+
+			ImGui::EndMenuBar();
+		}
+		ImGui::End();
+
+
+
 		static bool show = false ;
-		ImGui::ShowDemoWindow(&show);
+		//ImGui::ShowDemoWindow(&show);-
 		VulkanRenderer& renderer = dynamic_cast<VulkanRenderer&>(Application::Get().GetRenderer());
+
+		ImGui::Begin("viewport");		
+		if (mVeiwportImageId != nullptr)
+		{
+			ImGui::Image(mVeiwportImageId, { 720, 480 }, ImVec2{ 0, -1 }, ImVec2{ 1, 0 });
+		}
+		ImGui::End();
+
 		// FIXME-VIEWPORT: Select a default viewport
 		const float DISTANCE = 10.0f;
-		static int corner = 0;
-		ImGuiIO& io = ImGui::GetIO();
+		static int corner = 2;
 		if (corner != -1)
 		{
 			ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -133,7 +204,7 @@ namespace Chaos
 			ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
 			ImGui::SetNextWindowViewport(viewport->ID);
 		}
-		ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
+		//ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
 		if (ImGui::Begin("FPS counter", &show, (corner != -1 ? ImGuiWindowFlags_NoMove : 0) | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
 		{
 			ImGui::Text("FPS: %f", 1 / mTime);
@@ -152,12 +223,7 @@ namespace Chaos
 			}
 		}
 		ImGui::End();
-		
-		//VIEWPORT RENDER, currently Imgui saves images to the same swapchainimageveiws so it renders itself again if it is on top, need to create new image views for ImGUI
-		ImGui::Begin("viewport");		
-		ImTextureID id = (ImTextureID)ImGui_ImplVulkan_AddTexture(renderer.mTextureSampler, renderer.mSwapchainImageViews[renderer.mCurrentFrame], VK_IMAGE_LAYOUT_UNDEFINED);
-		ImGui::Image(id, { 1280, 720}, ImVec2{ 0, -1 }, ImVec2{ 1, 0 });
-		ImGui::End();
+
 	}
 
 	void ImGuiLayer::End()
@@ -168,6 +234,9 @@ namespace Chaos
 		//Rendering			   
 		ImGui::Render();
 
+		VulkanTexture* texture = new VulkanTexture();
+		delete texture;
+
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			GLFWwindow* backup_current_context = glfwGetCurrentContext();
@@ -176,8 +245,10 @@ namespace Chaos
 			glfwMakeContextCurrent(backup_current_context);
 		}
 
+		uint32_t mImageIndex = renderer.mImageIndex;
+
 		//Create command bufferr
-		mCommandBuffers.resize(renderer.mImGuiImageViews.size());
+		mCommandBuffers.resize(renderer.mSwapchainImageViews.size());
 
 		VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
 		commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -186,13 +257,13 @@ namespace Chaos
 		commandBufferAllocateInfo.commandBufferCount = (uint32_t)mCommandBuffers.size();
 		vkAllocateCommandBuffers(renderer.mDevice, &commandBufferAllocateInfo, mCommandBuffers.data());
 
-		renderer.mImGuiFrameBuffer.resize(renderer.mImGuiImageViews.size());
+		frameBuffers.resize(renderer.mSwapchainImageViews.size());
 
 		//Create frame buffers
-		for (size_t i = 0; i < renderer.mImGuiImageViews.size(); ++i)
+		for (size_t i = 0; i < renderer.mSwapchainImageViews.size(); ++i)
 		{
 			VkImageView attachments[] = {
-				renderer.mImGuiImageViews[i]
+				renderer.mSwapchainImageViews[i]
 			};
 			VkFramebufferCreateInfo framebufferInfo = {};
 			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -203,7 +274,7 @@ namespace Chaos
 			framebufferInfo.height = renderer.mSwapchainExtent.height;
 			framebufferInfo.layers = 1;
 
-			if (vkCreateFramebuffer(renderer.mDevice, &framebufferInfo, nullptr, &renderer.mImGuiFrameBuffer[i]) != VK_SUCCESS)
+			if (vkCreateFramebuffer(renderer.mDevice, &framebufferInfo, nullptr, &frameBuffers[i]) != VK_SUCCESS)
 			{
 				LOGCORE_ERROR("IMGUI: failed to create framebuffer!");
 			}
@@ -217,7 +288,7 @@ namespace Chaos
 			VkRenderPassBeginInfo renderpassinfo = {};
 			renderpassinfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 			renderpassinfo.renderPass = renderpass;
-			renderpassinfo.framebuffer = renderer.mImGuiFrameBuffer[i];
+			renderpassinfo.framebuffer = frameBuffers[i];
 			renderpassinfo.renderArea.extent.width = renderer.mSwapchainExtent.width;
 			renderpassinfo.renderArea.extent.height = renderer.mSwapchainExtent.height;
 			renderpassinfo.clearValueCount = 1;
@@ -225,17 +296,19 @@ namespace Chaos
 
 			vkBeginCommandBuffer(mCommandBuffers[i], &beginInfo);
 
-			vkCmdBindPipeline(mCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer.mGraphicsPipeline);
+			//vkCmdBindPipeline(mCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer.mGraphicsPipeline);
 			vkCmdBeginRenderPass(mCommandBuffers[i], &renderpassinfo, VK_SUBPASS_CONTENTS_INLINE);
+			
+
 
 			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), mCommandBuffers[i]);
 
 			vkCmdEndRenderPass(mCommandBuffers[i]);
 			vkEndCommandBuffer(mCommandBuffers[i]);
 		}
-		renderer.mImGuiCommandBuffers = mCommandBuffers;	
-		renderer.mImGuiCommandPool = commandPool;
-		//renderer.mImGuiFrameBuffer = frameBuffers;
+		renderer.SetImGuiCommandBuffer(mCommandBuffers);	
+		renderer.SetImGuiCommandPool(&commandPool);
+		renderer.SetImGuiFramebuffer(&frameBuffers);
 		renderer.mRenderingGUI = true;
 	}
 
