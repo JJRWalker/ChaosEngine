@@ -24,7 +24,7 @@ Features currently implemented:
 * Textures and texture mapping
 * Sub Textures (allows for the use of sprite sheets)
 * Debug GUI (using ImGui, currently causes some issues on certain hardware, see note below)
-* Basic Entity Component frame work (users can write their own components and add them to entities)
+* Basic Entity Component framework (users can write their own components and add them to entities)
 
 ## Next steps
 * Scene system (will also help optimise renderer)
