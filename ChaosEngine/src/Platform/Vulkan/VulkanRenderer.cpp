@@ -24,7 +24,7 @@
 #include <functional>
 
 #ifdef CHAOS_DEBUG
-const bool enableValidationLayers = false;	//change to true if vulkan SDK is installed to recieve validation layer warnings
+const bool enableValidationLayers = true;	//change to true if vulkan SDK is installed to recieve validation layer warnings
 #else
 const bool enableValidationLayers = false;
 #endif
@@ -522,7 +522,7 @@ namespace Chaos
 		createInfo.imageColorSpace = surfaceFormat.colorSpace;
 		createInfo.imageExtent = extent;
 		createInfo.imageArrayLayers = 1;
-		createInfo.imageUsage = VK_IMAGE_USAGE_SAMPLED_BIT; //VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+		createInfo.imageUsage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT; //VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 		QueueFamilyIndices indices = FindQueueFamilies(mPhysicalDevice);
 		uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };
@@ -559,7 +559,7 @@ namespace Chaos
 
 		for (int i = 0; i < imageCount; ++i)
 		{
-			CreateImage(mSwapchainExtent.width, mSwapchainExtent.height, mSwapchainImageFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mRenderedFrames[i], mRenderedFramesMemory[i]);
+			CreateImage(mSwapchainExtent.width, mSwapchainExtent.height, mSwapchainImageFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mRenderedFrames[i], mRenderedFramesMemory[i]);
 		}
 	}
 
@@ -1177,22 +1177,23 @@ namespace Chaos
 				LOGCORE_ERROR("VULKAN: failed to record command buffer!");
 			}
 
-			VkCommandBuffer command = BeginSingleTimeCommands();
-			VkImageCopy copy = {};
-			copy.extent.height = mSwapchainExtent.height;
-			copy.extent.width = mSwapchainExtent.width;
-			copy.srcOffset = { 0,0,0 };
-			copy.dstOffset = { 0,0,0 };
-			VkImageSubresourceLayers layers;
-			layers.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			layers.mipLevel = 0;
-			layers.baseArrayLayer = 0;
-			layers.layerCount = 1;
-			copy.srcSubresource = layers;
-			copy.dstSubresource = layers;
+			//Code for copying image, not sure if we really need this if we're only rendering to the viewport in anything but release mode
+			//VkCommandBuffer command = BeginSingleTimeCommands();
+			//VkImageCopy copy = {};
+			//copy.extent.height = mSwapchainExtent.height;
+			//copy.extent.width = mSwapchainExtent.width;
+			//copy.srcOffset = { 0,0,0 };
+			//copy.dstOffset = { 0,0,0 };
+			//VkImageSubresourceLayers layers;
+			//layers.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			//layers.mipLevel = 0;
+			//layers.baseArrayLayer = 0;
+			//layers.layerCount = 1;
+			//copy.srcSubresource = layers;
+			//copy.dstSubresource = layers;
 
-			vkCmdCopyImage(command, mRenderedFrames[i], VK_IMAGE_LAYOUT_UNDEFINED, mSwapchainImages[i], VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, 1, &copy);
-			EndSingleTimeCommands(command);
+			//vkCmdCopyImage(command, mRenderedFrames[i], VK_IMAGE_LAYOUT_UNDEFINED, mSwapchainImages[i], VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, 1, &copy);
+			//EndSingleTimeCommands(command);
 
 		}
 #else
