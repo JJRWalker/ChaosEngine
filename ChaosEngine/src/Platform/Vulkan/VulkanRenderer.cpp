@@ -15,16 +15,21 @@
 #include <filesystem>
 #include <chrono>
 
-#include "Chaos/Renderer/Quad.h"
-#include "Chaos/Renderer/Vertex.h"
+#include "Platform/Vulkan/VulkanTexture.h"
+
+#include "Chaos/DataTypes/Vec3.h"
+#include "Chaos/DataTypes/Vec2.h"
+#include "Chaos/DataTypes/Vec4.h"
 
 #include "Chaos/Entity/Components/Camera.h"
 
 #include <thread>
 #include <functional>
 
+//change to true if vulkan SDK is installed to recieve validation layer warnings, seems to have a bug currently where it will report that a descriptor set has not been updated
+//even though it has and is rendering the image correctly.
 #ifdef CHAOS_DEBUG
-const bool enableValidationLayers = true;	//change to true if vulkan SDK is installed to recieve validation layer warnings
+const bool enableValidationLayers = false;	
 #else
 const bool enableValidationLayers = false;
 #endif
@@ -39,62 +44,58 @@ namespace Chaos
 
 	VulkanRenderer::~VulkanRenderer()
 	{
-		vkDeviceWaitIdle(mDevice);
-
-		for (auto texture : mTexturesToBind)
-		{
-			delete texture.get();
-		}
+		vkDeviceWaitIdle(m_device);
 
 		CleanUpSwapchain();
 
-		vkDestroySampler(mDevice, mTextureSampler, nullptr);
+		vkDestroySampler(m_device, m_textureSampler, nullptr);
 
-		vkDestroyDescriptorSetLayout(mDevice, mDescriptorSetLayout, nullptr);
+		vkDestroyDescriptorSetLayout(m_device, m_descriptorSetLayout, nullptr);
 
-		for (size_t i = 0; i < mBuffers.size(); ++i)
+		for (size_t i = 0; i < m_buffers.size(); ++i)
 		{
-			vkDestroyBuffer(mDevice, mBuffers[i].VertexBuffer, nullptr);
-			vkFreeMemory(mDevice, mBuffers[i].VertexBufferMemory, nullptr);
-			vkDestroyBuffer(mDevice, mBuffers[i].IndexBuffer, nullptr);
-			vkFreeMemory(mDevice, mBuffers[i].IndexBufferMemory, nullptr);
+			vkDestroyBuffer(m_device, m_buffers[i].VertexBuffer, nullptr);
+			vkFreeMemory(m_device, m_buffers[i].VertexBufferMemory, nullptr);
+			vkDestroyBuffer(m_device, m_buffers[i].IndexBuffer, nullptr);
+			vkFreeMemory(m_device, m_buffers[i].IndexBufferMemory, nullptr);
 		}
 
 
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
 		{
-			vkDestroySemaphore(mDevice, mRenderFinishedSemaphores[i], nullptr);
-			vkDestroySemaphore(mDevice, mImageAvailableSemaphores[i], nullptr);
-			vkDestroyFence(mDevice, mInFlightFences[i], nullptr);
+			vkDestroySemaphore(m_device, m_renderFinishedSemaphores[i], nullptr);
+			vkDestroySemaphore(m_device, m_imageAvailableSemaphores[i], nullptr);
+			vkDestroyFence(m_device, m_inFlightFences[i], nullptr);
 		}
 
-		vkResetCommandPool(mDevice, mCommandPool, 0);
+		vkResetCommandPool(m_device, m_commandPool, 0);
 
-		if (mRenderingGUI)
+		if (m_renderingGUI)
 		{
-			vkResetCommandPool(mDevice, *mImGuiCommandPool, 0);
+			vkResetCommandPool(m_device, *m_imGuiCommandPool, 0);
 		}
 
-		vkDestroyDevice(mDevice, nullptr);
+		vkDestroyDevice(m_device, nullptr);
 
 		if (enableValidationLayers) {
-			DestroyDebugUtilsMessengerEXT(mInstance, mDebugMessenger, nullptr);
+			DestroyDebugUtilsMessengerEXT(m_instance, m_debugMessenger, nullptr);
 		}
 
-		vkDestroySurfaceKHR(mInstance, mSurface, nullptr);
-		vkDestroyInstance(mInstance, nullptr);
+		vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
+		vkDestroyInstance(m_instance, nullptr);
 	}
 
+#pragma region DRAW QUAD
 	//Called from outside the renderer class whenever the user wants to add anything to the render queue
 	void VulkanRenderer::DrawQuad(Vec2& position, Vec2& scale, Ref<Texture> texture)
 	{
 
 		Vec4 colour = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-		float imageIndex = (float)mTexturesToBind.size();
-		for (size_t i = 0; i < mTexturesToBind.size(); ++i)
+		float imageIndex = (float)m_texturesToBind.size();
+		for (size_t i = 0; i < m_texturesToBind.size(); ++i)
 		{
-			if (mTexturesToBind[i].get()->GetFilePath() == texture.get()->GetFilePath())
+			if (m_texturesToBind[i].get()->GetFilePath() == texture.get()->GetFilePath())
 			{
 				imageIndex = (float)i;
 				break;
@@ -102,41 +103,41 @@ namespace Chaos
 		}
 
 		//Creates local vector to store all the verts for the quad using the position and scale given.
-		mVertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, 1.0f), imageIndex });
-		mVertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(1.0f, 1.0f), imageIndex });
-		mVertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, Vec2(1.0f, 0.01f), imageIndex });
-		mVertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, 0.01f), imageIndex });
+		m_vertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, 1.0f), imageIndex });
+		m_vertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(1.0f, 1.0f), imageIndex });
+		m_vertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, Vec2(1.0f, 0.01f), imageIndex });
+		m_vertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, 0.01f), imageIndex });
 
-		mIndices.push_back(0 + mIndOffset);
-		mIndices.push_back(1 + mIndOffset);
-		mIndices.push_back(2 + mIndOffset);
-		mIndices.push_back(2 + mIndOffset);
-		mIndices.push_back(3 + mIndOffset);
-		mIndices.push_back(0 + mIndOffset);
+		m_indices.push_back(0 + m_indOffset);
+		m_indices.push_back(1 + m_indOffset);
+		m_indices.push_back(2 + m_indOffset);
+		m_indices.push_back(2 + m_indOffset);
+		m_indices.push_back(3 + m_indOffset);
+		m_indices.push_back(0 + m_indOffset);
 
-		mIndOffset += 4;
+		m_indOffset += 4;
 
-		if (imageIndex == mTexturesToBind.size())
+		if (imageIndex == m_texturesToBind.size())
 		{
-			mTexturesToBind.push_back((Ref<VulkanTexture>&)texture);
+			m_texturesToBind.push_back((Ref<VulkanTexture>&)texture);
 		}
 
-		mRenderCount++;
+		m_renderCount++;
 
-		if (mTexturesToBind.size() == MAX_TEXTURES_PER_DRAW || mRenderCount == MAX_OBJECTS_PER_DRAW)
+		if (m_texturesToBind.size() == MAX_TEXTURES_PER_DRAW || m_renderCount == MAX_OBJECTS_PER_DRAW)
 		{
-			mBuffers.resize(mBuffers.size() + 1);
-			CreateAndClearBuffers(mBuffers.size() - 1);
+			m_buffers.resize(m_buffers.size() + 1);
+			CreateBuffersAndClearResources(m_buffers.size() - 1);
 		}
-		mTotalQuadsDrawn++;
+		m_totalQuadsDrawn++;
 	}
 
 	void VulkanRenderer::DrawQuad(Vec2& position, Vec2& scale, Vec4& colour, Ref<Texture> texture)
 	{
-		float imageIndex = (float)mTexturesToBind.size();
-		for (size_t i = 0; i < mTexturesToBind.size(); ++i)
+		float imageIndex = (float)m_texturesToBind.size();
+		for (size_t i = 0; i < m_texturesToBind.size(); ++i)
 		{
-			if (mTexturesToBind[i].get()->GetFilePath() == texture.get()->GetFilePath())
+			if (m_texturesToBind[i].get()->GetFilePath() == texture.get()->GetFilePath())
 			{
 				imageIndex = (float)i;
 				break;
@@ -144,41 +145,41 @@ namespace Chaos
 		}
 
 		//Creates local vector to store all the verts for the quad using the position and scale given.
-		mVertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, 1.0f), imageIndex });
-		mVertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(1.0f, 1.0f), imageIndex });
-		mVertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, Vec2(1.0f, 0.01f), imageIndex });
-		mVertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, 0.01f), imageIndex });
+		m_vertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, 1.0f), imageIndex });
+		m_vertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(1.0f, 1.0f), imageIndex });
+		m_vertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, Vec2(1.0f, 0.01f), imageIndex });
+		m_vertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, 0.01f), imageIndex });
 
-		mIndices.push_back(0 + mIndOffset);
-		mIndices.push_back(1 + mIndOffset);
-		mIndices.push_back(2 + mIndOffset);
-		mIndices.push_back(2 + mIndOffset);
-		mIndices.push_back(3 + mIndOffset);
-		mIndices.push_back(0 + mIndOffset);
+		m_indices.push_back(0 + m_indOffset);
+		m_indices.push_back(1 + m_indOffset);
+		m_indices.push_back(2 + m_indOffset);
+		m_indices.push_back(2 + m_indOffset);
+		m_indices.push_back(3 + m_indOffset);
+		m_indices.push_back(0 + m_indOffset);
 
-		mIndOffset += 4;
+		m_indOffset += 4;
 
-		if (imageIndex == mTexturesToBind.size())
+		if (imageIndex == m_texturesToBind.size())
 		{
-			mTexturesToBind.push_back((Ref<VulkanTexture>&)texture);
+			m_texturesToBind.push_back((Ref<VulkanTexture>&)texture);
 		}
 
-		mRenderCount++;
+		m_renderCount++;
 
-		if (mTexturesToBind.size() == MAX_TEXTURES_PER_DRAW || mRenderCount == MAX_OBJECTS_PER_DRAW)
+		if (m_texturesToBind.size() == MAX_TEXTURES_PER_DRAW || m_renderCount == MAX_OBJECTS_PER_DRAW)
 		{
-			mBuffers.resize(mBuffers.size() + 1);
-			CreateAndClearBuffers(mBuffers.size() - 1);
+			m_buffers.resize(m_buffers.size() + 1);
+			CreateBuffersAndClearResources(m_buffers.size() - 1);
 		}
-		mTotalQuadsDrawn++;
+		m_totalQuadsDrawn++;
 	}
 
 	void VulkanRenderer::DrawQuad(Vec2& position, Vec2& scale, Vec4& colour, Ref<Texture> texture, float tilingFactor)
 	{
-		float imageIndex = (float)mTexturesToBind.size();
-		for (size_t i = 0; i < mTexturesToBind.size(); ++i)
+		float imageIndex = (float)m_texturesToBind.size();
+		for (size_t i = 0; i < m_texturesToBind.size(); ++i)
 		{
-			if (mTexturesToBind[i].get()->GetFilePath() == texture.get()->GetFilePath())
+			if (m_texturesToBind[i].get()->GetFilePath() == texture.get()->GetFilePath())
 			{
 				imageIndex = (float)i;
 				break;
@@ -186,43 +187,43 @@ namespace Chaos
 		}
 
 		//Creates local vector to store all the verts for the quad using the position and scale given.
-		mVertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, tilingFactor), imageIndex });
-		mVertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(tilingFactor, tilingFactor), imageIndex });
-		mVertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, Vec2(tilingFactor, 0.01f), imageIndex });
-		mVertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, 0.01f), imageIndex });
+		m_vertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, tilingFactor), imageIndex });
+		m_vertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(tilingFactor, tilingFactor), imageIndex });
+		m_vertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, Vec2(tilingFactor, 0.01f), imageIndex });
+		m_vertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, 0.01f), imageIndex });
 
-		mIndices.push_back(0 + mIndOffset);
-		mIndices.push_back(1 + mIndOffset);
-		mIndices.push_back(2 + mIndOffset);
-		mIndices.push_back(2 + mIndOffset);
-		mIndices.push_back(3 + mIndOffset);
-		mIndices.push_back(0 + mIndOffset);
+		m_indices.push_back(0 + m_indOffset);
+		m_indices.push_back(1 + m_indOffset);
+		m_indices.push_back(2 + m_indOffset);
+		m_indices.push_back(2 + m_indOffset);
+		m_indices.push_back(3 + m_indOffset);
+		m_indices.push_back(0 + m_indOffset);
 
-		mIndOffset += 4;
+		m_indOffset += 4;
 
-		if (imageIndex == mTexturesToBind.size())
+		if (imageIndex == m_texturesToBind.size())
 		{
-			mTexturesToBind.push_back((Ref<VulkanTexture>&)texture);
+			m_texturesToBind.push_back((Ref<VulkanTexture>&)texture);
 		}
 
-		mRenderCount++;
+		m_renderCount++;
 
-		if (mTexturesToBind.size() == MAX_TEXTURES_PER_DRAW || mRenderCount == MAX_OBJECTS_PER_DRAW)
+		if (m_texturesToBind.size() == MAX_TEXTURES_PER_DRAW || m_renderCount == MAX_OBJECTS_PER_DRAW)
 		{
-			mBuffers.resize(mBuffers.size() + 1);
-			CreateAndClearBuffers(mBuffers.size() - 1);
+			m_buffers.resize(m_buffers.size() + 1);
+			CreateBuffersAndClearResources(m_buffers.size() - 1);
 		}
-		mTotalQuadsDrawn++;
+		m_totalQuadsDrawn++;
 	}
 
 	void VulkanRenderer::DrawQuad(Vec2& position, Vec2& scale, Ref<Texture> texture, float tilingFactor)
 	{
 		Vec4 colour = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-		float imageIndex = (float)mTexturesToBind.size();
-		for (size_t i = 0; i < mTexturesToBind.size(); ++i)
+		float imageIndex = (float)m_texturesToBind.size();
+		for (size_t i = 0; i < m_texturesToBind.size(); ++i)
 		{
-			if (mTexturesToBind[i].get()->GetFilePath() == texture.get()->GetFilePath())
+			if (m_texturesToBind[i].get()->GetFilePath() == texture.get()->GetFilePath())
 			{
 				imageIndex = (float)i;
 				break;
@@ -230,43 +231,43 @@ namespace Chaos
 		}
 
 		//Creates local vector to store all the verts for the quad using the position and scale given.
-		mVertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, tilingFactor), imageIndex });
-		mVertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(tilingFactor, tilingFactor), imageIndex });
-		mVertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, Vec2(tilingFactor, 0.01f), imageIndex });
-		mVertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, 0.01f), imageIndex });
+		m_vertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, tilingFactor), imageIndex });
+		m_vertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, Vec2(tilingFactor, tilingFactor), imageIndex });
+		m_vertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, Vec2(tilingFactor, 0.01f), imageIndex });
+		m_vertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, Vec2(0.01f, 0.01f), imageIndex });
 
-		mIndices.push_back(0 + mIndOffset);
-		mIndices.push_back(1 + mIndOffset);
-		mIndices.push_back(2 + mIndOffset);
-		mIndices.push_back(2 + mIndOffset);
-		mIndices.push_back(3 + mIndOffset);
-		mIndices.push_back(0 + mIndOffset);
+		m_indices.push_back(0 + m_indOffset);
+		m_indices.push_back(1 + m_indOffset);
+		m_indices.push_back(2 + m_indOffset);
+		m_indices.push_back(2 + m_indOffset);
+		m_indices.push_back(3 + m_indOffset);
+		m_indices.push_back(0 + m_indOffset);
 
-		mIndOffset += 4;
+		m_indOffset += 4;
 
-		if (imageIndex == mTexturesToBind.size())
+		if (imageIndex == m_texturesToBind.size())
 		{
-			mTexturesToBind.push_back((Ref<VulkanTexture>&)texture);
+			m_texturesToBind.push_back((Ref<VulkanTexture>&)texture);
 		}
 
-		mRenderCount++;
+		m_renderCount++;
 
-		if (mTexturesToBind.size() == MAX_TEXTURES_PER_DRAW || mRenderCount == MAX_OBJECTS_PER_DRAW)
+		if (m_texturesToBind.size() == MAX_TEXTURES_PER_DRAW || m_renderCount == MAX_OBJECTS_PER_DRAW)
 		{
-			mBuffers.resize(mBuffers.size() + 1);
-			CreateAndClearBuffers(mBuffers.size() - 1);
+			m_buffers.resize(m_buffers.size() + 1);
+			CreateBuffersAndClearResources(m_buffers.size() - 1);
 		}
-		mTotalQuadsDrawn++;
+		m_totalQuadsDrawn++;
 	}
 
 	void VulkanRenderer::DrawQuad(Vec2& position, Vec2& scale, Ref<SubTexture> subTexture)
 	{
 		Vec4 colour = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-		float imageIndex = (float)mTexturesToBind.size();
-		for (size_t i = 0; i < mTexturesToBind.size(); ++i)
+		float imageIndex = (float)m_texturesToBind.size();
+		for (size_t i = 0; i < m_texturesToBind.size(); ++i)
 		{
-			if (mTexturesToBind[i].get()->GetFilePath() == subTexture.get()->GetFilePath())
+			if (m_texturesToBind[i].get()->GetFilePath() == subTexture.get()->GetFilePath())
 			{
 				imageIndex = (float)i;
 				break;
@@ -274,38 +275,40 @@ namespace Chaos
 		}
 
 		//Creates local vector to store all the verts for the quad using the position and scale given.
-		mVertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, subTexture->GetTexCoords()[3], imageIndex });
-		mVertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, subTexture->GetTexCoords()[2], imageIndex });
-		mVertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, subTexture->GetTexCoords()[1], imageIndex });
-		mVertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, subTexture->GetTexCoords()[0], imageIndex });
+		m_vertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, subTexture->GetTexCoords()[3], imageIndex });
+		m_vertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (-1.f * scale.Y / 2) + position.Y), colour, subTexture->GetTexCoords()[2], imageIndex });
+		m_vertices.push_back(VulkanVertex{ Vec2((1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, subTexture->GetTexCoords()[1], imageIndex });
+		m_vertices.push_back(VulkanVertex{ Vec2((-1.f * scale.X / 2) + position.X, (1.f * scale.Y / 2) + position.Y), colour, subTexture->GetTexCoords()[0], imageIndex });
 
-		mIndices.push_back(0 + mIndOffset);
-		mIndices.push_back(1 + mIndOffset);
-		mIndices.push_back(2 + mIndOffset);
-		mIndices.push_back(2 + mIndOffset);
-		mIndices.push_back(3 + mIndOffset);
-		mIndices.push_back(0 + mIndOffset);
+		m_indices.push_back(0 + m_indOffset);
+		m_indices.push_back(1 + m_indOffset);
+		m_indices.push_back(2 + m_indOffset);
+		m_indices.push_back(2 + m_indOffset);
+		m_indices.push_back(3 + m_indOffset);
+		m_indices.push_back(0 + m_indOffset);
 
-		mIndOffset += 4;
+		m_indOffset += 4;
 
-		if (imageIndex == mTexturesToBind.size())
+		if (imageIndex == m_texturesToBind.size())
 		{
-			mTexturesToBind.push_back((Ref<VulkanTexture>&)subTexture->GetMainTexture());
+			m_texturesToBind.push_back((Ref<VulkanTexture>&)subTexture->GetMainTexture());
 		}
 
-		mRenderCount++;
+		m_renderCount++;
 
-		if (mTexturesToBind.size() == MAX_TEXTURES_PER_DRAW || mRenderCount == MAX_OBJECTS_PER_DRAW)
+		if (m_texturesToBind.size() == MAX_TEXTURES_PER_DRAW || m_renderCount == MAX_OBJECTS_PER_DRAW)
 		{
-			mBuffers.resize(mBuffers.size() + 1);
-			CreateAndClearBuffers(mBuffers.size() - 1);
+			m_buffers.resize(m_buffers.size() + 1);
+			CreateBuffersAndClearResources(m_buffers.size() - 1);
 		}
-		mTotalQuadsDrawn++;
+		m_totalQuadsDrawn++;
 	}
+#pragma endregion
 
+	//Checks if the renderer currently has the texture in the specified file path stored, if it does it will return true and set old texture to that texture. Else returns false if none exists 
 	bool VulkanRenderer::HasTexture(const char* filePath, Ref<Texture> outTexture)
 	{
-		for (auto& t : mTexturesToBind)
+		for (auto& t : m_texturesToBind)
 		{
 			if (t->GetFilePath() == filePath)
 			{
@@ -342,15 +345,12 @@ namespace Chaos
 		CreateLogicalDevice();
 		CreateSwapChain();
 		CreateImageViews();
-		//CreateRenderedImageTextures();
 		CreateRenderPass();
 		CreateDescriptorSetLayout();
 		CreateGraphicsPipeline();
 		CreateFrameBuffers();
 		CreateCommandPool();
 		CreateTextureSampler();
-		//CreateVertexBuffers();
-		//CreateIndexBuffers();
 		CreateUniformBuffers();
 		CreateDescriptorPool();
 		//CreateDescriptorSet();
@@ -384,8 +384,8 @@ namespace Chaos
 
 		VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
 		if (enableValidationLayers) {
-			createInfo.enabledLayerCount = static_cast<uint32_t>(mValidationLayers.size());
-			createInfo.ppEnabledLayerNames = mValidationLayers.data();
+			createInfo.enabledLayerCount = static_cast<uint32_t>(m_validationLayers.size());
+			createInfo.ppEnabledLayerNames = m_validationLayers.data();
 
 			PopulateDebugMessengerCreateInfo(debugCreateInfo);
 			createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
@@ -396,7 +396,7 @@ namespace Chaos
 			createInfo.pNext = nullptr;
 		}
 
-		if (vkCreateInstance(&createInfo, nullptr, &mInstance) != VK_SUCCESS) {
+		if (vkCreateInstance(&createInfo, nullptr, &m_instance) != VK_SUCCESS) {
 			LOGCORE_ERROR("VULKAN: failed to create instance!");
 		}
 	}
@@ -415,14 +415,14 @@ namespace Chaos
 		VkDebugUtilsMessengerCreateInfoEXT createInfo;
 		PopulateDebugMessengerCreateInfo(createInfo);
 
-		if (CreateDebugUtilsMessengerEXT(mInstance, &createInfo, nullptr, &mDebugMessenger) != VK_SUCCESS) {
+		if (CreateDebugUtilsMessengerEXT(m_instance, &createInfo, nullptr, &m_debugMessenger) != VK_SUCCESS) {
 			LOGCORE_ERROR("VULKAN: could not create debug messenger");
 		}
 	}
 
 	//Creating a platform angostic object to display on using window library in use, needs to be changed to use precompiler macros when porting to other systems
 	void VulkanRenderer::CreateSurface() {
-		if (glfwCreateWindowSurface(mInstance, (GLFWwindow*)Application::Get().GetWindow().GetNativeWindow(), nullptr, &mSurface) != VK_SUCCESS) {
+		if (glfwCreateWindowSurface(m_instance, (GLFWwindow*)Application::Get().GetWindow().GetNativeWindow(), nullptr, &m_surface) != VK_SUCCESS) {
 			LOGCORE_ERROR("VULKAN: failed to create window surface!");
 		}
 	}
@@ -430,30 +430,30 @@ namespace Chaos
 	//Selecting the correct graphics card, gives each device a score and picks the one that is most suitable for presenting graphics
 	void VulkanRenderer::PickPhysicalDevice() {
 		uint32_t deviceCount = 0;
-		vkEnumeratePhysicalDevices(mInstance, &deviceCount, nullptr);
+		vkEnumeratePhysicalDevices(m_instance, &deviceCount, nullptr);
 
 		if (deviceCount == 0) {
 			LOGCORE_ERROR("VULKAN: failed to find GPUs with Vulkan support!");
 		}
 
 		std::vector<VkPhysicalDevice> devices(deviceCount);
-		vkEnumeratePhysicalDevices(mInstance, &deviceCount, devices.data());
+		vkEnumeratePhysicalDevices(m_instance, &deviceCount, devices.data());
 
 		for (const auto& device : devices) {
 			if (IsDeviceSuitable(device)) {
-				mPhysicalDevice = device;
+				m_physicalDevice = device;
 				break;
 			}
 		}
 
-		if (mPhysicalDevice == VK_NULL_HANDLE) {
+		if (m_physicalDevice == VK_NULL_HANDLE) {
 			LOGCORE_ERROR("VULKAN: failed to find a suitable GPU!");
 		}
 	}
 
 	//Creating logical device used for vulkan allocations, Called once upon renderer creation
 	void VulkanRenderer::CreateLogicalDevice() {
-		QueueFamilyIndices indices = FindQueueFamilies(mPhysicalDevice);
+		QueueFamilyIndices indices = FindQueueFamilies(m_physicalDevice);
 
 		std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
 		std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.presentFamily.value() };
@@ -479,29 +479,29 @@ namespace Chaos
 
 		createInfo.pEnabledFeatures = &deviceFeatures;
 
-		createInfo.enabledExtensionCount = static_cast<uint32_t>(mDeviceExtensions.size());
-		createInfo.ppEnabledExtensionNames = mDeviceExtensions.data();
+		createInfo.enabledExtensionCount = static_cast<uint32_t>(m_deviceExtensions.size());
+		createInfo.ppEnabledExtensionNames = m_deviceExtensions.data();
 
 		if (enableValidationLayers) {
-			createInfo.enabledLayerCount = static_cast<uint32_t>(mValidationLayers.size());
-			createInfo.ppEnabledLayerNames = mValidationLayers.data();
+			createInfo.enabledLayerCount = static_cast<uint32_t>(m_validationLayers.size());
+			createInfo.ppEnabledLayerNames = m_validationLayers.data();
 		}
 		else {
 			createInfo.enabledLayerCount = 0;
 		}
 
-		if (vkCreateDevice(mPhysicalDevice, &createInfo, nullptr, &mDevice) != VK_SUCCESS) {
+		if (vkCreateDevice(m_physicalDevice, &createInfo, nullptr, &m_device) != VK_SUCCESS) {
 			LOGCORE_ERROR("VULKAN: failed to create logical device!");
 		}
 
-		vkGetDeviceQueue(mDevice, indices.graphicsFamily.value(), 0, &mGraphicsQueue);
-		vkGetDeviceQueue(mDevice, indices.presentFamily.value(), 0, &mPresentQueue);
+		vkGetDeviceQueue(m_device, indices.graphicsFamily.value(), 0, &m_graphicsQueue);
+		vkGetDeviceQueue(m_device, indices.presentFamily.value(), 0, &m_presentQueue);
 	}
 
 	//Swapchain to be created on creation of renderer and whenever it is invalidated (most commonly on window resize)
 	void VulkanRenderer::CreateSwapChain() {
 		//Getting physical device swapchain support and capabilities
-		SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(mPhysicalDevice);
+		SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(m_physicalDevice);
 
 		VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.Formats);
 		VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.PresentModes);
@@ -515,16 +515,20 @@ namespace Chaos
 		//using capbablilites to fill in parameters needed to create the swapchain
 		VkSwapchainCreateInfoKHR createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-		createInfo.surface = mSurface;
+		createInfo.surface = m_surface;
 
 		createInfo.minImageCount = imageCount;
 		createInfo.imageFormat = surfaceFormat.format;
 		createInfo.imageColorSpace = surfaceFormat.colorSpace;
 		createInfo.imageExtent = extent;
 		createInfo.imageArrayLayers = 1;
+#if !CHAOS_RELEASE
 		createInfo.imageUsage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT; //VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+#else
+		createInfo.imageUsage = VK_IMAGE_USAGE_SAMPLED_BIT; //VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+#endif
 
-		QueueFamilyIndices indices = FindQueueFamilies(mPhysicalDevice);
+		QueueFamilyIndices indices = FindQueueFamilies(m_physicalDevice);
 		uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };
 
 		if (indices.graphicsFamily != indices.presentFamily) {
@@ -543,39 +547,41 @@ namespace Chaos
 
 		createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-		if (vkCreateSwapchainKHR(mDevice, &createInfo, nullptr, &mSwapchain) != VK_SUCCESS)
+		if (vkCreateSwapchainKHR(m_device, &createInfo, nullptr, &m_swapchain) != VK_SUCCESS)
 		{
 			LOGCORE_ERROR("VULKAN: failed to create swapchain");
 		}
 
-		vkGetSwapchainImagesKHR(mDevice, mSwapchain, &imageCount, nullptr);
-		mSwapchainImages.resize(imageCount);
-		vkGetSwapchainImagesKHR(mDevice, mSwapchain, &imageCount, mSwapchainImages.data());
-		mRenderedFrames.resize(imageCount);
-		mRenderedFramesMemory.resize(imageCount);
+		vkGetSwapchainImagesKHR(m_device, m_swapchain, &imageCount, nullptr);
+		m_swapchainImages.resize(imageCount);
+		vkGetSwapchainImagesKHR(m_device, m_swapchain, &imageCount, m_swapchainImages.data());
+		m_renderedFrames.resize(imageCount);
+		m_renderedFramesMemory.resize(imageCount);
 
-		mSwapchainImageFormat = surfaceFormat.format;
-		mSwapchainExtent = extent;
+		m_swapchainImageFormat = surfaceFormat.format;
+		m_swapchainExtent = extent;
 
-		for (int i = 0; i < imageCount; ++i)
+#if !CHAOS_RELEASE
+		for (size_t i = 0; i < imageCount; ++i)
 		{
-			CreateImage(mSwapchainExtent.width, mSwapchainExtent.height, mSwapchainImageFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mRenderedFrames[i], mRenderedFramesMemory[i]);
+			CreateImage(m_swapchainExtent.width, m_swapchainExtent.height, m_swapchainImageFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_renderedFrames[i], m_renderedFramesMemory[i]);
 		}
+#endif
 	}
 
 	//setting up the image views (still images) that will be presented to the surface, created upon renderer construction / creation
 	void VulkanRenderer::CreateImageViews()
 	{
-		mSwapchainImageViews.resize(mSwapchainImages.size());
-		mRenderedFrameViews.resize(mRenderedFrames.size());
-		for (size_t i = 0; i < mSwapchainImages.size(); ++i)
+		m_swapchainImageViews.resize(m_swapchainImages.size());
+		m_renderedFrameViews.resize(m_renderedFrames.size());
+		for (size_t i = 0; i < m_swapchainImages.size(); ++i)
 		{
-			mSwapchainImageViews[i] = CreateImageView(mSwapchainImages[i], mSwapchainImageFormat);
+			m_swapchainImageViews[i] = CreateImageView(m_swapchainImages[i], m_swapchainImageFormat);
 			VkImageViewCreateInfo createInfo = {};
 			createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-			createInfo.image = mSwapchainImages[i];
+			createInfo.image = m_swapchainImages[i];
 			createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-			createInfo.format = mSwapchainImageFormat;
+			createInfo.format = m_swapchainImageFormat;
 
 			createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
 			createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -588,16 +594,17 @@ namespace Chaos
 			createInfo.subresourceRange.baseArrayLayer = 0;
 			createInfo.subresourceRange.layerCount = 1;
 
-			if (vkCreateImageView(mDevice, &createInfo, nullptr, &mSwapchainImageViews[i]) != VK_SUCCESS) {
+			if (vkCreateImageView(m_device, &createInfo, nullptr, &m_swapchainImageViews[i]) != VK_SUCCESS) {
 				LOGCORE_ERROR("VULKAN: failed to create image views!");
 			}
 
-			mRenderedFrameViews[i] = CreateImageView(mRenderedFrames[i], mSwapchainImageFormat);
+#if !CHAOS_RELEASE
+			m_renderedFrameViews[i] = CreateImageView(m_renderedFrames[i], m_swapchainImageFormat);
 			VkImageViewCreateInfo frameViewsCreateInfo = {};
 			frameViewsCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-			frameViewsCreateInfo.image = mRenderedFrames[i];
+			frameViewsCreateInfo.image = m_renderedFrames[i];
 			frameViewsCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-			frameViewsCreateInfo.format = mSwapchainImageFormat;
+			frameViewsCreateInfo.format = m_swapchainImageFormat;
 
 			frameViewsCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
 			frameViewsCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -610,9 +617,10 @@ namespace Chaos
 			frameViewsCreateInfo.subresourceRange.baseArrayLayer = 0;
 			frameViewsCreateInfo.subresourceRange.layerCount = 1;
 
-			if (vkCreateImageView(mDevice, &frameViewsCreateInfo, nullptr, &mRenderedFrameViews[i]) != VK_SUCCESS) {
+			if (vkCreateImageView(m_device, &frameViewsCreateInfo, nullptr, &m_renderedFrameViews[i]) != VK_SUCCESS) {
 				LOGCORE_ERROR("VULKAN: failed to create image views!");
 			}
+#endif
 		}
 	}
 
@@ -639,7 +647,7 @@ namespace Chaos
 		layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
 		layoutInfo.pBindings = bindings.data();
 
-		if (vkCreateDescriptorSetLayout(mDevice, &layoutInfo, nullptr, &mDescriptorSetLayout) != VK_SUCCESS) {
+		if (vkCreateDescriptorSetLayout(m_device, &layoutInfo, nullptr, &m_descriptorSetLayout) != VK_SUCCESS) {
 			LOGCORE_ERROR("VULKAN: failed to create descriptor set layout!");
 		}
 	}
@@ -648,7 +656,7 @@ namespace Chaos
 	void VulkanRenderer::CreateRenderPass()
 	{
 		VkAttachmentDescription colorAttachment = {};
-		colorAttachment.format = mSwapchainImageFormat;
+		colorAttachment.format = m_swapchainImageFormat;
 		colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 
 		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -687,12 +695,12 @@ namespace Chaos
 		renderpassInfo.dependencyCount = 1;
 		renderpassInfo.pDependencies = &dependency;
 
-		if (vkCreateRenderPass(mDevice, &renderpassInfo, nullptr, &mRenderPass) != VK_SUCCESS)
+		if (vkCreateRenderPass(m_device, &renderpassInfo, nullptr, &m_renderpass) != VK_SUCCESS)
 		{
 			LOGCORE_ERROR("VULKAN: failed to create render pass!");
 		}
 
-		if (vkCreateRenderPass(mDevice, &renderpassInfo, nullptr, &mRenderedRenderPass) != VK_SUCCESS)
+		if (vkCreateRenderPass(m_device, &renderpassInfo, nullptr, &m_renderedRenderPass) != VK_SUCCESS)
 		{
 			LOGCORE_ERROR("VULKAN: failed to create render pass!");
 		}
@@ -740,14 +748,14 @@ namespace Chaos
 		VkViewport viewport = {};
 		viewport.x = 0.0f;
 		viewport.y = 0.0f;
-		viewport.width = (float)mSwapchainExtent.width;
-		viewport.height = (float)mSwapchainExtent.height;
+		viewport.width = (float)m_swapchainExtent.width;
+		viewport.height = (float)m_swapchainExtent.height;
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
 
 		VkRect2D scissor = {};
 		scissor.offset = { 0, 0 };
-		scissor.extent = mSwapchainExtent;
+		scissor.extent = m_swapchainExtent;
 
 		VkPipelineViewportStateCreateInfo viewportState = {};
 		viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -794,9 +802,9 @@ namespace Chaos
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutInfo.setLayoutCount = 1;
-		pipelineLayoutInfo.pSetLayouts = &mDescriptorSetLayout;
+		pipelineLayoutInfo.pSetLayouts = &m_descriptorSetLayout;
 
-		if (vkCreatePipelineLayout(mDevice, &pipelineLayoutInfo, nullptr, &mPipelineLayout) != VK_SUCCESS) {
+		if (vkCreatePipelineLayout(m_device, &pipelineLayoutInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS) {
 			LOGCORE_ERROR("VULKAN: failed to create pipeline layout!");
 		}
 
@@ -810,61 +818,61 @@ namespace Chaos
 		pipelineInfo.pRasterizationState = &rasterizer;
 		pipelineInfo.pMultisampleState = &multisampling;
 		pipelineInfo.pColorBlendState = &colorBlending;
-		pipelineInfo.layout = mPipelineLayout;
-		pipelineInfo.renderPass = mRenderPass;
+		pipelineInfo.layout = m_pipelineLayout;
+		pipelineInfo.renderPass = m_renderpass;
 		pipelineInfo.subpass = 0;
 		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-		if (vkCreateGraphicsPipelines(mDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &mGraphicsPipeline) != VK_SUCCESS) 
+		if (vkCreateGraphicsPipelines(m_device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_graphicsPipeline) != VK_SUCCESS) 
 		{
 			LOGCORE_ERROR("VULKAN: failed to create graphics pipeline!");
 		}
 
-		vkDestroyShaderModule(mDevice, fragShaderModule, nullptr);
-		vkDestroyShaderModule(mDevice, vertShaderModule, nullptr);
+		vkDestroyShaderModule(m_device, fragShaderModule, nullptr);
+		vkDestroyShaderModule(m_device, vertShaderModule, nullptr);
 	}
 
 	//Frame buffers only created on renderer construction
 	void VulkanRenderer::CreateFrameBuffers()
 	{
-		mSwapchainframebuffers.resize(mSwapchainImageViews.size());
-		mRenderedFrameBuffers.resize(mRenderedFrameViews.size());
-		for (size_t i = 0; i < mSwapchainImageViews.size(); ++i)
+		m_swapchainframebuffers.resize(m_swapchainImageViews.size());
+		m_renderedFrameBuffers.resize(m_renderedFrameViews.size());
+		for (size_t i = 0; i < m_swapchainImageViews.size(); ++i)
 		{
 			VkImageView attachments[] = {
-				mSwapchainImageViews[i]
+				m_swapchainImageViews[i]
 			};
 			VkFramebufferCreateInfo framebufferInfo = {};
 			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-			framebufferInfo.renderPass = mRenderPass;
+			framebufferInfo.renderPass = m_renderpass;
 			framebufferInfo.attachmentCount = 1;
 			framebufferInfo.pAttachments = attachments;
-			framebufferInfo.width = mSwapchainExtent.width;
-			framebufferInfo.height = mSwapchainExtent.height;
+			framebufferInfo.width = m_swapchainExtent.width;
+			framebufferInfo.height = m_swapchainExtent.height;
 			framebufferInfo.layers = 1;
 
-			if (vkCreateFramebuffer(mDevice, &framebufferInfo, nullptr, &mSwapchainframebuffers[i]) != VK_SUCCESS)
+			if (vkCreateFramebuffer(m_device, &framebufferInfo, nullptr, &m_swapchainframebuffers[i]) != VK_SUCCESS)
 			{
 				LOGCORE_ERROR("VULKAN: failed to create framebuffer!");
 			}
-
+#if !CHAOS_RELEASE
 			VkImageView frameAttachments[] = {
-				mRenderedFrameViews[i]
+				m_renderedFrameViews[i]
 			};
 			VkFramebufferCreateInfo renderedFrameframebufferInfo = {};
 			renderedFrameframebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-			renderedFrameframebufferInfo.renderPass = mRenderedRenderPass;
+			renderedFrameframebufferInfo.renderPass = m_renderedRenderPass;
 			renderedFrameframebufferInfo.attachmentCount = 1;
 			renderedFrameframebufferInfo.pAttachments = frameAttachments;
-			renderedFrameframebufferInfo.width = mSwapchainExtent.width;
-			renderedFrameframebufferInfo.height = mSwapchainExtent.height;
+			renderedFrameframebufferInfo.width = m_swapchainExtent.width;
+			renderedFrameframebufferInfo.height = m_swapchainExtent.height;
 			renderedFrameframebufferInfo.layers = 1;
 
-			if (vkCreateFramebuffer(mDevice, &renderedFrameframebufferInfo, nullptr, &mRenderedFrameBuffers[i]) != VK_SUCCESS)
+			if (vkCreateFramebuffer(m_device, &renderedFrameframebufferInfo, nullptr, &m_renderedFrameBuffers[i]) != VK_SUCCESS)
 			{
 				LOGCORE_ERROR("VULKAN: failed to create framebuffer!");
 			}
-
+#endif
 		}
 
 	}
@@ -873,13 +881,13 @@ namespace Chaos
 	//Cleared each frame after commands have been executed.
 	void VulkanRenderer::CreateCommandPool()
 	{
-		QueueFamilyIndices queueFamilyIndices = FindQueueFamilies(mPhysicalDevice);
+		QueueFamilyIndices queueFamilyIndices = FindQueueFamilies(m_physicalDevice);
 
 		VkCommandPoolCreateInfo poolInfo = {};
 		poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 		poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
 
-		if (vkCreateCommandPool(mDevice, &poolInfo, nullptr, &mCommandPool) != VK_SUCCESS)
+		if (vkCreateCommandPool(m_device, &poolInfo, nullptr, &m_commandPool) != VK_SUCCESS)
 		{
 			LOGCORE_ERROR("VULKAN: failed to create command pool!");
 		}
@@ -904,7 +912,7 @@ namespace Chaos
 		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
 		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 
-		if (vkCreateSampler(mDevice, &samplerInfo, nullptr, &mTextureSampler) != VK_SUCCESS)
+		if (vkCreateSampler(m_device, &samplerInfo, nullptr, &m_textureSampler) != VK_SUCCESS)
 		{
 			LOGCORE_ERROR("VULKAN: failed to create texture sampler!");
 		}
@@ -912,9 +920,9 @@ namespace Chaos
 
 	void VulkanRenderer::CreateIndexedBuffer(std::vector<VulkanVertex> vertices, std::vector<uint16_t> indices, BufferType type, size_t insertIndex)
 	{
-		if (mBuffers.size() < insertIndex + 1)
+		if (m_buffers.size() < insertIndex + 1)
 		{
-			mBuffers.resize(insertIndex + 1);
+			m_buffers.resize(insertIndex + 1);
 		}
 		//CREATING VERTEX BUFFER
 		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
@@ -924,9 +932,9 @@ namespace Chaos
 		CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vertexStagingBuffer, vertexStagingBufferMemory);
 
 		void* vertData;
-		vkMapMemory(mDevice, vertexStagingBufferMemory, 0, bufferSize, 0, &vertData);
+		vkMapMemory(m_device, vertexStagingBufferMemory, 0, bufferSize, 0, &vertData);
 		memcpy(vertData, vertices.data(), (size_t)bufferSize);
-		vkUnmapMemory(mDevice, vertexStagingBufferMemory);
+		vkUnmapMemory(m_device, vertexStagingBufferMemory);
 
 		VkBuffer vertexBuffer;
 		VkDeviceMemory vertexBufferMemory;
@@ -935,8 +943,8 @@ namespace Chaos
 
 		CopyBuffer(vertexStagingBuffer, vertexBuffer, bufferSize);
 
-		vkDestroyBuffer(mDevice, vertexStagingBuffer, nullptr);
-		vkFreeMemory(mDevice, vertexStagingBufferMemory, nullptr);
+		vkDestroyBuffer(m_device, vertexStagingBuffer, nullptr);
+		vkFreeMemory(m_device, vertexStagingBufferMemory, nullptr);
 
 		//CREATING INDEX BUFFER
 		bufferSize = sizeof(indices[0]) * indices.size();
@@ -946,9 +954,9 @@ namespace Chaos
 		CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, indexStagingBuffer, indexStagingBufferMemory);
 
 		void* indData;
-		vkMapMemory(mDevice, indexStagingBufferMemory, 0, bufferSize, 0, &indData);
+		vkMapMemory(m_device, indexStagingBufferMemory, 0, bufferSize, 0, &indData);
 		memcpy(indData, indices.data(), (size_t)bufferSize);
-		vkUnmapMemory(mDevice, indexStagingBufferMemory);
+		vkUnmapMemory(m_device, indexStagingBufferMemory);
 
 		VkBuffer indexBuffer;
 		VkDeviceMemory indexBufferMemory;
@@ -957,8 +965,8 @@ namespace Chaos
 
 		CopyBuffer(indexStagingBuffer, indexBuffer, bufferSize);
 
-		vkDestroyBuffer(mDevice, indexStagingBuffer, nullptr);
-		vkFreeMemory(mDevice, indexStagingBufferMemory, nullptr);
+		vkDestroyBuffer(m_device, indexStagingBuffer, nullptr);
+		vkFreeMemory(m_device, indexStagingBufferMemory, nullptr);
 
 		uint16_t highestInd = 0;
 
@@ -971,18 +979,18 @@ namespace Chaos
 
 		Buffer buffer = { vertexBuffer, vertexBufferMemory, indexBuffer, indexBufferMemory, vertices.size(), indices.size(), highestInd, type };
 
-		mBuffers[insertIndex] = buffer;
+		m_buffers[insertIndex] = buffer;
 	}
 
-	void VulkanRenderer::CreateAndClearBuffers(size_t insertIndex)
+	void VulkanRenderer::CreateBuffersAndClearResources(size_t insertIndex)
 	{
-		CreateIndexedBuffer(mVertices, mIndices, BufferType::Dynamic, insertIndex);
-		mBuffers[insertIndex].TexturesToBind = mTexturesToBind;
-		mTexturesToBind.clear();
-		mVertices.clear();
-		mIndices.clear();
-		mIndOffset = 0;
-		mRenderCount = 0;
+		CreateIndexedBuffer(m_vertices, m_indices, BufferType::Dynamic, insertIndex);
+		m_buffers[insertIndex].TexturesToBind = m_texturesToBind;
+		m_texturesToBind.clear();
+		m_vertices.clear();
+		m_indices.clear();
+		m_indOffset = 0;
+		m_renderCount = 0;
 	}
 
 	//SHOULD BE CALLED ON SCENE LOAD ONCE WE HAVE A MANIFEST OF ALL THE TEXTURES / SHADERS NEEDED IN THE SCENE
@@ -990,12 +998,12 @@ namespace Chaos
 	{
 		VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 
-		mUniformBuffers.resize(mSwapchainImages.size());	//Affording for 100 different textures, increadibly sub optimal. Increases memory footprint
-		mUniformBuffersMemory.resize(mSwapchainImages.size());
+		m_uniformBuffers.resize(m_swapchainImages.size());	//Affording for 100 different textures, increadibly sub optimal. Increases memory footprint
+		m_uniformBuffersMemory.resize(m_swapchainImages.size());
 
-		for (size_t i = 0; i < mSwapchainImages.size(); ++i)
+		for (size_t i = 0; i < m_swapchainImages.size(); ++i)
 		{
-			CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, mUniformBuffers[i], mUniformBuffersMemory[i]);
+			CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_uniformBuffers[i], m_uniformBuffersMemory[i]);
 		}
 	}
 
@@ -1019,7 +1027,7 @@ namespace Chaos
 		poolInfo.pPoolSizes = poolSizes.data();
 		poolInfo.maxSets = numOfSets;
 
-		if (vkCreateDescriptorPool(mDevice, &poolInfo, nullptr, &mDescriptorPool) != VK_SUCCESS)
+		if (vkCreateDescriptorPool(m_device, &poolInfo, nullptr, &m_descriptorPool) != VK_SUCCESS)
 		{
 			LOGCORE_ERROR("VULKAN: failed to allocate descriptor pool!");
 		}
@@ -1028,45 +1036,45 @@ namespace Chaos
 	//SHOULD ALSO BE CALLED ON SCENE LOAD TO AVOID CALLING EVERY FRAME
 	void VulkanRenderer::CreateDescriptorSet()
 	{
-		mDescriptorSets.resize(mBuffers.size());
-		std::vector<VkDescriptorSetLayout> layouts(mBuffers.size(), mDescriptorSetLayout);
+		m_descriptorSets.resize(m_buffers.size());
+		std::vector<VkDescriptorSetLayout> layouts(m_buffers.size(), m_descriptorSetLayout);
 		VkDescriptorSetAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		allocInfo.descriptorPool = mDescriptorPool;
-		allocInfo.descriptorSetCount = static_cast<uint32_t>(mBuffers.size());
+		allocInfo.descriptorPool = m_descriptorPool;
+		allocInfo.descriptorSetCount = static_cast<uint32_t>(m_buffers.size());
 		allocInfo.pSetLayouts = layouts.data();
 
-		if (vkAllocateDescriptorSets(mDevice, &allocInfo, mDescriptorSets.data()) != VK_SUCCESS)
+		if (vkAllocateDescriptorSets(m_device, &allocInfo, m_descriptorSets.data()) != VK_SUCCESS)
 		{
 			LOGCORE_ERROR("VULKAN: failed to allocate descriptor sets!");
 		}
 
-		for (size_t i = 0; i < mBuffers.size(); i++)
+		for (size_t i = 0; i < m_buffers.size(); i++)
 		{
-			mBuffers[i].DescriptorIndex = i;
-			mBuffers[i].TexturesLoaded = mBuffers[i].TexturesToBind.size();
+			m_buffers[i].DescriptorIndex = i;
+			m_buffers[i].TexturesLoaded = m_buffers[i].TexturesToBind.size();
 
 			VkDescriptorBufferInfo bufferInfo = {};
-			bufferInfo.buffer = mUniformBuffers[0];
+			bufferInfo.buffer = m_uniformBuffers[0];
 			bufferInfo.offset = 0;
 			bufferInfo.range = sizeof(UniformBufferObject);
 
-			std::vector<VkDescriptorImageInfo> imageInfo(mBuffers[i].TexturesToBind.size());
+			std::vector<VkDescriptorImageInfo> imageInfo(m_buffers[i].TexturesToBind.size());
 
 			//Itterating through the render queue and binding images to the descriptor set for texture array
-			for (uint32_t imageIndex = 0; imageIndex < mBuffers[i].TexturesToBind.size(); ++imageIndex)
+			for (uint32_t imageIndex = 0; imageIndex < m_buffers[i].TexturesToBind.size(); ++imageIndex)
 			{
 				//Change to the indexed buffer at i
 				imageInfo[imageIndex].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				imageInfo[imageIndex].imageView = mBuffers[i].TexturesToBind[imageIndex].get()->GetImageView();
-				imageInfo[imageIndex].sampler = mTextureSampler;
+				imageInfo[imageIndex].imageView = m_buffers[i].TexturesToBind[imageIndex].get()->GetImageView();
+				imageInfo[imageIndex].sampler = m_textureSampler;
 			}
 
 			VkWriteDescriptorSet descriptorWrites[2];
 
 			descriptorWrites[0] = {};
 			descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrites[0].dstSet = mDescriptorSets[i];
+			descriptorWrites[0].dstSet = m_descriptorSets[i];
 			descriptorWrites[0].dstBinding = 0;
 			descriptorWrites[0].dstArrayElement = 0;
 			descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -1075,14 +1083,14 @@ namespace Chaos
 
 			descriptorWrites[1] = {};
 			descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrites[1].dstSet = mDescriptorSets[i];
+			descriptorWrites[1].dstSet = m_descriptorSets[i];
 			descriptorWrites[1].dstBinding = 1;
 			descriptorWrites[1].dstArrayElement = 0;
 			descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			descriptorWrites[1].descriptorCount = (uint32_t)mBuffers[i].TexturesToBind.size();
+			descriptorWrites[1].descriptorCount = (uint32_t)m_buffers[i].TexturesToBind.size();
 			descriptorWrites[1].pImageInfo = imageInfo.data();
 
-			vkUpdateDescriptorSets(mDevice, 2, descriptorWrites, 0, nullptr);
+			vkUpdateDescriptorSets(m_device, 2, descriptorWrites, 0, nullptr);
 		}
 	}
 
@@ -1090,7 +1098,7 @@ namespace Chaos
 	uint32_t VulkanRenderer::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags props)
 	{
 		VkPhysicalDeviceMemoryProperties memProperties;
-		vkGetPhysicalDeviceMemoryProperties(mPhysicalDevice, &memProperties);
+		vkGetPhysicalDeviceMemoryProperties(m_physicalDevice, &memProperties);
 
 		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
 			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & props) == props) {
@@ -1108,71 +1116,71 @@ namespace Chaos
 	{
 #if !CHAOS_RELEASE
 		//Resizing vectors to contain the new buffers
-		mCommandBuffers.resize(mRenderedFrameBuffers.size());
+		m_commandBuffers.resize(m_renderedFrameBuffers.size());
 
 		VkCommandBufferAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.commandPool = mCommandPool;
+		allocInfo.commandPool = m_commandPool;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandBufferCount = (uint32_t)mCommandBuffers.size();
+		allocInfo.commandBufferCount = (uint32_t)m_commandBuffers.size();
 
 
-		if (vkAllocateCommandBuffers(mDevice, &allocInfo, mCommandBuffers.data()) != VK_SUCCESS) 
+		if (vkAllocateCommandBuffers(m_device, &allocInfo, m_commandBuffers.data()) != VK_SUCCESS) 
 		{
 			LOGCORE_ERROR("VULKAN: failed to allocate command buffers!");
 			return;
 		}
 
-		for (size_t i = 0; i < mRenderedFrameBuffers.size(); i++)
+		for (size_t i = 0; i < m_renderedFrameBuffers.size(); i++)
 		{
 			VkCommandBufferBeginInfo beginInfo = {};
 			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-			if (vkBeginCommandBuffer(mCommandBuffers[i], &beginInfo) != VK_SUCCESS)
+			if (vkBeginCommandBuffer(m_commandBuffers[i], &beginInfo) != VK_SUCCESS)
 			{
 				LOGCORE_ERROR("VULKAN: failed to begin recording command buffer!");
 				return;
 			}
 			VkRenderPassBeginInfo renderPassInfo = {};
 			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-			renderPassInfo.renderPass = mRenderPass;
-			renderPassInfo.framebuffer = mRenderedFrameBuffers[i];
+			renderPassInfo.renderPass = m_renderpass;
+			renderPassInfo.framebuffer = m_renderedFrameBuffers[i];
 			renderPassInfo.renderArea.offset = { 0, 0 };
-			renderPassInfo.renderArea.extent = mSwapchainExtent;
+			renderPassInfo.renderArea.extent = m_swapchainExtent;
 
-			VkClearValue clearColor = { CLEAR_COLOR.r, CLEAR_COLOR.g, CLEAR_COLOR.b, CLEAR_COLOR.a };
+			VkClearValue clearColor = { CLEAR_COLOR.X, CLEAR_COLOR.Y, CLEAR_COLOR.Z, CLEAR_COLOR.W };
 			renderPassInfo.clearValueCount = 1;
 			renderPassInfo.pClearValues = &clearColor;
 
-			vkCmdBeginRenderPass(mCommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-			vkCmdBindPipeline(mCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline);
+			vkCmdBeginRenderPass(m_commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+			vkCmdBindPipeline(m_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
 
 			//Itterates through RenderQueue and records commands, drawing all objects of the same texture together.
-			for (uint32_t x = 0; x < mBuffers.size(); ++x)
+			for (uint32_t x = 0; x < m_buffers.size(); ++x)
 			{
 				//if a buffer is found that doesn't have all textures loaded, create descriptor sets
-				if (mBuffers[x].TexturesLoaded != mBuffers[x].TexturesToBind.size())
+				if (m_buffers[x].TexturesLoaded != m_buffers[x].TexturesToBind.size())
 				{
-					if (mDescriptorSets.size() > 0)
+					if (m_descriptorSets.size() > 0)
 					{
-						vkFreeDescriptorSets(mDevice, mDescriptorPool, (uint32_t)mDescriptorSets.size(), mDescriptorSets.data());
+						vkFreeDescriptorSets(m_device, m_descriptorPool, (uint32_t)m_descriptorSets.size(), m_descriptorSets.data());
 					}
 					CreateDescriptorSet();
 				}
 
-				VkBuffer vertexBuffersToBind[] = { mBuffers[x].VertexBuffer };
+				VkBuffer vertexBuffersToBind[] = { m_buffers[x].VertexBuffer };
 				VkDeviceSize offsets[] = { 0 };
-				vkCmdBindVertexBuffers(mCommandBuffers[i], 0, 1, vertexBuffersToBind, offsets);
+				vkCmdBindVertexBuffers(m_commandBuffers[i], 0, 1, vertexBuffersToBind, offsets);
 
-				vkCmdBindIndexBuffer(mCommandBuffers[i], mBuffers[x].IndexBuffer, 0, VK_INDEX_TYPE_UINT16);
+				vkCmdBindIndexBuffer(m_commandBuffers[i], m_buffers[x].IndexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
-				vkCmdBindDescriptorSets(mCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout, 0, 1, &mDescriptorSets[mBuffers[x].DescriptorIndex], 0, nullptr);
+				vkCmdBindDescriptorSets(m_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSets[m_buffers[x].DescriptorIndex], 0, nullptr);
 
-				vkCmdDrawIndexed(mCommandBuffers[i], static_cast<uint32_t>(mBuffers[x].IndexCount), 1, 0, 0, 0);
+				vkCmdDrawIndexed(m_commandBuffers[i], static_cast<uint32_t>(m_buffers[x].IndexCount), 1, 0, 0, 0);
 
 			}
-			vkCmdEndRenderPass(mCommandBuffers[i]);
-			if (vkEndCommandBuffer(mCommandBuffers[i]) != VK_SUCCESS)
+			vkCmdEndRenderPass(m_commandBuffers[i]);
+			if (vkEndCommandBuffer(m_commandBuffers[i]) != VK_SUCCESS)
 			{
 				LOGCORE_ERROR("VULKAN: failed to record command buffer!");
 			}
@@ -1198,71 +1206,71 @@ namespace Chaos
 		}
 #else
 		//Resizing vectors to contain the new buffers
-		mCommandBuffers.resize(mSwapchainframebuffers.size());
+		m_commandBuffers.resize(m_swapchainframebuffers.size());
 
 		VkCommandBufferAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.commandPool = mCommandPool;
+		allocInfo.commandPool = m_commandPool;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandBufferCount = (uint32_t)mCommandBuffers.size();
+		allocInfo.commandBufferCount = (uint32_t)m_commandBuffers.size();
 
 
-		if (vkAllocateCommandBuffers(mDevice, &allocInfo, mCommandBuffers.data()) != VK_SUCCESS)
+		if (vkAllocateCommandBuffers(m_device, &allocInfo, m_commandBuffers.data()) != VK_SUCCESS)
 		{
 			LOGCORE_ERROR("VULKAN: failed to allocate command buffers!");
 			return;
 		}
 
-		for (size_t i = 0; i < mSwapchainframebuffers.size(); i++)
+		for (size_t i = 0; i < m_swapchainframebuffers.size(); i++)
 		{
 			VkCommandBufferBeginInfo beginInfo = {};
 			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-			if (vkBeginCommandBuffer(mCommandBuffers[i], &beginInfo) != VK_SUCCESS)
+			if (vkBeginCommandBuffer(m_commandBuffers[i], &beginInfo) != VK_SUCCESS)
 			{
 				LOGCORE_ERROR("VULKAN: failed to begin recording command buffer!");
 				return;
 			}
 			VkRenderPassBeginInfo renderPassInfo = {};
 			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-			renderPassInfo.renderPass = mRenderPass;
-			renderPassInfo.framebuffer = mSwapchainframebuffers[i];
+			renderPassInfo.renderPass = m_renderpass;
+			renderPassInfo.framebuffer = m_swapchainframebuffers[i];
 			renderPassInfo.renderArea.offset = { 0, 0 };
-			renderPassInfo.renderArea.extent = mSwapchainExtent;
+			renderPassInfo.renderArea.extent = m_swapchainExtent;
 
-			VkClearValue clearColor = { CLEAR_COLOR.r, CLEAR_COLOR.g, CLEAR_COLOR.b, CLEAR_COLOR.a };
+			VkClearValue clearColor = { CLEAR_COLOR.X, CLEAR_COLOR.Y, CLEAR_COLOR.Z, CLEAR_COLOR.W };
 			renderPassInfo.clearValueCount = 1;
 			renderPassInfo.pClearValues = &clearColor;
 
-			vkCmdBeginRenderPass(mCommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-			vkCmdBindPipeline(mCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline);
+			vkCmdBeginRenderPass(m_commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+			vkCmdBindPipeline(m_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
 
 			//Itterates through RenderQueue and records commands, drawing all objects of the same texture together.
-			for (uint32_t x = 0; x < mBuffers.size(); ++x)
+			for (uint32_t x = 0; x < m_buffers.size(); ++x)
 			{
 				//if a buffer is found that doesn't have all textures loaded, create descriptor sets
-				if (mBuffers[x].TexturesLoaded != mBuffers[x].TexturesToBind.size())
+				if (m_buffers[x].TexturesLoaded != m_buffers[x].TexturesToBind.size())
 				{
-					if (mDescriptorSets.size() > 0)
+					if (m_descriptorSets.size() > 0)
 					{
-						vkFreeDescriptorSets(mDevice, mDescriptorPool, (uint32_t)mDescriptorSets.size(), mDescriptorSets.data());
+						vkFreeDescriptorSets(m_device, m_descriptorPool, (uint32_t)m_descriptorSets.size(), m_descriptorSets.data());
 					}
 					CreateDescriptorSet();
 				}
 
-				VkBuffer vertexBuffersToBind[] = { mBuffers[x].VertexBuffer };
+				VkBuffer vertexBuffersToBind[] = { m_buffers[x].VertexBuffer };
 				VkDeviceSize offsets[] = { 0 };
-				vkCmdBindVertexBuffers(mCommandBuffers[i], 0, 1, vertexBuffersToBind, offsets);
+				vkCmdBindVertexBuffers(m_commandBuffers[i], 0, 1, vertexBuffersToBind, offsets);
 
-				vkCmdBindIndexBuffer(mCommandBuffers[i], mBuffers[x].IndexBuffer, 0, VK_INDEX_TYPE_UINT16);
+				vkCmdBindIndexBuffer(m_commandBuffers[i], m_buffers[x].IndexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
-				vkCmdBindDescriptorSets(mCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout, 0, 1, &mDescriptorSets[mBuffers[x].DescriptorIndex], 0, nullptr);
+				vkCmdBindDescriptorSets(m_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSets[m_buffers[x].DescriptorIndex], 0, nullptr);
 
-				vkCmdDrawIndexed(mCommandBuffers[i], static_cast<uint32_t>(mBuffers[x].IndexCount), 1, 0, 0, 0);
+				vkCmdDrawIndexed(m_commandBuffers[i], static_cast<uint32_t>(m_buffers[x].IndexCount), 1, 0, 0, 0);
 
 			}
-			vkCmdEndRenderPass(mCommandBuffers[i]);
-			if (vkEndCommandBuffer(mCommandBuffers[i]) != VK_SUCCESS)
+			vkCmdEndRenderPass(m_commandBuffers[i]);
+			if (vkEndCommandBuffer(m_commandBuffers[i]) != VK_SUCCESS)
 			{
 				LOGCORE_ERROR("VULKAN: failed to record command buffer!");
 			}
@@ -1275,10 +1283,10 @@ namespace Chaos
 	void VulkanRenderer::CreateSyncObjects()
 	{
 		//Resizing the sync object vectors to the max number of frames that can be in flight (the amount that will be asyncronusly prepared)
-		mImageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-		mRenderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-		mInFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
-		mImagesInFlight.resize(mSwapchainImages.size(), VK_NULL_HANDLE);
+		m_imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+		m_renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+		m_inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+		m_imagesInFlight.resize(m_swapchainImages.size(), VK_NULL_HANDLE);
 
 		VkSemaphoreCreateInfo semaphoreInfo = {};
 		semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -1289,9 +1297,9 @@ namespace Chaos
 
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
 		{
-			if (vkCreateSemaphore(mDevice, &semaphoreInfo, nullptr, &mImageAvailableSemaphores[i]) != VK_SUCCESS ||
-				vkCreateSemaphore(mDevice, &semaphoreInfo, nullptr, &mRenderFinishedSemaphores[i]) != VK_SUCCESS ||
-				vkCreateFence(mDevice, &fenceInfo, nullptr, &mInFlightFences[i]) != VK_SUCCESS)
+			if (vkCreateSemaphore(m_device, &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]) != VK_SUCCESS ||
+				vkCreateSemaphore(m_device, &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]) != VK_SUCCESS ||
+				vkCreateFence(m_device, &fenceInfo, nullptr, &m_inFlightFences[i]) != VK_SUCCESS)
 			{
 				LOGCORE_ERROR("VULKAN: failed to create synchronization objects for frame {0}!", i);
 			}
@@ -1307,23 +1315,23 @@ namespace Chaos
 		bufferInfo.usage = usage;
 		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-		if (vkCreateBuffer(mDevice, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+		if (vkCreateBuffer(m_device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
 			LOGCORE_ERROR("failed to create buffer!");
 		}
 
 		VkMemoryRequirements memRequirements;
-		vkGetBufferMemoryRequirements(mDevice, buffer, &memRequirements);
+		vkGetBufferMemoryRequirements(m_device, buffer, &memRequirements);
 
 		VkMemoryAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 		allocInfo.allocationSize = memRequirements.size;
 		allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
 
-		if (vkAllocateMemory(mDevice, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
+		if (vkAllocateMemory(m_device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
 			LOGCORE_ERROR("VULKAN: failed to allocate buffer memory!");
 		}
 
-		vkBindBufferMemory(mDevice, buffer, bufferMemory, 0);
+		vkBindBufferMemory(m_device, buffer, bufferMemory, 0);
 	}
 
 	//Helper function for copying buffers using single time commands
@@ -1375,15 +1383,15 @@ namespace Chaos
 	//Helper func that begins a single time command, allocates a command to the pool and starts recording
 	VkCommandBuffer VulkanRenderer::BeginSingleTimeCommands()
 	{
-		commandPoolMutex.lock();
+		m_commandPoolMutex.lock();
 		VkCommandBufferAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandPool = mCommandPool;
+		allocInfo.commandPool = m_commandPool;
 		allocInfo.commandBufferCount = 1;
 
 		VkCommandBuffer commandBuffer;
-		vkAllocateCommandBuffers(mDevice, &allocInfo, &commandBuffer);
+		vkAllocateCommandBuffers(m_device, &allocInfo, &commandBuffer);
 
 		VkCommandBufferBeginInfo beginInfo = {};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -1404,11 +1412,11 @@ namespace Chaos
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &commandBuffer;
 
-		vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(mGraphicsQueue);
+		vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+		vkQueueWaitIdle(m_graphicsQueue);
 
-		vkFreeCommandBuffers(mDevice, mCommandPool, 1, &commandBuffer);
-		commandPoolMutex.unlock();
+		vkFreeCommandBuffers(m_device, m_commandPool, 1, &commandBuffer);
+		m_commandPoolMutex.unlock();
 	}
 
 	//Creates and binds an image to an image memory
@@ -1429,22 +1437,22 @@ namespace Chaos
 		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-		if (vkCreateImage(mDevice, &imageInfo, nullptr, &image) != VK_SUCCESS) {
+		if (vkCreateImage(m_device, &imageInfo, nullptr, &image) != VK_SUCCESS) {
 			LOGCORE_ERROR("VULKAN: failed to create image!");
 		}
 
 		VkMemoryRequirements memRequirements;
-		vkGetImageMemoryRequirements(mDevice, image, &memRequirements);
+		vkGetImageMemoryRequirements(m_device, image, &memRequirements);
 
 		VkMemoryAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 		allocInfo.allocationSize = memRequirements.size;
 		allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
 
-		if (vkAllocateMemory(mDevice, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
+		if (vkAllocateMemory(m_device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
 			LOGCORE_ERROR("VULKAN: failed to allocate image memory!");
 		}
-		vkBindImageMemory(mDevice, image, imageMemory, 0);
+		vkBindImageMemory(m_device, image, imageMemory, 0);
 	}
 
 	//Translates the image format, used to make sending the image data to the GPU more performant
@@ -1521,7 +1529,7 @@ namespace Chaos
 		viewInfo.subresourceRange.layerCount = 1;
 
 		VkImageView imageView;
-		if (vkCreateImageView(mDevice, &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
+		if (vkCreateImageView(m_device, &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
 			LOGCORE_ERROR("VULKAN: failed to create texture image view!");
 		}
 
@@ -1531,35 +1539,35 @@ namespace Chaos
 	//Called once the swapchain is invalidated. Destroys all elements needed for swapchain creation
 	void VulkanRenderer::CleanUpSwapchain()
 	{
-		for (auto framebuffer : mSwapchainframebuffers)
+		for (auto framebuffer : m_swapchainframebuffers)
 		{
-			vkDestroyFramebuffer(mDevice, framebuffer, nullptr);
+			vkDestroyFramebuffer(m_device, framebuffer, nullptr);
 		}
 
-		vkFreeCommandBuffers(mDevice, mCommandPool, static_cast<uint32_t>(mCommandBuffers.size()), mCommandBuffers.data());
+		vkFreeCommandBuffers(m_device, m_commandPool, static_cast<uint32_t>(m_commandBuffers.size()), m_commandBuffers.data());
 
-		vkDestroyPipeline(mDevice, mGraphicsPipeline, nullptr);
-		vkDestroyPipelineLayout(mDevice, mPipelineLayout, nullptr);
-		vkDestroyRenderPass(mDevice, mRenderPass, nullptr);
+		vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
+		vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
+		vkDestroyRenderPass(m_device, m_renderpass, nullptr);
 
-		for (auto imageView : mSwapchainImageViews) {
-			vkDestroyImageView(mDevice, imageView, nullptr);
+		for (auto imageView : m_swapchainImageViews) {
+			vkDestroyImageView(m_device, imageView, nullptr);
 		}
 
-		vkDestroySwapchainKHR(mDevice, mSwapchain, nullptr);
+		vkDestroySwapchainKHR(m_device, m_swapchain, nullptr);
 
-		for (size_t i = 0; i < mSwapchainImages.size(); i++) {
-			vkDestroyBuffer(mDevice, mUniformBuffers[i], nullptr);
-			vkFreeMemory(mDevice, mUniformBuffersMemory[i], nullptr);
+		for (size_t i = 0; i < m_swapchainImages.size(); i++) {
+			vkDestroyBuffer(m_device, m_uniformBuffers[i], nullptr);
+			vkFreeMemory(m_device, m_uniformBuffersMemory[i], nullptr);
 		}
 
-		vkDestroyDescriptorPool(mDevice, mDescriptorPool, nullptr);
+		vkDestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
 	}
 
 	//Called once the swapchain is invalidated. Calls all functions needed to destroy and recreate the swapchain
 	void VulkanRenderer::RecreateSwapchain()
 	{
-		vkDeviceWaitIdle(mDevice);
+		vkDeviceWaitIdle(m_device);
 
 		CleanUpSwapchain();
 
@@ -1578,9 +1586,9 @@ namespace Chaos
 	//Updates all the UBOs maps memory for them. Resets vectors containing buffer memory and repopulates them
 	void VulkanRenderer::UpdateUniformBuffers()
 	{
-		mUniformBuffers.resize(mSwapchainImages.size());
-		mUniformBuffersMemory.resize(mSwapchainImages.size());
-		for (size_t i = 0; i < mSwapchainImages.size(); ++i)
+		m_uniformBuffers.resize(m_swapchainImages.size());
+		m_uniformBuffersMemory.resize(m_swapchainImages.size());
+		for (size_t i = 0; i < m_swapchainImages.size(); ++i)
 		{
 			UniformBufferObject ubo = {};
 			//ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -1588,13 +1596,13 @@ namespace Chaos
 			//ubo.proj = glm::ortho(-5.0f * (float)mSwapchainExtent.width / (float)mSwapchainExtent.height, 5.0f * (float)mSwapchainExtent.width / (float)mSwapchainExtent.height, 5.0f, -5.0f, -5.0f, 5.0f); //glm::perspective(glm::radians(45.0f), (float)swapchainExtent.width / (float)swapchainExtent.height, 0.1f, 1000.0f);
 
 
-			ubo.view = Application::Get().GetMainCamera().GetView();
-			ubo.proj = Application::Get().GetMainCamera().GetProjection();
+			ubo.view = Application::Get().GetMainCamera()->GetView();
+			ubo.proj = Application::Get().GetMainCamera()->GetProjection();
 
 			void* data;
-			vkMapMemory(mDevice, mUniformBuffersMemory[i], 0, sizeof(ubo), 0, &data);
+			vkMapMemory(m_device, m_uniformBuffersMemory[i], 0, sizeof(ubo), 0, &data);
 			memcpy(data, &ubo, sizeof(ubo));
-			vkUnmapMemory(mDevice, mUniformBuffersMemory[i]);
+			vkUnmapMemory(m_device, m_uniformBuffersMemory[i]);
 		}
 	}
 	
@@ -1603,17 +1611,17 @@ namespace Chaos
 	//Draw called once every game loop to display the data passed to it that loop
 	void VulkanRenderer::DrawFrame()
 	{
-		if (mVertices.size() > 0)
-			CreateAndClearBuffers(mBuffers.size());
-		if (mBuffers.size() > 0)
+		if (m_vertices.size() > 0)
+			CreateBuffersAndClearResources(m_buffers.size());
+		if (m_buffers.size() > 0)
 		{
 			//DRAW
-			mWaitingOnFences = true;
-			vkWaitForFences(mDevice, 1, &mInFlightFences[mCurrentFrame], VK_TRUE, UINT64_MAX);
-			vkResetFences(mDevice, 1, &mInFlightFences[mCurrentFrame]);
-			mWaitingOnFences = false;
+			m_waitingOnFences = true;
+			vkWaitForFences(m_device, 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
+			vkResetFences(m_device, 1, &m_inFlightFences[m_currentFrame]);
+			m_waitingOnFences = false;
 
-			VkResult result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mImageAvailableSemaphores[mCurrentFrame], VK_NULL_HANDLE, &mImageIndex);
+			VkResult result = vkAcquireNextImageKHR(m_device, m_swapchain, UINT64_MAX, m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, &m_imageIndex);
 
 			if (result == VK_ERROR_OUT_OF_DATE_KHR)
 			{
@@ -1629,24 +1637,24 @@ namespace Chaos
 			CreateCommandBuffers();
 
 			//Check if a previous frame is using the same image
-			if (mImagesInFlight[mImageIndex] != VK_NULL_HANDLE)
+			if (m_imagesInFlight[m_imageIndex] != VK_NULL_HANDLE)
 			{
-				vkWaitForFences(mDevice, 1, &mImagesInFlight[mImageIndex], VK_TRUE, UINT64_MAX);
+				vkWaitForFences(m_device, 1, &m_imagesInFlight[m_imageIndex], VK_TRUE, UINT64_MAX);
 			}
 
-			mImagesInFlight[mImageIndex] = mInFlightFences[mCurrentFrame];
+			m_imagesInFlight[m_imageIndex] = m_inFlightFences[m_currentFrame];
 
 			//Adding the command buffers to the submit buffer, if there is an imgui buffer also attach imgui command buffers for drawing UI
 			//Potential change: add check to see if a bool for rendering UI is true, would allow for toggling UI on and off. Could be done at a higher level
-			std::vector<VkCommandBuffer> submitCommandBuffers = { mCommandBuffers[mImageIndex] };
-			if (mImGuiCommandBuffers.size() > 0 && mRenderingGUI)
+			std::vector<VkCommandBuffer> submitCommandBuffers = { m_commandBuffers[m_imageIndex] };
+			if (m_imGuiCommandBuffers.size() > 0 && m_renderingGUI)
 			{
-				submitCommandBuffers.push_back(mImGuiCommandBuffers[mImageIndex]);
+				submitCommandBuffers.push_back(m_imGuiCommandBuffers[m_imageIndex]);
 			}
 			VkSubmitInfo submitInfo = {};
 			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-			VkSemaphore waitSemaphores[] = { mImageAvailableSemaphores[mCurrentFrame] };
+			VkSemaphore waitSemaphores[] = { m_imageAvailableSemaphores[m_currentFrame] };
 			VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 			submitInfo.waitSemaphoreCount = 1;
 			submitInfo.pWaitSemaphores = waitSemaphores;
@@ -1655,13 +1663,13 @@ namespace Chaos
 			submitInfo.commandBufferCount = (uint32_t)submitCommandBuffers.size();
 			submitInfo.pCommandBuffers = submitCommandBuffers.data();
 
-			VkSemaphore signalSemaphore[] = { mRenderFinishedSemaphores[mCurrentFrame] };
+			VkSemaphore signalSemaphore[] = { m_renderFinishedSemaphores[m_currentFrame] };
 			submitInfo.signalSemaphoreCount = 1;
 			submitInfo.pSignalSemaphores = signalSemaphore;
 
-			vkResetFences(mDevice, 1, &mInFlightFences[mCurrentFrame]);
+			vkResetFences(m_device, 1, &m_inFlightFences[m_currentFrame]);
 
-			if (vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, mInFlightFences[mCurrentFrame]) != VK_SUCCESS)
+			if (vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, m_inFlightFences[m_currentFrame]) != VK_SUCCESS)
 			{
 				LOGCORE_ERROR("VULKAN: failed to submit draw command buffer!");
 			}
@@ -1672,18 +1680,18 @@ namespace Chaos
 			presentInfo.waitSemaphoreCount = 1;
 			presentInfo.pWaitSemaphores = signalSemaphore;
 
-			VkSwapchainKHR swapChains[] = { mSwapchain };
+			VkSwapchainKHR swapChains[] = { m_swapchain };
 			presentInfo.swapchainCount = 1;
 			presentInfo.pSwapchains = swapChains;
-			presentInfo.pImageIndices = &mImageIndex;
+			presentInfo.pImageIndices = &m_imageIndex;
 			presentInfo.pResults = nullptr;
 
-			result = vkQueuePresentKHR(mPresentQueue, &presentInfo);
+			result = vkQueuePresentKHR(m_presentQueue, &presentInfo);
 
 			//if the swapchain has been invalidated or the frame buffer has been resized, then recreate it
-			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || mFramebufferResized)
+			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_framebufferResized)
 			{
-				mFramebufferResized = false;
+				m_framebufferResized = false;
 				RecreateSwapchain();
 				return;
 			}
@@ -1692,33 +1700,33 @@ namespace Chaos
 				LOGCORE_ERROR("VULKAN: failed to present swapchain image");
 			}
 
-			mCurrentFrame = (mCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-			vkQueueWaitIdle(mPresentQueue);	//Waiting for the queue to be idle before clean up
+			m_currentFrame = (m_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+			vkQueueWaitIdle(m_presentQueue);	//Waiting for the queue to be idle before clean up
 
 
 			//Cleaning up resources after rendering a frame
-			vkFreeCommandBuffers(mDevice, mCommandPool, static_cast<uint32_t>(mCommandBuffers.size()), mCommandBuffers.data());
+			vkFreeCommandBuffers(m_device, m_commandPool, static_cast<uint32_t>(m_commandBuffers.size()), m_commandBuffers.data());
 
-			if (mRenderingGUI)
+			if (m_renderingGUI)
 			{
-				vkFreeCommandBuffers(mDevice, *mImGuiCommandPool, static_cast<uint32_t>(mImGuiCommandBuffers.size()), mImGuiCommandBuffers.data());
-				for (auto framebuffer : *mImGuiFrameBuffer) {
-					vkDestroyFramebuffer(mDevice, framebuffer, nullptr);
+				vkFreeCommandBuffers(m_device, *m_imGuiCommandPool, static_cast<uint32_t>(m_imGuiCommandBuffers.size()), m_imGuiCommandBuffers.data());
+				for (auto framebuffer : *m_imGuiFrameBuffer) {
+					vkDestroyFramebuffer(m_device, framebuffer, nullptr);
 				}
 			}
 
 			//TODO: change to only free dynamic buffers
-			for (size_t i = 0; i < mBuffers.size(); ++i)
+			for (size_t i = 0; i < m_buffers.size(); ++i)
 			{
-				vkDestroyBuffer(mDevice, mBuffers[i].VertexBuffer, nullptr);
-				vkFreeMemory(mDevice, mBuffers[i].VertexBufferMemory, nullptr);
-				vkDestroyBuffer(mDevice, mBuffers[i].IndexBuffer, nullptr);
-				vkFreeMemory(mDevice, mBuffers[i].IndexBufferMemory, nullptr);
+				vkDestroyBuffer(m_device, m_buffers[i].VertexBuffer, nullptr);
+				vkFreeMemory(m_device, m_buffers[i].VertexBufferMemory, nullptr);
+				vkDestroyBuffer(m_device, m_buffers[i].IndexBuffer, nullptr);
+				vkFreeMemory(m_device, m_buffers[i].IndexBufferMemory, nullptr);
 			}
 
-			mBuffers.clear(); //TODO: change to only clear dynamic buffers
-			mImGuiCommandBuffers.clear();
-			mTotalQuadsDrawn = 0;
+			m_buffers.clear(); //TODO: change to only clear dynamic buffers
+			m_imGuiCommandBuffers.clear();
+			m_totalQuadsDrawn = 0;
 		}
 
 	}
@@ -1764,22 +1772,22 @@ namespace Chaos
 	{
 		SwapChainSupportDetails details;
 
-		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, mSurface, &details.Capabilities);
+		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, m_surface, &details.Capabilities);
 
 		uint32_t formatCount;
-		vkGetPhysicalDeviceSurfaceFormatsKHR(device, mSurface, &formatCount, nullptr);
+		vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_surface, &formatCount, nullptr);
 
 		if (formatCount != 0) {
 			details.Formats.resize(formatCount);
-			vkGetPhysicalDeviceSurfaceFormatsKHR(device, mSurface, &formatCount, details.Formats.data());
+			vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_surface, &formatCount, details.Formats.data());
 		}
 
 		uint32_t presentModeCount;
-		vkGetPhysicalDeviceSurfacePresentModesKHR(device, mSurface, &presentModeCount, nullptr);
+		vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_surface, &presentModeCount, nullptr);
 
 		if (presentModeCount != 0) {
 			details.PresentModes.resize(presentModeCount);
-			vkGetPhysicalDeviceSurfacePresentModesKHR(device, mSurface, &presentModeCount, details.PresentModes.data());
+			vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_surface, &presentModeCount, details.PresentModes.data());
 		}
 
 		return details;
@@ -1809,7 +1817,7 @@ namespace Chaos
 		std::vector<VkExtensionProperties> availableExtensions(extensionCount);
 		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
 
-		std::set<std::string> requiredExtensions(mDeviceExtensions.begin(), mDeviceExtensions.end());
+		std::set<std::string> requiredExtensions(m_deviceExtensions.begin(), m_deviceExtensions.end());
 
 		for (const auto& extension : availableExtensions) {
 			requiredExtensions.erase(extension.extensionName);
@@ -1834,7 +1842,7 @@ namespace Chaos
 			}
 
 			VkBool32 presentSupport = false;
-			vkGetPhysicalDeviceSurfaceSupportKHR(device, i, mSurface, &presentSupport);
+			vkGetPhysicalDeviceSurfaceSupportKHR(device, i, m_surface, &presentSupport);
 
 			if (presentSupport) {
 				indices.presentFamily = i;
@@ -1871,7 +1879,7 @@ namespace Chaos
 		std::vector<VkLayerProperties> availableLayers(layerCount);
 		vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-		for (const char* layerName : mValidationLayers) {
+		for (const char* layerName : m_validationLayers) {
 			bool layerFound = false;
 
 			for (const auto& layerProperties : availableLayers) {
@@ -1928,7 +1936,7 @@ namespace Chaos
 		createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
 		VkShaderModule shaderModule;
-		if (vkCreateShaderModule(mDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+		if (vkCreateShaderModule(m_device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
 			LOGCORE_ERROR("VULKAN: could not create shader module!");
 		}
 

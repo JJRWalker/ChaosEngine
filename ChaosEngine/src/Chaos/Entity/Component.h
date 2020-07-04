@@ -3,7 +3,7 @@
 
 namespace Chaos
 {
-	class Component
+	class IComponent
 	{
 	public:
 		virtual void Start() const = 0;

@@ -167,13 +167,10 @@
     <ClInclude Include="src\Chaos\Input\Input.h" />
     <ClInclude Include="src\Chaos\Input\KeyCodes.h" />
     <ClInclude Include="src\Chaos\Input\MouseCodes.h" />
-    <ClInclude Include="src\Chaos\Renderer\PrimitiveType.h" />
-    <ClInclude Include="src\Chaos\Renderer\Quad.h" />
     <ClInclude Include="src\Chaos\Renderer\Renderer.h" />
     <ClInclude Include="src\Chaos\Renderer\RendererAPI.h" />
     <ClInclude Include="src\Chaos\Renderer\SubTexture.h" />
     <ClInclude Include="src\Chaos\Renderer\Texture.h" />
-    <ClInclude Include="src\Chaos\Renderer\Vertex.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanRenderer.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanSubTexture.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanTexture.h" />
@@ -564,7 +561,6 @@
   <ItemGroup>
     <ClCompile Include="src\Chaos\Entity\Components\Camera.cpp" />
     <ClCompile Include="src\Chaos\Core\Application.cpp" />
-    <ClCompile Include="src\Chaos\Core\Layer.cpp" />
     <ClCompile Include="src\Chaos\Core\LayerStack.cpp" />
     <ClCompile Include="src\Chaos\Core\Log.cpp" />
     <ClCompile Include="src\Chaos\Core\Scene.cpp" />

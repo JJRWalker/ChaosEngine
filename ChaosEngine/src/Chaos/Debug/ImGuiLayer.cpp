@@ -5,8 +5,8 @@
 #include "ImGUI/examples/imgui_impl_vulkan.h"
 #include "ImGUI/examples/imgui_impl_glfw.h"
 #include "Chaos/Core/Application.h"
-#include "Chaos/Renderer/Renderer.h"
 #include "Platform/Vulkan/VulkanRenderer.h"
+#include "Platform/Vulkan/VulkanTexture.h"
 
 #ifndef GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_NONE
@@ -74,41 +74,43 @@ namespace Chaos
 		// Setup Platform/Renderer bindings
 
 		ImGui_ImplVulkan_InitInfo init_info = {};
-		init_info.Instance = renderer.mInstance;
-		init_info.PhysicalDevice = renderer.mPhysicalDevice;
-		init_info.Device = renderer.mDevice;
-		init_info.QueueFamily = renderer.FindQueueFamilies(renderer.mPhysicalDevice).graphicsFamily.value();
-		init_info.Queue = renderer.mPresentQueue;
+		init_info.Instance = renderer.m_instance;
+		init_info.PhysicalDevice = renderer.m_physicalDevice;
+		init_info.Device = renderer.m_device;
+		init_info.QueueFamily = renderer.FindQueueFamilies(renderer.m_physicalDevice).graphicsFamily.value();
+		init_info.Queue = renderer.m_presentQueue;
 		init_info.PipelineCache = VK_NULL_HANDLE;
-		init_info.DescriptorPool = mDescriptorPool;
+		init_info.DescriptorPool = m_descriptorPool;
 		init_info.Allocator = nullptr;
 		init_info.MinImageCount = 2;
 		init_info.ImageCount = 2;
 		init_info.CheckVkResultFn = check_vk_result;
-		ImGui_ImplVulkan_Init(&init_info, renderpass);
+		ImGui_ImplVulkan_Init(&init_info, m_renderpass);
 
 		VkCommandBuffer commandBuffer = renderer.BeginSingleTimeCommands();
 		ImGui_ImplVulkan_CreateFontsTexture(commandBuffer);
 		renderer.EndSingleTimeCommands(commandBuffer);
 
-		clear = { 0.0f, 0.0f, 0.0f, 0.0f };
-		mVeiwportImageId = (ImTextureID)ImGui_ImplVulkan_AddTexture(renderer.mTextureSampler, renderer.mRenderedFrameViews[renderer.mCurrentFrame], VK_IMAGE_LAYOUT_UNDEFINED);
+		m_clear = { 0.0f, 0.0f, 0.0f, 0.0f };
+#if !CHAOS_RELEASE		
+		m_veiwportImageId = (ImTextureID)ImGui_ImplVulkan_AddTexture(renderer.m_textureSampler, renderer.m_renderedFrameViews[renderer.m_currentFrame], VK_IMAGE_LAYOUT_UNDEFINED);
+#endif
 	}
 
 	void ImGuiLayer::OnDetach()
 	{
 		Application& app = Application::Get();
 		VulkanRenderer& renderer = dynamic_cast<VulkanRenderer&>(app.GetRenderer());
-		vkDestroyRenderPass(renderer.mDevice, renderpass, nullptr);
+		vkDestroyRenderPass(renderer.m_device, m_renderpass, nullptr);
 
-		vkFreeCommandBuffers(renderer.mDevice, commandPool, static_cast<uint32_t>(mCommandBuffers.size()), mCommandBuffers.data());
-		vkDestroyCommandPool(renderer.mDevice, commandPool, nullptr);
+		vkFreeCommandBuffers(renderer.m_device, m_commandPool, static_cast<uint32_t>(m_commandBuffers.size()), m_commandBuffers.data());
+		vkDestroyCommandPool(renderer.m_device, m_commandPool, nullptr);
 
 		// Resources to destroy when the program ends
 		ImGui_ImplVulkan_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
-		vkDestroyDescriptorPool(renderer.mDevice, mDescriptorPool, nullptr);
+		vkDestroyDescriptorPool(renderer.m_device, m_descriptorPool, nullptr);
 	}
 
 	void ImGuiLayer::Begin()
@@ -119,6 +121,11 @@ namespace Chaos
 
 	void ImGuiLayer::OnImGuiRender()
 	{
+		static bool show = false;
+		//ImGui::ShowDemoWindow(&show);-
+		VulkanRenderer& renderer = dynamic_cast<VulkanRenderer&>(Application::Get().GetRenderer());
+
+#if !CHAOS_RELEASE
 		// Note: Switch this to true to enable dockspace
 		static bool dockspaceOpen = true;
 		static bool opt_fullscreen_persistant = true;
@@ -180,19 +187,13 @@ namespace Chaos
 		}
 		ImGui::End();
 
-
-
-		static bool show = false ;
-		//ImGui::ShowDemoWindow(&show);-
-		VulkanRenderer& renderer = dynamic_cast<VulkanRenderer&>(Application::Get().GetRenderer());
-
 		ImGui::Begin("viewport");		
-		if (mVeiwportImageId != nullptr)
+		if (m_veiwportImageId != nullptr)
 		{
-			ImGui::Image(mVeiwportImageId, { 720, 480 }, ImVec2{ 0, -1 }, ImVec2{ 1, 0 });
+			ImGui::Image(m_veiwportImageId, { 720, 480 }, ImVec2{ 0, -1 }, ImVec2{ 1, 0 });
 		}
 		ImGui::End();
-
+#endif
 		// FIXME-VIEWPORT: Select a default viewport
 		const float DISTANCE = 10.0f;
 		static int corner = 2;
@@ -208,8 +209,8 @@ namespace Chaos
 		if (ImGui::Begin("FPS counter", &show, (corner != -1 ? ImGuiWindowFlags_NoMove : 0) | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
 		{
 			ImGui::Text("FPS: %f", 1 / mTime);
-			ImGui::Text("Quads: %d", renderer.mTotalQuadsDrawn);
-			ImGui::Text("Draw calls: %d", renderer.mBuffers.size() + 1);
+			ImGui::Text("Quads: %d", renderer.m_totalQuadsDrawn);
+			ImGui::Text("Draw calls: %d", renderer.m_buffers.size() + 1);
 
 			if (ImGui::BeginPopupContextWindow())
 			{
@@ -234,9 +235,6 @@ namespace Chaos
 		//Rendering			   
 		ImGui::Render();
 
-		VulkanTexture* texture = new VulkanTexture();
-		delete texture;
-
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			GLFWwindow* backup_current_context = glfwGetCurrentContext();
@@ -245,36 +243,36 @@ namespace Chaos
 			glfwMakeContextCurrent(backup_current_context);
 		}
 
-		uint32_t mImageIndex = renderer.mImageIndex;
+		uint32_t mImageIndex = renderer.m_imageIndex;
 
 		//Create command bufferr
-		mCommandBuffers.resize(renderer.mSwapchainImageViews.size());
+		m_commandBuffers.resize(renderer.m_swapchainImageViews.size());
 
 		VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
 		commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		commandBufferAllocateInfo.commandPool = commandPool;
-		commandBufferAllocateInfo.commandBufferCount = (uint32_t)mCommandBuffers.size();
-		vkAllocateCommandBuffers(renderer.mDevice, &commandBufferAllocateInfo, mCommandBuffers.data());
+		commandBufferAllocateInfo.commandPool = m_commandPool;
+		commandBufferAllocateInfo.commandBufferCount = (uint32_t)m_commandBuffers.size();
+		vkAllocateCommandBuffers(renderer.m_device, &commandBufferAllocateInfo, m_commandBuffers.data());
 
-		frameBuffers.resize(renderer.mSwapchainImageViews.size());
+		m_frameBuffers.resize(renderer.m_swapchainImageViews.size());
 
 		//Create frame buffers
-		for (size_t i = 0; i < renderer.mSwapchainImageViews.size(); ++i)
+		for (size_t i = 0; i < renderer.m_swapchainImageViews.size(); ++i)
 		{
 			VkImageView attachments[] = {
-				renderer.mSwapchainImageViews[i]
+				renderer.m_swapchainImageViews[i]
 			};
 			VkFramebufferCreateInfo framebufferInfo = {};
 			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-			framebufferInfo.renderPass = renderpass;
+			framebufferInfo.renderPass = m_renderpass;
 			framebufferInfo.attachmentCount = 1;
 			framebufferInfo.pAttachments = attachments;
-			framebufferInfo.width = renderer.mSwapchainExtent.width;
-			framebufferInfo.height = renderer.mSwapchainExtent.height;
+			framebufferInfo.width = renderer.m_swapchainExtent.width;
+			framebufferInfo.height = renderer.m_swapchainExtent.height;
 			framebufferInfo.layers = 1;
 
-			if (vkCreateFramebuffer(renderer.mDevice, &framebufferInfo, nullptr, &frameBuffers[i]) != VK_SUCCESS)
+			if (vkCreateFramebuffer(renderer.m_device, &framebufferInfo, nullptr, &m_frameBuffers[i]) != VK_SUCCESS)
 			{
 				LOGCORE_ERROR("IMGUI: failed to create framebuffer!");
 			}
@@ -283,33 +281,33 @@ namespace Chaos
 		VkCommandBufferBeginInfo beginInfo = {};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-		for (size_t i = 0; i < mCommandBuffers.size(); ++i)
+		for (size_t i = 0; i < m_commandBuffers.size(); ++i)
 		{
 			VkRenderPassBeginInfo renderpassinfo = {};
 			renderpassinfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-			renderpassinfo.renderPass = renderpass;
-			renderpassinfo.framebuffer = frameBuffers[i];
-			renderpassinfo.renderArea.extent.width = renderer.mSwapchainExtent.width;
-			renderpassinfo.renderArea.extent.height = renderer.mSwapchainExtent.height;
+			renderpassinfo.renderPass = m_renderpass;
+			renderpassinfo.framebuffer = m_frameBuffers[i];
+			renderpassinfo.renderArea.extent.width = renderer.m_swapchainExtent.width;
+			renderpassinfo.renderArea.extent.height = renderer.m_swapchainExtent.height;
 			renderpassinfo.clearValueCount = 1;
-			renderpassinfo.pClearValues = &clear;
+			renderpassinfo.pClearValues = &m_clear;
 
-			vkBeginCommandBuffer(mCommandBuffers[i], &beginInfo);
+			vkBeginCommandBuffer(m_commandBuffers[i], &beginInfo);
 
 			//vkCmdBindPipeline(mCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer.mGraphicsPipeline);
-			vkCmdBeginRenderPass(mCommandBuffers[i], &renderpassinfo, VK_SUBPASS_CONTENTS_INLINE);
+			vkCmdBeginRenderPass(m_commandBuffers[i], &renderpassinfo, VK_SUBPASS_CONTENTS_INLINE);
 			
 
 
-			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), mCommandBuffers[i]);
+			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), m_commandBuffers[i]);
 
-			vkCmdEndRenderPass(mCommandBuffers[i]);
-			vkEndCommandBuffer(mCommandBuffers[i]);
+			vkCmdEndRenderPass(m_commandBuffers[i]);
+			vkEndCommandBuffer(m_commandBuffers[i]);
 		}
-		renderer.SetImGuiCommandBuffer(mCommandBuffers);	
-		renderer.SetImGuiCommandPool(&commandPool);
-		renderer.SetImGuiFramebuffer(&frameBuffers);
-		renderer.mRenderingGUI = true;
+		renderer.SetImGuiCommandBuffer(m_commandBuffers);	
+		renderer.SetImGuiCommandPool(&m_commandPool);
+		renderer.SetImGuiFramebuffer(&m_frameBuffers);
+		renderer.m_renderingGUI = true;
 	}
 
 	void ImGuiLayer::VulkanInit()
@@ -341,7 +339,7 @@ namespace Chaos
 		poolInfo.poolSizeCount = (uint32_t)IM_ARRAYSIZE(poolSizes);
 		poolInfo.pPoolSizes = poolSizes;
 
-		if (vkCreateDescriptorPool(renderer.mDevice, &poolInfo, nullptr, &mDescriptorPool) != VK_SUCCESS)
+		if (vkCreateDescriptorPool(renderer.m_device, &poolInfo, nullptr, &m_descriptorPool) != VK_SUCCESS)
 		{
 			LOGCORE_ERROR("VULKAN: failed to allocate descriptor pool!");
 		}
@@ -350,15 +348,15 @@ namespace Chaos
 		//Create command pool
 		VkCommandPoolCreateInfo commandPoolCreateInfo = {};
 		commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-		commandPoolCreateInfo.queueFamilyIndex = renderer.FindQueueFamilies(renderer.mPhysicalDevice).graphicsFamily.value();
+		commandPoolCreateInfo.queueFamilyIndex = renderer.FindQueueFamilies(renderer.m_physicalDevice).graphicsFamily.value();
 		commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-		if (vkCreateCommandPool(renderer.mDevice, &commandPoolCreateInfo, nullptr, &commandPool) != VK_SUCCESS) {
+		if (vkCreateCommandPool(renderer.m_device, &commandPoolCreateInfo, nullptr, &m_commandPool) != VK_SUCCESS) {
 			LOGCORE_ERROR("IMGUI: Could not create graphics command pool");
 		}
 
 		VkAttachmentDescription attachment = {};
-		attachment.format = renderer.mSwapchainImageFormat;
+		attachment.format = renderer.m_swapchainImageFormat;
 		attachment.samples = VK_SAMPLE_COUNT_1_BIT;
 		attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -393,7 +391,7 @@ namespace Chaos
 		info.dependencyCount = 1;
 		info.pDependencies = &dependency;
 
-		if (vkCreateRenderPass(renderer.mDevice, &info, nullptr, &renderpass) != VK_SUCCESS) {
+		if (vkCreateRenderPass(renderer.m_device, &info, nullptr, &m_renderpass) != VK_SUCCESS) {
 			LOGCORE_ERROR("IMGUI: Could not create ImGui's render pass");
 		}
 	}

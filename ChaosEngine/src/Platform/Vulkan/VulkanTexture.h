@@ -12,32 +12,34 @@ namespace Chaos
 		VulkanTexture();
 		VulkanTexture(const char* filePath);
 
-		virtual ~VulkanTexture();
+		virtual ~VulkanTexture() {};
 
-		virtual void SetFilePath(const char* path) const override { mFilePath = path; }
-		virtual const char* GetFilePath() const override { return mFilePath; }
+		//Must explicitly unload textures, note if renderer doesn't exist on load or unload, it will fail to be dealocated or alocated
+		virtual void Load (const char* filePath) override;
+		virtual void Unload() override;
 
-		virtual void SetWidth(uint32_t width) { mWidth = width; }
-		virtual void SetHeight(uint32_t height) { mHeight = height; }
+		virtual const char* GetFilePath() const override { return m_filePath; }
 
-		virtual uint32_t GetWidth() const override { return mWidth; }
-		virtual uint32_t GetHeight() const override { return mHeight; }
-		virtual int GetSize() const override { return mSize; }
+		virtual uint32_t GetWidth() const override { return m_width; }
+		virtual uint32_t GetHeight() const override { return m_height; }
+		virtual int GetSize() const override { return m_size; }
 		
-		VkImage& GetImage() { return mImage; }
-		VkDeviceMemory& GetImageMemory() { return mImageMemory; }
-		VkImageView& GetImageView() { return mImageView; }
+		VkImage& GetImage() { return m_image; }
+		VkDeviceMemory& GetImageMemory() { return m_imageMemory; }
+		VkImageView& GetImageView() { return m_imageView; }
 
 
 	private: 
-		mutable const char* mFilePath;
-		uint32_t mWidth = 0;
-		uint32_t mHeight = 0;
-		int mSize;
-		VkImage mImage;
-		VkDeviceMemory mImageMemory;
-		VkImageView mImageView;
+		mutable const char* m_filePath;	//not sure if having a mutable const char pointer is a good idea...
+		uint32_t m_width = 0;
+		uint32_t m_height = 0;
+		int m_size;
+		VkImage m_image;
+		VkDeviceMemory m_imageMemory;
+		VkImageView m_imageView;
 		//reference to the renderer we created the texture on
-		VulkanRenderer& mRenderer;
+		VulkanRenderer& m_renderer;
+		//has this texture been loaded to
+		bool m_loaded = false; 
 	};
 }

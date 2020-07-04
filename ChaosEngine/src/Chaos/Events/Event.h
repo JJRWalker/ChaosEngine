@@ -51,14 +51,14 @@ namespace Chaos
 
 	public:
 		EventDispatcher(Event& event)
-			: mEvent(event) {}
+			: m_event(event) {}
 
 		template<typename T>
 		bool Dispatch(EventFn<T> func)
 		{
-			if (mEvent.GetEventType() == T::GetStaticType())
+			if (m_event.GetEventType() == T::GetStaticType())
 			{
-				mEvent.Handled = func(*(T*)&mEvent);
+				m_event.Handled = func(*(T*)&m_event);
 				return true;
 			}
 			else
@@ -68,7 +68,7 @@ namespace Chaos
 		}
 
 	private:
-		Event& mEvent;
+		Event& m_event;
 
 	};
 }

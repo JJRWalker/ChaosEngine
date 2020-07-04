@@ -13,15 +13,15 @@ namespace Chaos
 		
 		virtual ~VulkanSubTexture() {};
 
-		virtual const char* GetFilePath() const override { return mFilePath; }
+		virtual const char* GetFilePath() const override { return m_filePath; }
 
-		virtual const Vec2* GetTexCoords() const override { return mTexCoords; }
-		virtual const Ref<Texture> GetMainTexture() const override { return mMainTexture; }
+		virtual const Vec2* GetTexCoords() const override { return m_texCoords; }
+		virtual const Ref<Texture> GetMainTexture() const override { return m_mainTexture; }
 
 	private:
-		const char* mFilePath;
-		Vec2 mCoordinates;
-		Vec2 mTexCoords[4];
-		Ref<VulkanTexture> mMainTexture;
+		const char* m_filePath;
+		Vec2 m_coordinates;
+		Vec2 m_texCoords[4];
+		Ref<VulkanTexture> m_mainTexture;
 	};
 }

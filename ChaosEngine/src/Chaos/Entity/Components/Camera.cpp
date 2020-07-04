@@ -9,12 +9,12 @@ namespace Chaos
 {
 	void Camera::Recalculate()
 	{
-		mView = glm::lookAt(glm::vec3(mPosition.X, mPosition.Y, mPosition.Z + 1), glm::vec3(mPosition.X, mPosition.Y, mPosition.Z), glm::vec3(0.0f, 1.0f, 0.0f));
+		m_view = glm::lookAt(glm::vec3(m_position.X, m_position.Y, m_position.Z + 1), glm::vec3(m_position.X, m_position.Y, m_position.Z), glm::vec3(0.0f, 1.0f, 0.0f));
 
 
-		mProjection = glm::ortho(mBounds.X * (float)Application::Get().GetWindow().GetWidth() / (float)Application::Get().GetWindow().GetHeight(),
-			mBounds.Y * (float)Application::Get().GetWindow().GetWidth() / (float)Application::Get().GetWindow().GetHeight(),
-			mBounds.Z, mBounds.W, -5.0f, 5.0f);
-		mProjection[1][1] *= -1;
+		m_projection = glm::ortho(m_bounds.X * (float)Application::Get().GetWindow().GetWidth() / (float)Application::Get().GetWindow().GetHeight(),
+			m_bounds.Y * (float)Application::Get().GetWindow().GetWidth() / (float)Application::Get().GetWindow().GetHeight(),
+			m_bounds.Z, m_bounds.W, -5.0f, 5.0f);
+		m_projection[1][1] *= -1;
 	}
 }

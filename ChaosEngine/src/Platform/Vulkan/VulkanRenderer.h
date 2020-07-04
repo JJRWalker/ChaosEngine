@@ -1,22 +1,19 @@
 #pragma once
 #include "Chaos/Renderer/Renderer.h"
-
 #include <Vulkan/vulkan.h>
 
+//Ideally I'd like to avoid including GLM here but I don't have a mat4 data type that has the functionality of GLM's
 #define GLM_FORCE_RADIANS
 #include <GLM/glm/glm.hpp>
-
-#include <optional>
 #include <array>
-
-#include "Chaos/DataTypes/Vec3.h"
-#include "Chaos/DataTypes/Vec2.h"
-#include "Chaos/DataTypes/Vec4.h"
-#include "Platform/Vulkan/VulkanTexture.h"
-#include "Chaos/Renderer/PrimitiveType.h"
 
 namespace Chaos
 {
+	class VulkanTexture;
+	class Vec2;
+	class Vec3;
+	class Vec4;
+
 	struct VulkanVertex {
 		Vec2 pos;
 		Vec4 color;
@@ -115,12 +112,12 @@ namespace Chaos
 		virtual void DrawQuad(Vec2& position, Vec2& scale, Ref<Texture> texture, float tilingFactor) override;
 		virtual void DrawQuad(Vec2& position, Vec2& scale, Ref<SubTexture> subTexture) override;
 		virtual void DrawFrame() override;
-		virtual void WindowResized() override { mFramebufferResized = true; }
+		virtual void WindowResized() override { m_framebufferResized = true; }
 		bool HasTexture(const char* filePath, Ref<Texture> outTexture) override; //Takes in a file path and a texture, returns true and sets the ref of inputted texture if one exists
 		//VULKAN TEMP
 	private:
 		//constants
-		const glm::vec4 CLEAR_COLOR = { 0.0f,0.0f, 0.03f, 1.0f };
+		const Vec4 CLEAR_COLOR = { 0.0f,0.0f, 0.03f, 1.0f };
 		const int MAX_FRAMES_IN_FLIGHT = 2;
 		const int MAX_OBJECTS_PER_DRAW = 10000;
 		const int MAX_TEXTURES_PER_DRAW = 31;
@@ -145,7 +142,7 @@ namespace Chaos
 		void CreateCommandPool();
 		void CreateTextureSampler();
 		void CreateIndexedBuffer(std::vector<VulkanVertex> vertices, std::vector<uint16_t> indices, BufferType type, size_t insertIndex);
-		void CreateAndClearBuffers(size_t insertIndex);
+		void CreateBuffersAndClearResources(size_t insertIndex);
 		void CreateUniformBuffers();
 		void CreateDescriptorPool();
 		void CreateDescriptorSet();
@@ -191,81 +188,81 @@ namespace Chaos
 		void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
 
 		//IMGUI
-		void SetImGuiCommandBuffer(std::vector<VkCommandBuffer> mCommandBuffers) { mImGuiCommandBuffers = mCommandBuffers; }
-		void SetImGuiCommandPool(VkCommandPool* pool) { mImGuiCommandPool = pool; }
-		void SetImGuiFramebuffer(std::vector<VkFramebuffer>* buffer) { mImGuiFrameBuffer = buffer; }
+		void SetImGuiCommandBuffer(std::vector<VkCommandBuffer> mCommandBuffers) { m_imGuiCommandBuffers = mCommandBuffers; }
+		void SetImGuiCommandPool(VkCommandPool* pool) { m_imGuiCommandPool = pool; }
+		void SetImGuiFramebuffer(std::vector<VkFramebuffer>* buffer) { m_imGuiFrameBuffer = buffer; }
 
 		//Variables
-		std::vector<VulkanVertex> mVertices;
-		std::vector<uint16_t> mIndices;
+		std::vector<VulkanVertex> m_vertices;
+		std::vector<uint16_t> m_indices;
 
-		std::vector<Ref<VulkanTexture>> mTexturesToBind;
-		int mRenderCount = 0;
-		uint16_t mIndOffset = 0;
+		std::vector<Ref<VulkanTexture>> m_texturesToBind;
+		int m_renderCount = 0;
+		uint16_t m_indOffset = 0;
 
-		VkSampler mTextureSampler;
+		VkSampler m_textureSampler;
 
-		bool mFramebufferResized = false;
-		bool mRenderingGUI = false;
-		size_t mCurrentFrame = 0;
+		bool m_framebufferResized = false;
+		bool m_renderingGUI = false;
+		size_t m_currentFrame = 0;
 
-		VkInstance mInstance;
-		VkDebugUtilsMessengerEXT mDebugMessenger;
-		VkSurfaceKHR mSurface;
+		VkInstance m_instance;
+		VkDebugUtilsMessengerEXT m_debugMessenger;
+		VkSurfaceKHR m_surface;
 
-		VkPhysicalDevice mPhysicalDevice = VK_NULL_HANDLE;
-		VkDevice mDevice;
+		VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
+		VkDevice m_device;
 
-		VkQueue mGraphicsQueue;
-		VkQueue mPresentQueue;
+		VkQueue m_graphicsQueue;
+		VkQueue m_presentQueue;
 
-		VkRenderPass mRenderPass;
-		VkDescriptorSetLayout mDescriptorSetLayout;
-		VkPipelineLayout mPipelineLayout;
+		VkRenderPass m_renderpass;
+		VkDescriptorSetLayout m_descriptorSetLayout;
+		VkPipelineLayout m_pipelineLayout;
 
-		VkPipeline mGraphicsPipeline;
+		VkPipeline m_graphicsPipeline;
 
-		std::mutex commandPoolMutex;
-		VkCommandPool mCommandPool;
-		VkCommandPool* mImGuiCommandPool = VK_NULL_HANDLE;
-		std::vector<VkCommandBuffer> mCommandBuffers;
-		std::vector<VkCommandBuffer> mImGuiCommandBuffers;
+		std::mutex m_commandPoolMutex;
+		VkCommandPool m_commandPool;
+		VkCommandPool* m_imGuiCommandPool = VK_NULL_HANDLE;
+		std::vector<VkCommandBuffer> m_commandBuffers;
+		std::vector<VkCommandBuffer> m_imGuiCommandBuffers;
 
-		std::vector<VkFramebuffer>* mImGuiFrameBuffer;
+		std::vector<VkFramebuffer>* m_imGuiFrameBuffer;
 
-		std::vector<Buffer> mBuffers;
+		std::vector<Buffer> m_buffers;
 
-		VkDescriptorPool mDescriptorPool;
-		std::vector<VkDescriptorSet> mDescriptorSets;
+		VkDescriptorPool m_descriptorPool;
+		std::vector<VkDescriptorSet> m_descriptorSets;
 
-		std::vector<VkBuffer> mUniformBuffers;
-		std::vector<VkDeviceMemory> mUniformBuffersMemory;
+		std::vector<VkBuffer> m_uniformBuffers;
+		std::vector<VkDeviceMemory> m_uniformBuffersMemory;
 
-		bool mWaitingOnFences = true;
-		std::vector<VkFence> mImagesInFlight;
-		std::vector<VkFence> mInFlightFences;
-		std::vector<VkSemaphore>mImageAvailableSemaphores;
-		std::vector<VkSemaphore>mRenderFinishedSemaphores;
+		bool m_waitingOnFences = true;
+		std::vector<VkFence> m_imagesInFlight;
+		std::vector<VkFence> m_inFlightFences;
+		std::vector<VkSemaphore>m_imageAvailableSemaphores;
+		std::vector<VkSemaphore>m_renderFinishedSemaphores;
 
-		VkSwapchainKHR mSwapchain;
-		std::vector<VkImageView> mSwapchainImageViews;
-		std::vector<VkFramebuffer> mSwapchainframebuffers;
-		std::vector<VkImage> mSwapchainImages;
-		uint32_t mImageIndex = 0;
-		VkFormat mSwapchainImageFormat;
-		VkExtent2D mSwapchainExtent;
+		VkSwapchainKHR m_swapchain;
+		std::vector<VkImageView> m_swapchainImageViews;
+		std::vector<VkFramebuffer> m_swapchainframebuffers;
+		std::vector<VkImage> m_swapchainImages;
+		uint32_t m_imageIndex = 0;
+		VkFormat m_swapchainImageFormat;
+		VkExtent2D m_swapchainExtent;
 
 		//for viewport
-		std::vector<VkImage> mRenderedFrames;
-		std::vector<VkDeviceMemory> mRenderedFramesMemory;
-		std::vector<VkImageView> mRenderedFrameViews;
-		std::vector<VkFramebuffer> mRenderedFrameBuffers;
-		VkRenderPass mRenderedRenderPass;
+		std::vector<VkImage> m_renderedFrames;
+		std::vector<VkDeviceMemory> m_renderedFramesMemory;
+		std::vector<VkImageView> m_renderedFrameViews;
+		std::vector<VkFramebuffer> m_renderedFrameBuffers;
+		VkRenderPass m_renderedRenderPass;
 
-		const std::vector<const char*> mValidationLayers = { "VK_LAYER_KHRONOS_validation" };
-		const std::vector<const char*> mDeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+		const std::vector<const char*> m_validationLayers = { "VK_LAYER_KHRONOS_validation" };
+		const std::vector<const char*> m_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
 		//DEBUG VARS
-		int mTotalQuadsDrawn;
+		int m_totalQuadsDrawn;
 	};
 }

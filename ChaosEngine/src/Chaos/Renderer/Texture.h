@@ -10,12 +10,12 @@ namespace Chaos
 	public:
 		virtual ~Texture() = default;
 
-		virtual void SetFilePath(const char* path) const = 0;
+		virtual void Load(const char* filePath) = 0;
+		virtual void Unload() = 0;
+
 		virtual const char* GetFilePath() const = 0;
 
-		virtual void SetWidth(uint32_t width) = 0;
 		virtual uint32_t GetWidth() const = 0;
-		virtual void SetHeight(uint32_t height) = 0;
 		virtual uint32_t GetHeight() const = 0;
 		virtual int GetSize() const = 0;
 
@@ -23,6 +23,6 @@ namespace Chaos
 		static Ref<Texture> Create();
 		static Ref<Texture> GetBlank();
 	private:
-		static Ref<Texture> mBlankTexture;
+		static Ref<Texture> s_blankTexture;
 	};
 }

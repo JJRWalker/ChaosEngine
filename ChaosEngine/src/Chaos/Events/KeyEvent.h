@@ -6,34 +6,34 @@ namespace Chaos
 	class KeyEvent : public Event
 	{
 	public:
-		inline int GetKeyCode() const { return mKeyCode; }
+		inline int GetKeyCode() const { return m_keyCode; }
 
 		EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)
 	protected:
 		KeyEvent(int keycode)
-			: mKeyCode(keycode) {}
+			: m_keyCode(keycode) {}
 
-		int mKeyCode;
+		int m_keyCode;
 	};
 
 	class KeyPressedEvent : public KeyEvent
 	{
 	public:
 		KeyPressedEvent(int keycode, int repeatCount)
-			:KeyEvent(keycode), mRepeatCount(repeatCount) {}
+			:KeyEvent(keycode), m_repeatCount(repeatCount) {}
 
-		inline int GetRepeatCount() const { return mRepeatCount; }
+		inline int GetRepeatCount() const { return m_repeatCount; }
 
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "KeyPressedEvent: " << mKeyCode << " (" << mRepeatCount << " repeats)";
+			ss << "KeyPressedEvent: " << m_keyCode << " (" << m_repeatCount << " repeats)";
 			return ss.str();
 		}
 		EVENT_CLASS_TYPE(KeyPressed)
 
 	protected:
-		int mRepeatCount;
+		int m_repeatCount;
 	};
 
 	class KeyReleasedEvent : public KeyEvent
@@ -45,7 +45,7 @@ namespace Chaos
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "KeyReleasedEvent: " << mKeyCode;
+			ss << "KeyReleasedEvent: " << m_keyCode;
 			return ss.str();
 		}
 		EVENT_CLASS_TYPE(KeyReleased)
@@ -59,7 +59,7 @@ namespace Chaos
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "KeyReleasedEvent: " << mKeyCode;
+			ss << "KeyReleasedEvent: " << m_keyCode;
 			return ss.str();
 		}
 		EVENT_CLASS_TYPE(KeyTyped)

@@ -28,6 +28,6 @@ namespace Chaos
 		virtual bool HasTexture(const char* filePath, Ref<Texture> outTexture) = 0;
 
 	private:
-		static RendererAPI sRendererAPI;		
+		static RendererAPI s_rendererAPI;		
 	};
 }

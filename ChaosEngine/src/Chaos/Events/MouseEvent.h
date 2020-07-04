@@ -7,15 +7,15 @@ namespace Chaos
 	{
 	public:
 		MouseMovedEvent(float x, float y)
-			: mMouseX(x), mMouseY(y) {}
+			: m_mouseX(x), m_mouseY(y) {}
 
-		inline float GetX() { return mMouseX; }
-		inline float GetY() { return mMouseY; }
+		inline float GetX() { return m_mouseX; }
+		inline float GetY() { return m_mouseY; }
 
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "MouseMovedEvent: " << mMouseX << ", " << mMouseY;
+			ss << "MouseMovedEvent: " << m_mouseX << ", " << m_mouseY;
 			return ss.str();
 		}
 
@@ -23,20 +23,20 @@ namespace Chaos
 		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
 
 	private:
-		float mMouseX, mMouseY;
+		float m_mouseX, m_mouseY;
 	};
 	class MouseScrollEvent : public Event
 	{
 	public:
-		MouseScrollEvent(float x, float y) : mScrollX(x), mScrollY(y) {}
+		MouseScrollEvent(float x, float y) : m_scrollX(x), m_scrollY(y) {}
 
-		inline float GetScrollX() { return mScrollX; }
-		inline float GetScrollY() { return mScrollY; }
+		inline float GetScrollX() { return m_scrollX; }
+		inline float GetScrollY() { return m_scrollY; }
 
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "MouseScrollEvent: " << mScrollX << ", " << mScrollY;
+			ss << "MouseScrollEvent: " << m_scrollX << ", " << m_scrollY;
 			return ss.str();
 		}
 
@@ -44,8 +44,8 @@ namespace Chaos
 		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
 
 	private:
-		float mScrollX;
-		float mScrollY;
+		float m_scrollX;
+		float m_scrollY;
 	};
 
 	class MouseButtonEvent : public Event

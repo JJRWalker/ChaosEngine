@@ -14,28 +14,28 @@ namespace Chaos
 	{
 	public:
 		Camera() {};
-		Camera(Vec3 positon, Vec3 rotation, Vec4 bounds) : mPosition(positon), mRotation(rotation), mBounds(bounds) { Recalculate(); };
+		Camera(Vec3 positon, Vec3 rotation, Vec4 bounds) : m_position(positon), m_rotation(rotation), m_bounds(bounds) { Recalculate(); };
 
-		void SetPosition(Vec3 position) { mPosition = position; Recalculate(); }
-		void SetRotation(Vec3 rotation) { mRotation = rotation; Recalculate(); }
-		void SetBounds(Vec4 bounds) { mBounds = bounds; Recalculate(); }
+		void SetPosition(Vec3 position) { m_position = position; Recalculate(); }
+		void SetRotation(Vec3 rotation) { m_rotation = rotation; Recalculate(); }
+		void SetBounds(Vec4 bounds) { m_bounds = bounds; Recalculate(); }
 
-		Vec3 GetPosition() { return mPosition; }
-		Vec3 GetRoation() { return mRotation; }
-		Vec4 GetBounds() { return mBounds; }
+		Vec3 GetPosition() { return m_position; }
+		Vec3 GetRoation() { return m_rotation; }
+		Vec4 GetBounds() { return m_bounds; }
 
-		glm::mat4 GetProjection() { return mProjection; }
-		glm::mat4 GetView() { return mView; }
+		glm::mat4 GetProjection() { return m_projection; }
+		glm::mat4 GetView() { return m_view; }
 
 	private:
 		void Recalculate();
 
 	private:
-		Vec3 mPosition = Vec3::Zero();
-		Vec3 mRotation = Vec3::Zero();
-		Vec4 mBounds = Vec4(-5.0f, 5.0f, -5.0f, 5.0f);
+		Vec3 m_position = Vec3::Zero();
+		Vec3 m_rotation = Vec3::Zero();
+		Vec4 m_bounds = Vec4(-5.0f, 5.0f, -5.0f, 5.0f);
 
-		glm::mat4 mProjection;
-		glm::mat4 mView;
+		glm::mat4 m_projection = glm::mat4();
+		glm::mat4 m_view = glm::mat4();
 	};
 }

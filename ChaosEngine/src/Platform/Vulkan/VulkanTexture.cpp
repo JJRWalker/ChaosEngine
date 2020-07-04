@@ -7,116 +7,136 @@
 
 namespace Chaos
 {
-	//Defualt constructor, if not given a path it will return a texture containing 1 pixel of white
-	VulkanTexture::VulkanTexture() :  mRenderer(dynamic_cast<VulkanRenderer&>(Application::Get().GetRenderer()))
+	//Defualt constructor, create a texture containing 1 pixel of white, doesn't call load as we don't want to trigger warnings as blank texture was probably intended
+	VulkanTexture::VulkanTexture() :  m_renderer(dynamic_cast<VulkanRenderer&>(Application::Get().GetRenderer()))
 	{
 		VulkanRenderer& mRenderer = dynamic_cast<VulkanRenderer&>(Application::Get().GetRenderer());
 		void* pixelData;
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
 
-		mFilePath = "";
+		m_filePath = "";
 		//0xffffffff (1 pixel of white image data) 
 		uint32_t blankPixelData = 0xffffffff;
-		mSize = 4;
-		mWidth = 1;
-		mHeight = 1;
-		pixelData = malloc(static_cast<size_t>(mSize));
-		memcpy(pixelData, &blankPixelData, mSize);
+		m_size = 4;
+		m_width = 1;
+		m_height = 1;
+		pixelData = malloc(static_cast<size_t>(m_size));
+		memcpy(pixelData, &blankPixelData, m_size);
 
-		VkDeviceSize imageSize = mWidth * mHeight * 4;
+		VkDeviceSize imageSize = m_width * m_height * 4;
 
 		mRenderer.CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
 		void* data;
-		vkMapMemory(mRenderer.mDevice, stagingBufferMemory, 0, imageSize, 0, &data);
+		vkMapMemory(mRenderer.m_device, stagingBufferMemory, 0, imageSize, 0, &data);
 		memcpy(data, pixelData, static_cast<size_t>(imageSize));
-		vkUnmapMemory(mRenderer.mDevice, stagingBufferMemory);
+		vkUnmapMemory(mRenderer.m_device, stagingBufferMemory);
 
 
-		mRenderer.CreateImage(mWidth, mHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mImage, mImageMemory);
+		mRenderer.CreateImage(m_width, m_height, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_image, m_imageMemory);
 
-		mRenderer.TransitionImageLayout(mImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		mRenderer.CopyBufferToImage(stagingBuffer, mImage, static_cast<uint32_t>(mWidth), static_cast<uint32_t>(mHeight));
-		mRenderer.TransitionImageLayout(mImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		mRenderer.TransitionImageLayout(m_image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		mRenderer.CopyBufferToImage(stagingBuffer, m_image, static_cast<uint32_t>(m_width), static_cast<uint32_t>(m_height));
+		mRenderer.TransitionImageLayout(m_image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-		vkDestroyBuffer(mRenderer.mDevice, stagingBuffer, nullptr);
-		vkFreeMemory(mRenderer.mDevice, stagingBufferMemory, nullptr);
+		vkDestroyBuffer(mRenderer.m_device, stagingBuffer, nullptr);
+		vkFreeMemory(mRenderer.m_device, stagingBufferMemory, nullptr);
 
-		mImageView = mRenderer.CreateImageView(mImage, VK_FORMAT_R8G8B8A8_SRGB);
+		m_imageView = mRenderer.CreateImageView(m_image, VK_FORMAT_R8G8B8A8_SRGB);
 
 		delete pixelData;
+
+		m_loaded = true;
 	}
 
-	//Constructor if given a path, will create a blank texture of 1 white pixel if the file does not exist
-	VulkanTexture::VulkanTexture(const char* filePath) : mFilePath(filePath), mRenderer(dynamic_cast<VulkanRenderer&>(Application::Get().GetRenderer()))
+	//Constructor Calls load function
+	VulkanTexture::VulkanTexture(const char* filePath) : m_filePath(filePath), m_renderer(dynamic_cast<VulkanRenderer&>(Application::Get().GetRenderer()))
 	{
+		Load(filePath);
+	}
+
+	//tries to load the texture specified, if a texture is already loaded, it will call unload first
+	void VulkanTexture::Load(const char* filePath)
+	{
+		if (m_loaded)
+		{
+			if (!std::filesystem::exists(filePath))
+			{
+				LOGCORE_WARN("TEXTURE: could not open file '{0}' maintaining current texture", filePath);
+				return;
+			}
+			Unload();
+		}
+
+		//if exists then set new file path and load from there
+		m_filePath = filePath;
+
 		void* pixelData;
 		int texWidth, texHeight, texChannels;
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
 
-		if (!std::filesystem::exists(mFilePath))
+		if (!std::filesystem::exists(m_filePath))
 		{
 			LOGCORE_WARN("TEXTURE: could not open file '{0}' Loading blank", filePath);
-			mFilePath = "";
+			m_filePath = "";
 			//0xffffffff (1 pixel of white image data) 
 			uint32_t data = 0xffffffff;
-			mSize = 4;
-			mWidth = 1;
-			mHeight = 1;
-			pixelData = malloc(static_cast<size_t>(mSize));
-			memcpy(pixelData, &data, mSize);
+			m_size = 4;
+			m_width = 1;
+			m_height = 1;
+			pixelData = malloc(static_cast<size_t>(m_size));
+			memcpy(pixelData, &data, m_size);
 		}
 		else
 		{
-			stbi_uc* pixels = stbi_load(mFilePath, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-			mSize = texWidth * texHeight * 4;
-			mWidth = texWidth;
-			mHeight = texHeight;
+			stbi_uc* pixels = stbi_load(m_filePath, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+			m_size = texWidth * texHeight * 4;
+			m_width = texWidth;
+			m_height = texHeight;
 
-			pixelData = malloc(static_cast<size_t>(mSize));
+			pixelData = malloc(static_cast<size_t>(m_size));
 
 			if (!pixels) {
 				LOGCORE_ERROR("TEXTURE: failed to load texture image!");
 			}
 
-			memcpy(pixelData, pixels, static_cast<size_t>(mSize));
+			memcpy(pixelData, pixels, static_cast<size_t>(m_size));
 		}
 
-		VkDeviceSize imageSize = mWidth * mHeight * 4;
+		VkDeviceSize imageSize = m_width * m_height * 4;
 
-		mRenderer.CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+		m_renderer.CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
 		void* data;
-		vkMapMemory(mRenderer.mDevice, stagingBufferMemory, 0, imageSize, 0, &data);
+		vkMapMemory(m_renderer.m_device, stagingBufferMemory, 0, imageSize, 0, &data);
 		memcpy(data, pixelData, static_cast<size_t>(imageSize));
-		vkUnmapMemory(mRenderer.mDevice, stagingBufferMemory);
+		vkUnmapMemory(m_renderer.m_device, stagingBufferMemory);
 
 
-		mRenderer.CreateImage(mWidth, mHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mImage, mImageMemory);
+		m_renderer.CreateImage(m_width, m_height, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_image, m_imageMemory);
 
-		mRenderer.TransitionImageLayout(mImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		mRenderer.CopyBufferToImage(stagingBuffer, mImage, static_cast<uint32_t>(mWidth), static_cast<uint32_t>(mHeight));
-		mRenderer.TransitionImageLayout(mImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		m_renderer.TransitionImageLayout(m_image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		m_renderer.CopyBufferToImage(stagingBuffer, m_image, static_cast<uint32_t>(m_width), static_cast<uint32_t>(m_height));
+		m_renderer.TransitionImageLayout(m_image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-		vkDestroyBuffer(mRenderer.mDevice, stagingBuffer, nullptr);
-		vkFreeMemory(mRenderer.mDevice, stagingBufferMemory, nullptr);
+		vkDestroyBuffer(m_renderer.m_device, stagingBuffer, nullptr);
+		vkFreeMemory(m_renderer.m_device, stagingBufferMemory, nullptr);
 
-		mImageView = mRenderer.CreateImageView(mImage, VK_FORMAT_R8G8B8A8_SRGB);
+		m_imageView = m_renderer.CreateImageView(m_image, VK_FORMAT_R8G8B8A8_SRGB);
 
 		delete pixelData;
+
+		m_loaded = true;
 	}
 
-	VulkanTexture::~VulkanTexture()
+	void VulkanTexture::Unload()
 	{
-		//TODO: Need to destroy all textures before the renderer is destroyed, right now it'll just ignore this if the renderer is null
-		if (mRenderer.mDevice)
-		{
-			vkDestroyImageView(mRenderer.mDevice, mImageView, nullptr);
-			vkDestroyImage(mRenderer.mDevice, mImage, nullptr);
-			vkFreeMemory(mRenderer.mDevice, mImageMemory, nullptr);
-		}
+		vkDestroyImageView(m_renderer.m_device, m_imageView, nullptr);
+		vkDestroyImage(m_renderer.m_device, m_image, nullptr);
+		vkFreeMemory(m_renderer.m_device, m_imageMemory, nullptr);
+		m_loaded = false;
 	}
 
 }

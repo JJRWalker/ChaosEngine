@@ -9,12 +9,12 @@ namespace Chaos
 	{
 	public:
 		WindowResizeEvent(unsigned int width, unsigned int height) 
-			: mWidth(width), mHeight(height) {};
+			: m_width(width), m_height(height) {};
 
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "WindowResizeEvent: " << mWidth << ", " << mHeight;
+			ss << "WindowResizeEvent: " << m_width << ", " << m_height;
 			return ss.str();
 		}
 
@@ -22,7 +22,7 @@ namespace Chaos
 		EVENT_CLASS_CATEGORY(EventCategoryApplication)
 
 	private:
-		unsigned int mWidth, mHeight;
+		unsigned int m_width, m_height;
 	};
 
 	class WindowCloseEvent : public Event

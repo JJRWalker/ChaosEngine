@@ -1,5 +1,4 @@
 #pragma once
-
 #include "Chaos/Core/Core.h"
 #include "Layer.h"
 
@@ -18,14 +17,14 @@ namespace Chaos
 		void PopLayer(Layer* layer);
 		void PopOverlay(Layer* overlay);
 
-		std::vector<Layer*>::iterator begin() { return mLayers.begin(); }
-		std::vector<Layer*>::iterator end() { return mLayers.end(); }
-		std::vector<Layer*>::const_reverse_iterator  rbegin() { return mLayers.rbegin(); }
-		std::vector<Layer*>::const_reverse_iterator  rend() { return mLayers.rend(); }
+		std::vector<Layer*>::iterator begin() { return m_layers.begin(); }
+		std::vector<Layer*>::iterator end() { return m_layers.end(); }
+		std::vector<Layer*>::const_reverse_iterator  rbegin() { return m_layers.rbegin(); }
+		std::vector<Layer*>::const_reverse_iterator  rend() { return m_layers.rend(); }
 
 	private: 
-		std::vector<Layer*> mLayers; 
-		unsigned int mLayerInsertIndex = 0;
+		std::vector<Layer*> m_layers; 
+		unsigned int m_layerInsertIndex = 0;
 
 	};
 }

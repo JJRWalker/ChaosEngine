@@ -11,31 +11,31 @@ namespace Chaos
 	class Entity
 	{
 	public:
-		Entity() : mName("entity"), mEntityID(sEntityCount) { ++sEntityCount; LOGCORE_TRACE("Entity Created with ID {0} Name {1}", mEntityID, mName); }
-		Entity(const char* name) : mName(name), mEntityID(sEntityCount) { ++sEntityCount; };
+		Entity() : m_name("entity"), m_entityID(sEntityCount) { ++sEntityCount; LOGCORE_TRACE("Entity Created with ID {0} Name {1}", m_entityID, m_name); }
+		Entity(const char* name) : m_name(name), m_entityID(sEntityCount) { ++sEntityCount; };
 		~Entity()
 		{
 			Destroy();
-			mComponents.clear();
+			m_components.clear();
 		}
 
 		void Start() 
 		{
-			for (auto& c : mComponents)
+			for (auto& c : m_components)
 			{
 				c->Start();
 			}
 		}
 		void Update() 
 		{
-			for (auto& c : mComponents)
+			for (auto& c : m_components)
 			{
 				c->Update();
 			}
 		}
 		void Destroy()
 		{
-			for (auto& c : mComponents)
+			for (auto& c : m_components)
 			{
 				c->Destroy();
 				delete c;
@@ -46,10 +46,10 @@ namespace Chaos
 		template<typename T>
 		void AddComponent()
 		{
-			if (std::is_base_of<Component, T>::value)
+			if (std::is_base_of<IComponent, T>::value)
 			{
 				T* component = new T(this);
-				mComponents.push_back(component);
+				m_components.push_back(component);
 			}
 			else
 			{
@@ -60,7 +60,7 @@ namespace Chaos
 		template<typename T>
 		T* GetComponent()
 		{
-			for (Component* c : mComponents)
+			for (IComponent* c : m_components)
 			{
 				T* component = dynamic_cast<T*>(c); //this will return a nullptr if the cast was not possible
 				if (component != nullptr)
@@ -68,7 +68,7 @@ namespace Chaos
 					return component;
 				}
 			}
-			LOGCORE_ERROR("Failed to get component on entity {0} ID: {1} returning nullptr!", mName, mEntityID);
+			LOGCORE_ERROR("Failed to get component on entity {0} ID: {1} returning nullptr!", m_name, m_entityID);
 			return nullptr;
 		}
 
@@ -76,9 +76,9 @@ namespace Chaos
 		template<typename T>
 		bool TryGetComponent(T* outComponent)
 		{
-			if (std::is_base_of<Component, T>::value)
+			if (std::is_base_of<IComponent, T>::value)
 			{
-				for (Component* c : mComponents)
+				for (IComponent* c : m_components)
 				{
 					T* component = dynamic_cast<T*>(c); //this will return a nullptr if the cast was not possible
 					if (component != nullptr)
@@ -87,7 +87,7 @@ namespace Chaos
 						return true;
 					}
 				}
-				LOGCORE_WARN("Component could not be found on Entity: {1} ID: {2}", mName, mEntityID);
+				LOGCORE_WARN("Component could not be found on Entity: {1} ID: {2}", m_name, m_entityID);
 				return false;
 			}
 			LOGCORE_WARN("Component given to template TryGetComponent() is not derived from type component");
@@ -100,9 +100,9 @@ namespace Chaos
 		bool TryGetComponent(T& outComponent)
 		{
 			LOGCORE_ERROR("Attempting to pass a reference into the outComponent of TryGetComponent, This is not yet supported! Please use a raw pointer");
-			if (std::is_base_of<Component, T>::value)
+			if (std::is_base_of<IComponent, T>::value)
 			{
-				for (Component* c : mComponents)
+				for (IComponent* c : m_components)
 				{
 					T* component = dynamic_cast<T*>(c); //this will return a nullptr if the cast was not possible
 					if (component != nullptr)
@@ -111,21 +111,21 @@ namespace Chaos
 						return true;
 					}
 				}
-				LOGCORE_WARN("Component could not be found on Entity: {1} ID: {2}", mName, mEntityID);
+				LOGCORE_WARN("Component could not be found on Entity: {1} ID: {2}", m_name, m_entityID);
 				return false;
 			}
 			LOGCORE_WARN("Component given to template TryGetComponent() is not derived from type component");
 			return false;
 		}
 
-		const char* GetName() { return mName; }
-		size_t GetEntityID() { return mEntityID; }
-		Ref<Transform> GetTransform() { return mTransform; }
+		const char* GetName() { return m_name; }
+		size_t GetEntityID() { return m_entityID; }
+		Ref<Transform> GetTransform() { return m_transform; }
 
 	private:
-		size_t mEntityID;
-		const char* mName;
-		Ref<Transform> mTransform = CreateRef<Transform>();	
-		std::vector<Component*> mComponents;
+		size_t m_entityID;
+		const char* m_name;
+		Ref<Transform> m_transform = CreateRef<Transform>();	
+		std::vector<IComponent*> m_components;
 	};
 }

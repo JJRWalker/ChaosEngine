@@ -11,7 +11,7 @@ namespace Chaos
 
 	void Render::Update() const
 	{
-		Application::Get().GetRenderer().DrawQuad(mEntity->GetTransform()->Position(), mEntity->GetTransform()->Scale(), mTexture);
+		Application::Get().GetRenderer().DrawQuad(m_entity->GetTransform()->Position(), m_entity->GetTransform()->Scale(), m_texture);
 	}
 
 	void Render::Destroy() const

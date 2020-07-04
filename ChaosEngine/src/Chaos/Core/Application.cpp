@@ -13,23 +13,25 @@
 //inspired by The Cherno's Game engine series, however has and will continue to diverge
 namespace Chaos
 {
-	Application* Application::sInstance = nullptr;
+	Application* Application::s_instance = nullptr;
 
 	Application::Application()
 	{
 		//Asserting that we don't already have an instance of an application as there should only be one ever
-		COREASSERT(!sInstance, "APPLICATION ALREADY EXISTS");
-		sInstance = this;
+		COREASSERT(!s_instance, "APPLICATION ALREADY EXISTS");
+		s_instance = this;
 
 		//Creating a window
-		mWindow = std::unique_ptr<Window>(Window::Create());
-		mWindow->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
-
-		mRenderer = std::unique_ptr<Renderer>(Renderer::Create());
-
-		guiLayer = new ImGuiLayer();
-
-		PushOverlay(guiLayer);
+		m_window = std::unique_ptr<Window>(Window::Create());
+		m_window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
+		//Creating a default camera
+		m_mainCamera = new Camera();
+		//Creating renderer
+		m_renderer = std::unique_ptr<Renderer>(Renderer::Create());
+		//Creating test overlay layer
+		m_guiLayer = new ImGuiLayer();
+		//Push test overlay layer
+		PushOverlay(m_guiLayer);
 	}
 
 	Application::~Application()
@@ -39,26 +41,26 @@ namespace Chaos
 
 	void Application::Run()
 	{
-		while (mRunning)
+		while (m_running)
 		{
 			float time = (float)glfwGetTime();
-			mDeltaTime = time - mTimeLastFrame;
-			mTimeLastFrame = time;
+			m_deltaTime = time - m_timeLastFrame;
+			m_timeLastFrame = time;
 
-			for (Layer* layer : mLayerStack)
-				layer->OnUpdate(mDeltaTime);			
+			for (Layer* layer : m_layerStack)
+				layer->OnUpdate(m_deltaTime);			
 
 
-			mWindow->OnUpdate();
+			m_window->OnUpdate();
 
-			mRenderer->DrawFrame();
+			m_renderer->DrawFrame();
 
 			//Currently causes black screen to be rendered over the top of the main render, need to change how the pipeline and descriptor sets are handled by Vulkan/ImGui
-			guiLayer->Begin();
-			for (Layer* layer : mLayerStack)
+			m_guiLayer->Begin();
+			for (Layer* layer : m_layerStack)
 				layer->OnImGuiRender();
 			
-			guiLayer->End();
+			m_guiLayer->End();
 
 			//LOGCORE_INFO("Time to renderframe: {0} FPS: {1}", mDeltaTime, 1 / mDeltaTime);
 		}
@@ -73,10 +75,10 @@ namespace Chaos
 
 		if (e.GetEventType() == EventType::WindowResize)
 		{
-			mRenderer->WindowResized();
+			m_renderer->WindowResized();
 		}
 
-		for (auto it = mLayerStack.end(); it != mLayerStack.begin();)
+		for (auto it = m_layerStack.end(); it != m_layerStack.begin();)
 		{
 			(*--it)->OnEvent(e);
 			if (e.Handled)
@@ -87,18 +89,18 @@ namespace Chaos
 
 	void Application::PushLayer(Layer* layer)
 	{
-		mLayerStack.PushLayer(layer);
+		m_layerStack.PushLayer(layer);
 		layer->OnAttach();
 	}
 
 	void Application::PushOverlay(Layer* overlay)
 	{
-		mLayerStack.PushOverlay(overlay);
+		m_layerStack.PushOverlay(overlay);
 		overlay->OnAttach();
 	}
 	bool Application::OnWindowClose(WindowCloseEvent& e)
 	{
-		mRunning = false;
+		m_running = false;
 		return true;
 	}
 }

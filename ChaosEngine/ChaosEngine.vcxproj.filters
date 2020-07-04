@@ -123,12 +123,6 @@
     <ClInclude Include="src\Chaos\Input\MouseCodes.h">
       <Filter>src\Chaos\Input</Filter>
     </ClInclude>
-    <ClInclude Include="src\Chaos\Renderer\PrimitiveType.h">
-      <Filter>src\Chaos\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Chaos\Renderer\Quad.h">
-      <Filter>src\Chaos\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="src\Chaos\Renderer\Renderer.h">
       <Filter>src\Chaos\Renderer</Filter>
     </ClInclude>
@@ -136,9 +130,6 @@
       <Filter>src\Chaos\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Chaos\Renderer\Texture.h">
-      <Filter>src\Chaos\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Chaos\Renderer\Vertex.h">
       <Filter>src\Chaos\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\VulkanRenderer.h">
@@ -1306,9 +1297,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chaos\Core\Application.cpp">
-      <Filter>src\Chaos\Core</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Chaos\Core\Layer.cpp">
       <Filter>src\Chaos\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\Chaos\Core\LayerStack.cpp">

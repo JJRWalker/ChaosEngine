@@ -11,7 +11,7 @@ namespace Chaos
 
 	LayerStack::~LayerStack()
 	{
-		for (Layer* layer : mLayers)
+		for (Layer* layer : m_layers)
 		{
 			layer->OnDetach();
 			delete layer;
@@ -21,33 +21,33 @@ namespace Chaos
 	//On attach handled in application, however unsure if there would ever be a scenario where I'd want to push a layer but not call it's on attach function
 	void LayerStack::PushLayer(Layer* layer)
 	{
-		mLayers.emplace(mLayers.begin() + mLayerInsertIndex, layer);
-		mLayerInsertIndex++;
+		m_layers.emplace(m_layers.begin() + m_layerInsertIndex, layer);
+		m_layerInsertIndex++;
 	}
 
 	void LayerStack::PushOverlay(Layer* overlay)
 	{
-		mLayers.emplace_back(overlay);
+		m_layers.emplace_back(overlay);
 	}
 
 	void LayerStack::PopLayer(Layer* layer)
 	{
-		auto it = std::find(mLayers.begin(), mLayers.end(), layer);
-		if (it != mLayers.end())
+		auto it = std::find(m_layers.begin(), m_layers.end(), layer);
+		if (it != m_layers.end())
 		{
 			layer->OnDetach();
-			mLayers.erase(it);
-			mLayerInsertIndex--;
+			m_layers.erase(it);
+			m_layerInsertIndex--;
 		}
 	}
 
 	void LayerStack::PopOverlay(Layer* overlay)
 	{
-		auto it = std::find(mLayers.begin(), mLayers.end(), overlay);
-		if (it != mLayers.end())
+		auto it = std::find(m_layers.begin(), m_layers.end(), overlay);
+		if (it != m_layers.end())
 		{
 			overlay->OnDetach();
-			mLayers.erase(it);
+			m_layers.erase(it);
 		}
 	}
 }

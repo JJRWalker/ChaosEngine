@@ -11,7 +11,7 @@ namespace Chaos
 	{
 	public:
 		TimeStep(float time = 0.0f)
-			: mTime(time)
+			: m_time(time)
 		{
 
 		}
@@ -22,6 +22,6 @@ namespace Chaos
 		void EndDeltaTiming();
 
 	private:
-		float mTime;
+		float m_time;
 	};
 }

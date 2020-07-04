@@ -7,7 +7,7 @@
 
 namespace Chaos
 {
-	Ref<Texture> Texture::mBlankTexture = nullptr;
+	Ref<Texture> Texture::s_blankTexture = nullptr;
 	Ref<Texture> Texture::Create(const char* path)
 	{
 		switch (Renderer::GetAPI())
@@ -32,10 +32,10 @@ namespace Chaos
 
 	Ref<Texture> Texture::GetBlank()
 	{
-		if (mBlankTexture.get() == nullptr)
+		if (s_blankTexture.get() == nullptr)
 		{
-			mBlankTexture = Create();
+			s_blankTexture = Create();
 		}
-		return mBlankTexture;
+		return s_blankTexture;
 	}
 }

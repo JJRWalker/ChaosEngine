@@ -22,27 +22,18 @@ namespace Chaos
 		void End();
 	private:
 		void VulkanInit();
-		void CreateSwapChain();
-		void CreateImageViews();
 		
 	private:
 		float mTime = 0.0f;
-
-		uint32_t id = 0;
-
-		VkSwapchainKHR mSwapchain;
-		std::vector<VkImage> mSwapchainImages;
-		std::vector<VkImageView> mSwapchainImageViews;
 		
-		ImTextureID mVeiwportImageId;
+		ImTextureID m_veiwportImageId;
 
-		VkDescriptorPool mDescriptorPool;
-		VkDescriptorSetLayout mDescriptorSetLayout;
-		VkDescriptorSet descriptorSet;
-		VkRenderPass renderpass;
-		VkCommandPool commandPool;
-		std::vector<VkCommandBuffer> mCommandBuffers;
-		std::vector<VkFramebuffer> frameBuffers;
-		VkClearValue clear;
+		VkDescriptorPool m_descriptorPool;
+		VkDescriptorSetLayout m_descriptorSetLayout;
+		VkRenderPass m_renderpass;
+		VkCommandPool m_commandPool;
+		std::vector<VkCommandBuffer> m_commandBuffers;
+		std::vector<VkFramebuffer> m_frameBuffers;
+		VkClearValue m_clear;
 	};
 }

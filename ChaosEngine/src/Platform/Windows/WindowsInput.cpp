@@ -7,7 +7,7 @@
 
 namespace Chaos
 {
-	Input* Input::sInstance = new WindowsInput();
+	Input* Input::s_instance = new WindowsInput();
 
 	bool WindowsInput::IsKeyPressedImpl(KeyCode key)
 	{

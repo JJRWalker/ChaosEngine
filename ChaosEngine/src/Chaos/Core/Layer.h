@@ -9,7 +9,7 @@ namespace Chaos
 	{
 	public:
 		Layer(const std::string& name = "Layer") 
-			: mDebugName(name) {}
+			: m_debugName(name) {}
 		virtual ~Layer() {}
 
 		virtual void OnAttach() {}
@@ -18,9 +18,9 @@ namespace Chaos
 		virtual void OnEvent(Event& event) {}
 		virtual void OnImGuiRender() {}
 
-		inline const std::string& GetName() const { return mDebugName; }
+		inline const std::string& GetName() const { return m_debugName; }
 
 	protected:
-		std::string mDebugName;
+		std::string m_debugName;
 	};
 }
