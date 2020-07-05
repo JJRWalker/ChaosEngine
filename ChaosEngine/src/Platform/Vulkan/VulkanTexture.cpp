@@ -24,7 +24,7 @@ namespace Chaos
 		pixelData = malloc(static_cast<size_t>(m_size));
 		memcpy(pixelData, &blankPixelData, m_size);
 
-		VkDeviceSize imageSize = m_width * m_height * 4;
+		VkDeviceSize imageSize = m_size;
 
 		mRenderer.CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
@@ -45,7 +45,7 @@ namespace Chaos
 
 		m_imageView = mRenderer.CreateImageView(m_image, VK_FORMAT_R8G8B8A8_SRGB);
 
-		delete pixelData;
+		free(pixelData);
 
 		m_loaded = true;
 	}
@@ -59,15 +59,14 @@ namespace Chaos
 	//tries to load the texture specified, if a texture is already loaded, it will call unload first
 	void VulkanTexture::Load(const char* filePath)
 	{
-		if (m_loaded)
+
+		if (!std::filesystem::exists(filePath))
 		{
-			if (!std::filesystem::exists(filePath))
-			{
-				LOGCORE_WARN("TEXTURE: could not open file '{0}' maintaining current texture", filePath);
-				return;
-			}
-			Unload();
+			LOGCORE_WARN("TEXTURE: could not open file '{0}' maintaining current texture", filePath);
+			return;
 		}
+		Unload();
+
 
 		//if exists then set new file path and load from there
 		m_filePath = filePath;
@@ -105,7 +104,7 @@ namespace Chaos
 			memcpy(pixelData, pixels, static_cast<size_t>(m_size));
 		}
 
-		VkDeviceSize imageSize = m_width * m_height * 4;
+		VkDeviceSize imageSize = m_size;
 
 		m_renderer.CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
@@ -126,16 +125,19 @@ namespace Chaos
 
 		m_imageView = m_renderer.CreateImageView(m_image, VK_FORMAT_R8G8B8A8_SRGB);
 
-		delete pixelData;
+		free(pixelData);
 
 		m_loaded = true;
 	}
 
 	void VulkanTexture::Unload()
 	{
-		vkDestroyImageView(m_renderer.m_device, m_imageView, nullptr);
-		vkDestroyImage(m_renderer.m_device, m_image, nullptr);
-		vkFreeMemory(m_renderer.m_device, m_imageMemory, nullptr);
+		if (m_loaded)
+		{
+			vkDestroyImageView(m_renderer.m_device, m_imageView, nullptr);
+			vkDestroyImage(m_renderer.m_device, m_image, nullptr);
+			vkFreeMemory(m_renderer.m_device, m_imageMemory, nullptr);
+		}
 		m_loaded = false;
 	}
 

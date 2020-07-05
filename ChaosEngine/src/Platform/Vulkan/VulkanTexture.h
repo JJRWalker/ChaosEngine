@@ -22,7 +22,7 @@ namespace Chaos
 
 		virtual uint32_t GetWidth() const override { return m_width; }
 		virtual uint32_t GetHeight() const override { return m_height; }
-		virtual int GetSize() const override { return m_size; }
+		virtual uint32_t GetSize() const override { return m_size; }
 		
 		VkImage& GetImage() { return m_image; }
 		VkDeviceMemory& GetImageMemory() { return m_imageMemory; }
@@ -33,7 +33,7 @@ namespace Chaos
 		mutable const char* m_filePath;	//not sure if having a mutable const char pointer is a good idea...
 		uint32_t m_width = 0;
 		uint32_t m_height = 0;
-		int m_size;
+		uint32_t m_size;
 		VkImage m_image;
 		VkDeviceMemory m_imageMemory;
 		VkImageView m_imageView;

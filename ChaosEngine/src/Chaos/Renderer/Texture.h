@@ -17,9 +17,9 @@ namespace Chaos
 
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
-		virtual int GetSize() const = 0;
+		virtual uint32_t GetSize() const = 0;
 
-		static Ref<Texture> Create(const char* path);
+		static Ref<Texture> Create(const char* filePath);
 		static Ref<Texture> Create();
 		static Ref<Texture> GetBlank();
 	private:

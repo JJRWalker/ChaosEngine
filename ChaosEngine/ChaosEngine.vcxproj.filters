@@ -16,6 +16,12 @@
     <Filter Include="src\Chaos\Debug">
       <UniqueIdentifier>{00D59729-6C60-05EE-7571-88E2E17B61EE}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Chaos\Entity">
+      <UniqueIdentifier>{1628945F-0221-B3B1-2B53-983617AB92BD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Chaos\Entity\Components">
+      <UniqueIdentifier>{6B13C293-D720-F079-6007-EC64CC13BC30}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\Chaos\Events">
       <UniqueIdentifier>{AEC71C60-9AC0-3BB2-C3F2-2037AF4A1BBE}</UniqueIdentifier>
     </Filter>
@@ -102,6 +108,21 @@
     <ClInclude Include="src\Chaos\Debug\Timer.h">
       <Filter>src\Chaos\Debug</Filter>
     </ClInclude>
+    <ClInclude Include="src\Chaos\Entity\Component.h">
+      <Filter>src\Chaos\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Entity\Components\Camera.h">
+      <Filter>src\Chaos\Entity\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Entity\Components\Render.h">
+      <Filter>src\Chaos\Entity\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Entity\Components\Transform.h">
+      <Filter>src\Chaos\Entity\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Entity\Entity.h">
+      <Filter>src\Chaos\Entity</Filter>
+    </ClInclude>
     <ClInclude Include="src\Chaos\Events\ApplicationEvent.h">
       <Filter>src\Chaos\Events</Filter>
     </ClInclude>
@@ -129,10 +150,16 @@
     <ClInclude Include="src\Chaos\Renderer\RendererAPI.h">
       <Filter>src\Chaos\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="src\Chaos\Renderer\SubTexture.h">
+      <Filter>src\Chaos\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src\Chaos\Renderer\Texture.h">
       <Filter>src\Chaos\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\VulkanRenderer.h">
+      <Filter>src\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\Vulkan\VulkanSubTexture.h">
       <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\VulkanTexture.h">
@@ -1287,13 +1314,6 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp">
       <Filter>vendor\glm\glm</Filter>
     </ClInclude>
-    <ClInclude Include="src\Chaos\Renderer\SubTexture.h" />
-    <ClInclude Include="src\Platform\Vulkan\VulkanSubTexture.h" />
-    <ClInclude Include="src\Chaos\Entity\Components\Camera.h" />
-    <ClInclude Include="src\Chaos\Entity\Entity.h" />
-    <ClInclude Include="src\Chaos\Entity\Component.h" />
-    <ClInclude Include="src\Chaos\Entity\Components\Transform.h" />
-    <ClInclude Include="src\Chaos\Entity\Components\Render.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chaos\Core\Application.cpp">
@@ -1314,16 +1334,31 @@
     <ClCompile Include="src\Chaos\Debug\ImGuiLayer.cpp">
       <Filter>src\Chaos\Debug</Filter>
     </ClCompile>
+    <ClCompile Include="src\Chaos\Entity\Components\Camera.cpp">
+      <Filter>src\Chaos\Entity\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Chaos\Entity\Components\Render.cpp">
+      <Filter>src\Chaos\Entity\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Chaos\Entity\Components\Transform.cpp">
+      <Filter>src\Chaos\Entity\Components</Filter>
+    </ClCompile>
     <ClCompile Include="src\Chaos\Renderer\Renderer.cpp">
       <Filter>src\Chaos\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Chaos\Renderer\RendererAPI.cpp">
       <Filter>src\Chaos\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src\Chaos\Renderer\SubTexture.cpp">
+      <Filter>src\Chaos\Renderer</Filter>
+    </ClCompile>
     <ClCompile Include="src\Chaos\Renderer\Texture.cpp">
       <Filter>src\Chaos\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\VulkanRenderer.cpp">
+      <Filter>src\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\Vulkan\VulkanSubTexture.cpp">
       <Filter>src\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\VulkanTexture.cpp">
@@ -1338,10 +1373,5 @@
     <ClCompile Include="src\chaospch.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\Chaos\Renderer\SubTexture.cpp" />
-    <ClCompile Include="src\Platform\Vulkan\VulkanSubTexture.cpp" />
-    <ClCompile Include="src\Chaos\Entity\Components\Camera.cpp" />
-    <ClCompile Include="src\Chaos\Entity\Components\Transform.cpp" />
-    <ClCompile Include="src\Chaos\Entity\Components\Render.cpp" />
   </ItemGroup>
 </Project>

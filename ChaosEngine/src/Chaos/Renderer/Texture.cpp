@@ -8,12 +8,12 @@
 namespace Chaos
 {
 	Ref<Texture> Texture::s_blankTexture = nullptr;
-	Ref<Texture> Texture::Create(const char* path)
+	Ref<Texture> Texture::Create(const char* filePath)
 	{
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::API::None: LOGCORE_ERROR("Render API not supported!"); return nullptr;
-		case RendererAPI::API::Vulkan: return CreateRef<VulkanTexture>(path);
+		case RendererAPI::API::Vulkan: return CreateRef<VulkanTexture>(filePath);
 		}
 		LOGCORE_ERROR("Render API not found");
 		return nullptr;

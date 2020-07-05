@@ -1,7 +1,12 @@
 //This class contains functions for setting up a vulkan context, devices and pipelines. It also contains A function called "DrawFrame"
 //that should be called at the end of the main update loop in application. This Class also has methods for adding quads to the render queue.
 //This code was inspired by https://vulkan-tutorial.com/ and has been modified to better suit a game engine
-
+//===============================================================NOTES======================================================================
+//This class also works on the assumption that the user wont want to use a rendered frame for a viewport or anything else, as such there are 
+//Areas excluded from release builds using precompiler macros, however this might change in the future as I can forsee users wanting to render
+//say a cameras veiw to a texture on an entity but we'll cross that bridge when we come to it. 
+//Another note, this class should be more abstracted into maybe interfaces such as "Buffer" and "Vertex" and then have platform derivatives from
+//Those interfaces to keep this class lean, however I am not yet expirenced enough with render APIs to know how that abstraction should be done
 #include "chaospch.h"
 #include "VulkanRenderer.h"
 #include "Chaos/Core/Application.h"
@@ -1550,17 +1555,37 @@ namespace Chaos
 		vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
 		vkDestroyRenderPass(m_device, m_renderpass, nullptr);
 
-		for (auto imageView : m_swapchainImageViews) {
+		for (auto imageView : m_swapchainImageViews) 
+		{
 			vkDestroyImageView(m_device, imageView, nullptr);
 		}
 
 		vkDestroySwapchainKHR(m_device, m_swapchain, nullptr);
 
-		for (size_t i = 0; i < m_swapchainImages.size(); i++) {
+		for (size_t i = 0; i < m_swapchainImages.size(); i++) 
+		{
 			vkDestroyBuffer(m_device, m_uniformBuffers[i], nullptr);
 			vkFreeMemory(m_device, m_uniformBuffersMemory[i], nullptr);
 		}
 
+#if !CHAOS_RELEASE
+		for (auto framebuffer : m_renderedFrameBuffers)
+		{
+			vkDestroyFramebuffer(m_device, framebuffer, nullptr);
+		}
+		vkDestroyRenderPass(m_device, m_renderedRenderPass, nullptr);
+
+		for (auto imageView : m_renderedFrameViews) 
+		{
+			vkDestroyImageView(m_device, imageView, nullptr);
+		}
+
+		for (size_t i = 0; i < m_renderedFrames.size(); i++) 
+		{
+			vkDestroyImage(m_device, m_renderedFrames[i], nullptr);
+			vkFreeMemory(m_device, m_renderedFramesMemory[i], nullptr);
+		}
+#endif
 		vkDestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
 	}
 
@@ -1726,7 +1751,7 @@ namespace Chaos
 
 			m_buffers.clear(); //TODO: change to only clear dynamic buffers
 			m_imGuiCommandBuffers.clear();
-			m_totalQuadsDrawn = 0;
+
 		}
 
 	}

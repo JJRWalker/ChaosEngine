@@ -122,7 +122,7 @@ namespace Chaos
 	void ImGuiLayer::OnImGuiRender()
 	{
 		static bool show = false;
-		//ImGui::ShowDemoWindow(&show);-
+		//ImGui::ShowDemoWindow(&show);
 		VulkanRenderer& renderer = dynamic_cast<VulkanRenderer&>(Application::Get().GetRenderer());
 
 #if !CHAOS_RELEASE
@@ -187,12 +187,23 @@ namespace Chaos
 		}
 		ImGui::End();
 
+		ImGui::Begin("Settings");
+		ImGui::Text("FPS: %f", 1 / mTime);
+		ImGui::Text("Quads: %d", renderer.m_totalQuadsDrawn);
+		ImGui::Text("Draw calls: %d", renderer.m_buffers.size() + 1);
+		ImGui::End();
+
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
 		ImGui::Begin("viewport");		
+
+		ImVec2 viewportSize = ImGui::GetContentRegionAvail();
+
 		if (m_veiwportImageId != nullptr)
 		{
-			ImGui::Image(m_veiwportImageId, { 720, 480 }, ImVec2{ 0, -1 }, ImVec2{ 1, 0 });
+			ImGui::Image(m_veiwportImageId, { viewportSize.x, viewportSize.y}, ImVec2{ 0, -1 }, ImVec2{ 1, 0 });
 		}
 		ImGui::End();
+		ImGui::PopStyleVar();
 #endif
 		// FIXME-VIEWPORT: Select a default viewport
 		const float DISTANCE = 10.0f;
@@ -225,6 +236,8 @@ namespace Chaos
 		}
 		ImGui::End();
 
+
+		renderer.m_totalQuadsDrawn = 0;
 	}
 
 	void ImGuiLayer::End()
