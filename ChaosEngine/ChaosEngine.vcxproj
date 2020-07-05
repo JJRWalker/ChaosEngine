@@ -174,7 +174,6 @@
     <ClInclude Include="src\Platform\Vulkan\VulkanRenderer.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanSubTexture.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanTexture.h" />
-    <ClInclude Include="src\Platform\Windows\WindowsInput.h" />
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h" />
     <ClInclude Include="src\chaospch.h" />
     <ClInclude Include="vendor\glm\glm\common.hpp" />
