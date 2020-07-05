@@ -15,10 +15,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{7FA9857C-6BE0-860D-14CD-6C1000E3020F}</ProjectGuid>
+    <ProjectGuid>{B410F9B1-A073-8856-49F9-C00C353B54D9}</ProjectGuid>
     <IgnoreWarnCompileDuplicatedFilename>true</IgnoreWarnCompileDuplicatedFilename>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>Game</RootNamespace>
+    <RootNamespace>ChaosControl</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -55,23 +55,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>..\bin\Debug-windows-x86_64\Game\</OutDir>
-    <IntDir>..\int\Debug-windows-x86_64\Game\</IntDir>
-    <TargetName>Game</TargetName>
+    <OutDir>..\bin\Debug-windows-x86_64\ChaosControl\</OutDir>
+    <IntDir>..\int\Debug-windows-x86_64\ChaosControl\</IntDir>
+    <TargetName>ChaosControl</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\bin\Release-windows-x86_64\Game\</OutDir>
-    <IntDir>..\int\Release-windows-x86_64\Game\</IntDir>
-    <TargetName>Game</TargetName>
+    <OutDir>..\bin\Release-windows-x86_64\ChaosControl\</OutDir>
+    <IntDir>..\int\Release-windows-x86_64\ChaosControl\</IntDir>
+    <TargetName>ChaosControl</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\bin\Distribution-windows-x86_64\Game\</OutDir>
-    <IntDir>..\int\Distribution-windows-x86_64\Game\</IntDir>
-    <TargetName>Game</TargetName>
+    <OutDir>..\bin\Distribution-windows-x86_64\ChaosControl\</OutDir>
+    <IntDir>..\int\Distribution-windows-x86_64\ChaosControl\</IntDir>
+    <TargetName>ChaosControl</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -82,9 +82,7 @@
       <AdditionalIncludeDirectories>..\ChaosEngine\src;..\ChaosEngine\vendor;..\ChaosEngine\vendor\spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
-      <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -104,7 +102,6 @@
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -125,7 +122,6 @@
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -135,12 +131,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\GameApp.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\ChaosEngine\ChaosEngine.vcxproj">
       <Project>{095A0848-750F-813D-FE03-7B146AB87741}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\ControlApp.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

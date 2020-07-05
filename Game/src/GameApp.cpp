@@ -1,6 +1,7 @@
 
 #include <Chaos.h>
 #include <Chaos/Events/KeyEvent.h>
+#include <Chaos/Core/EntryPoint.h>
 
 
 //NOTE: this is a quick and dirty implementation to test functionality, not representitive of the product

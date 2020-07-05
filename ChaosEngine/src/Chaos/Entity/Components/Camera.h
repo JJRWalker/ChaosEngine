@@ -13,7 +13,7 @@ namespace Chaos
 	class Camera
 	{
 	public:
-		Camera() {};
+		Camera() { Recalculate(); }
 		Camera(Vec3 positon, Vec3 rotation, Vec4 bounds) : m_position(positon), m_rotation(rotation), m_bounds(bounds) { Recalculate(); };
 
 		void SetPosition(Vec3 position) { m_position = position; Recalculate(); }
@@ -31,7 +31,7 @@ namespace Chaos
 		void Recalculate();
 
 	private:
-		Vec3 m_position = Vec3::Zero();
+		Vec3 m_position = Vec3(0,0,0);
 		Vec3 m_rotation = Vec3::Zero();
 		Vec4 m_bounds = Vec4(-5.0f, 5.0f, -5.0f, 5.0f);
 

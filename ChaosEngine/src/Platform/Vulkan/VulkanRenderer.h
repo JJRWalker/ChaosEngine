@@ -1,6 +1,6 @@
 #pragma once
 #include "Chaos/Renderer/Renderer.h"
-#include <Vulkan/vulkan.h>
+#include <Vulkan/Include/vulkan/vulkan.h>
 
 //Ideally I'd like to avoid including GLM here but I don't have a mat4 data type that has the functionality of GLM's
 #define GLM_FORCE_RADIANS
@@ -113,7 +113,13 @@ namespace Chaos
 		virtual void DrawQuad(Vec2& position, Vec2& scale, Ref<SubTexture> subTexture) override;
 		virtual void DrawFrame() override;
 		virtual void WindowResized() override { m_framebufferResized = true; }
-		bool HasTexture(const char* filePath, Ref<Texture> outTexture) override; //Takes in a file path and a texture, returns true and sets the ref of inputted texture if one exists
+		virtual bool HasTexture(const char* filePath, Ref<Texture> outTexture) override; //Takes in a file path and a texture, returns true and sets the ref of inputted texture if one exists
+		virtual DebugInfo& GetDebugInfo() override { return m_debugInfo; }
+
+		VkSampler& GetTexSampler() { return m_textureSampler; }
+		std::vector<VkImageView>& GetRenderedFrames() { return m_renderedFrameViews; }
+		size_t GetCurrentFrame() { return m_currentFrame; }
+
 		//VULKAN TEMP
 	private:
 		//constants
@@ -263,6 +269,6 @@ namespace Chaos
 		const std::vector<const char*> m_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
 		//DEBUG VARS
-		int m_totalQuadsDrawn;
+		DebugInfo m_debugInfo;
 	};
 }

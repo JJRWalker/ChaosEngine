@@ -8,6 +8,12 @@
 
 namespace Chaos
 {
+	struct DebugInfo
+	{
+		int TotalQuadsDrawn = 0;
+		int NumOfDrawCalls = 0;
+	};
+
 	class Renderer
 	{
 		friend class ImGuiLayer;
@@ -26,6 +32,7 @@ namespace Chaos
 		virtual void DrawFrame() = 0;
 		virtual void WindowResized() = 0;
 		virtual bool HasTexture(const char* filePath, Ref<Texture> outTexture) = 0;
+		virtual DebugInfo& GetDebugInfo() = 0;
 
 	private:
 		static RendererAPI s_rendererAPI;		

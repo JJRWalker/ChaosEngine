@@ -28,6 +28,3 @@
 #include "Chaos/Entity/Components/Camera.h"
 #include "Chaos/Entity/Components/Render.h"
 #include "Chaos/Entity/Components/Transform.h"
-
-//===ENTRY=POINT========================================
-#include "Chaos/Core/EntryPoint.h"

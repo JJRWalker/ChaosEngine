@@ -134,7 +134,7 @@ namespace Chaos
 			m_buffers.resize(m_buffers.size() + 1);
 			CreateBuffersAndClearResources(m_buffers.size() - 1);
 		}
-		m_totalQuadsDrawn++;
+		m_debugInfo.TotalQuadsDrawn++;
 	}
 
 	void VulkanRenderer::DrawQuad(Vec2& position, Vec2& scale, Vec4& colour, Ref<Texture> texture)
@@ -176,7 +176,7 @@ namespace Chaos
 			m_buffers.resize(m_buffers.size() + 1);
 			CreateBuffersAndClearResources(m_buffers.size() - 1);
 		}
-		m_totalQuadsDrawn++;
+		m_debugInfo.TotalQuadsDrawn++;
 	}
 
 	void VulkanRenderer::DrawQuad(Vec2& position, Vec2& scale, Vec4& colour, Ref<Texture> texture, float tilingFactor)
@@ -218,7 +218,7 @@ namespace Chaos
 			m_buffers.resize(m_buffers.size() + 1);
 			CreateBuffersAndClearResources(m_buffers.size() - 1);
 		}
-		m_totalQuadsDrawn++;
+		m_debugInfo.TotalQuadsDrawn++;
 	}
 
 	void VulkanRenderer::DrawQuad(Vec2& position, Vec2& scale, Ref<Texture> texture, float tilingFactor)
@@ -262,7 +262,7 @@ namespace Chaos
 			m_buffers.resize(m_buffers.size() + 1);
 			CreateBuffersAndClearResources(m_buffers.size() - 1);
 		}
-		m_totalQuadsDrawn++;
+		m_debugInfo.TotalQuadsDrawn++;
 	}
 
 	void VulkanRenderer::DrawQuad(Vec2& position, Vec2& scale, Ref<SubTexture> subTexture)
@@ -306,7 +306,7 @@ namespace Chaos
 			m_buffers.resize(m_buffers.size() + 1);
 			CreateBuffersAndClearResources(m_buffers.size() - 1);
 		}
-		m_totalQuadsDrawn++;
+		m_debugInfo.TotalQuadsDrawn++;
 	}
 #pragma endregion
 
@@ -566,12 +566,12 @@ namespace Chaos
 		m_swapchainImageFormat = surfaceFormat.format;
 		m_swapchainExtent = extent;
 
-#if !CHAOS_RELEASE
+
 		for (size_t i = 0; i < imageCount; ++i)
 		{
 			CreateImage(m_swapchainExtent.width, m_swapchainExtent.height, m_swapchainImageFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_renderedFrames[i], m_renderedFramesMemory[i]);
 		}
-#endif
+
 	}
 
 	//setting up the image views (still images) that will be presented to the surface, created upon renderer construction / creation
@@ -603,7 +603,7 @@ namespace Chaos
 				LOGCORE_ERROR("VULKAN: failed to create image views!");
 			}
 
-#if !CHAOS_RELEASE
+
 			m_renderedFrameViews[i] = CreateImageView(m_renderedFrames[i], m_swapchainImageFormat);
 			VkImageViewCreateInfo frameViewsCreateInfo = {};
 			frameViewsCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -625,7 +625,7 @@ namespace Chaos
 			if (vkCreateImageView(m_device, &frameViewsCreateInfo, nullptr, &m_renderedFrameViews[i]) != VK_SUCCESS) {
 				LOGCORE_ERROR("VULKAN: failed to create image views!");
 			}
-#endif
+
 		}
 	}
 
@@ -860,7 +860,7 @@ namespace Chaos
 			{
 				LOGCORE_ERROR("VULKAN: failed to create framebuffer!");
 			}
-#if !CHAOS_RELEASE
+
 			VkImageView frameAttachments[] = {
 				m_renderedFrameViews[i]
 			};
@@ -877,7 +877,7 @@ namespace Chaos
 			{
 				LOGCORE_ERROR("VULKAN: failed to create framebuffer!");
 			}
-#endif
+
 		}
 
 	}
@@ -1119,7 +1119,7 @@ namespace Chaos
 	//Creating command buffers each frame, loads vertex, index and texture data from mRenderQueue and records commands to draw.
 	void VulkanRenderer::CreateCommandBuffers()
 	{
-#if !CHAOS_RELEASE
+
 		//Resizing vectors to contain the new buffers
 		m_commandBuffers.resize(m_renderedFrameBuffers.size());
 
@@ -1191,96 +1191,24 @@ namespace Chaos
 			}
 
 			//Code for copying image, not sure if we really need this if we're only rendering to the viewport in anything but release mode
-			//VkCommandBuffer command = BeginSingleTimeCommands();
-			//VkImageCopy copy = {};
-			//copy.extent.height = mSwapchainExtent.height;
-			//copy.extent.width = mSwapchainExtent.width;
-			//copy.srcOffset = { 0,0,0 };
-			//copy.dstOffset = { 0,0,0 };
-			//VkImageSubresourceLayers layers;
-			//layers.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			//layers.mipLevel = 0;
-			//layers.baseArrayLayer = 0;
-			//layers.layerCount = 1;
-			//copy.srcSubresource = layers;
-			//copy.dstSubresource = layers;
+			VkCommandBuffer command = BeginSingleTimeCommands();
+			VkImageCopy copy = {};
+			copy.extent.height = m_swapchainExtent.height;
+			copy.extent.width = m_swapchainExtent.width;
+			copy.srcOffset = { 0,0,0 };
+			copy.dstOffset = { 0,0,0 };
+			VkImageSubresourceLayers layers;
+			layers.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			layers.mipLevel = 0;
+			layers.baseArrayLayer = 0;
+			layers.layerCount = 1;
+			copy.srcSubresource = layers;
+			copy.dstSubresource = layers;
 
-			//vkCmdCopyImage(command, mRenderedFrames[i], VK_IMAGE_LAYOUT_UNDEFINED, mSwapchainImages[i], VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, 1, &copy);
-			//EndSingleTimeCommands(command);
+			vkCmdCopyImage(command, m_renderedFrames[i], VK_IMAGE_LAYOUT_UNDEFINED, m_swapchainImages[i], VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, 1, &copy);
+			EndSingleTimeCommands(command);
 
 		}
-#else
-		//Resizing vectors to contain the new buffers
-		m_commandBuffers.resize(m_swapchainframebuffers.size());
-
-		VkCommandBufferAllocateInfo allocInfo = {};
-		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.commandPool = m_commandPool;
-		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandBufferCount = (uint32_t)m_commandBuffers.size();
-
-
-		if (vkAllocateCommandBuffers(m_device, &allocInfo, m_commandBuffers.data()) != VK_SUCCESS)
-		{
-			LOGCORE_ERROR("VULKAN: failed to allocate command buffers!");
-			return;
-		}
-
-		for (size_t i = 0; i < m_swapchainframebuffers.size(); i++)
-		{
-			VkCommandBufferBeginInfo beginInfo = {};
-			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
-			if (vkBeginCommandBuffer(m_commandBuffers[i], &beginInfo) != VK_SUCCESS)
-			{
-				LOGCORE_ERROR("VULKAN: failed to begin recording command buffer!");
-				return;
-			}
-			VkRenderPassBeginInfo renderPassInfo = {};
-			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-			renderPassInfo.renderPass = m_renderpass;
-			renderPassInfo.framebuffer = m_swapchainframebuffers[i];
-			renderPassInfo.renderArea.offset = { 0, 0 };
-			renderPassInfo.renderArea.extent = m_swapchainExtent;
-
-			VkClearValue clearColor = { CLEAR_COLOR.X, CLEAR_COLOR.Y, CLEAR_COLOR.Z, CLEAR_COLOR.W };
-			renderPassInfo.clearValueCount = 1;
-			renderPassInfo.pClearValues = &clearColor;
-
-			vkCmdBeginRenderPass(m_commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-			vkCmdBindPipeline(m_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
-
-			//Itterates through RenderQueue and records commands, drawing all objects of the same texture together.
-			for (uint32_t x = 0; x < m_buffers.size(); ++x)
-			{
-				//if a buffer is found that doesn't have all textures loaded, create descriptor sets
-				if (m_buffers[x].TexturesLoaded != m_buffers[x].TexturesToBind.size())
-				{
-					if (m_descriptorSets.size() > 0)
-					{
-						vkFreeDescriptorSets(m_device, m_descriptorPool, (uint32_t)m_descriptorSets.size(), m_descriptorSets.data());
-					}
-					CreateDescriptorSet();
-				}
-
-				VkBuffer vertexBuffersToBind[] = { m_buffers[x].VertexBuffer };
-				VkDeviceSize offsets[] = { 0 };
-				vkCmdBindVertexBuffers(m_commandBuffers[i], 0, 1, vertexBuffersToBind, offsets);
-
-				vkCmdBindIndexBuffer(m_commandBuffers[i], m_buffers[x].IndexBuffer, 0, VK_INDEX_TYPE_UINT16);
-
-				vkCmdBindDescriptorSets(m_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSets[m_buffers[x].DescriptorIndex], 0, nullptr);
-
-				vkCmdDrawIndexed(m_commandBuffers[i], static_cast<uint32_t>(m_buffers[x].IndexCount), 1, 0, 0, 0);
-
-			}
-			vkCmdEndRenderPass(m_commandBuffers[i]);
-			if (vkEndCommandBuffer(m_commandBuffers[i]) != VK_SUCCESS)
-			{
-				LOGCORE_ERROR("VULKAN: failed to record command buffer!");
-			}
-		}
-#endif
 
 	}
 
@@ -1568,7 +1496,7 @@ namespace Chaos
 			vkFreeMemory(m_device, m_uniformBuffersMemory[i], nullptr);
 		}
 
-#if !CHAOS_RELEASE
+
 		for (auto framebuffer : m_renderedFrameBuffers)
 		{
 			vkDestroyFramebuffer(m_device, framebuffer, nullptr);
@@ -1585,7 +1513,7 @@ namespace Chaos
 			vkDestroyImage(m_device, m_renderedFrames[i], nullptr);
 			vkFreeMemory(m_device, m_renderedFramesMemory[i], nullptr);
 		}
-#endif
+
 		vkDestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
 	}
 
@@ -1636,6 +1564,7 @@ namespace Chaos
 	//Draw called once every game loop to display the data passed to it that loop
 	void VulkanRenderer::DrawFrame()
 	{
+		m_debugInfo.NumOfDrawCalls = m_buffers.size();
 		if (m_vertices.size() > 0)
 			CreateBuffersAndClearResources(m_buffers.size());
 		if (m_buffers.size() > 0)

@@ -30,11 +30,13 @@ namespace Chaos
 		inline class Renderer& GetRenderer() { return *m_renderer; }
 		inline Camera* GetMainCamera() { return m_mainCamera; }
 		inline void SetMainCamera(Camera* cam) { m_mainCamera = cam; }
+		inline void SetRenderingImGui(bool state) { m_renderingImGui = state; }
 
 	private:
 		bool OnWindowClose(WindowCloseEvent& e);
 
 		bool m_running = true;
+		bool m_renderingImGui = false;
 		std::unique_ptr<Window> m_window;
 		std::unique_ptr<Renderer> m_renderer;
 		Camera* m_mainCamera;

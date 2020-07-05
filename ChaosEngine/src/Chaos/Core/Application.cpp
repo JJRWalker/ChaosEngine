@@ -54,14 +54,15 @@ namespace Chaos
 			m_window->OnUpdate();
 
 			m_renderer->DrawFrame();
-
-			//Currently causes black screen to be rendered over the top of the main render, need to change how the pipeline and descriptor sets are handled by Vulkan/ImGui
-			m_guiLayer->Begin();
-			for (Layer* layer : m_layerStack)
-				layer->OnImGuiRender();
 			
-			m_guiLayer->End();
-
+			if (m_renderingImGui)
+			{
+				//Currently causes black screen to be rendered over the top of the main render, need to change how the pipeline and descriptor sets are handled by Vulkan/ImGui
+				m_guiLayer->Begin();
+				for (Layer* layer : m_layerStack)
+					layer->OnImGuiUpdate();
+				m_guiLayer->End();
+			}
 			//LOGCORE_INFO("Time to renderframe: {0} FPS: {1}", mDeltaTime, 1 / mDeltaTime);
 		}
 	}

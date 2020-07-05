@@ -15,8 +15,8 @@ namespace Chaos
 
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
-		virtual void OnUpdate(float deltaTime) override { mTime = deltaTime; }
-		virtual void OnImGuiRender() override;
+		virtual void OnUpdate(float deltaTime) override {};
+		virtual void OnImGuiUpdate() override;
 
 		void Begin();
 		void End();
@@ -24,10 +24,6 @@ namespace Chaos
 		void VulkanInit();
 		
 	private:
-		float mTime = 0.0f;
-		
-		ImTextureID m_veiwportImageId;
-
 		VkDescriptorPool m_descriptorPool;
 		VkDescriptorSetLayout m_descriptorSetLayout;
 		VkRenderPass m_renderpass;

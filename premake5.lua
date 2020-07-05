@@ -8,6 +8,11 @@ workspace "ChaosEngine"
         "Distribution"
     }
 
+    flags
+    {
+        "MultiProcessorCompile"
+    }
+
     startproject  "Game"
 
     outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
@@ -77,6 +82,59 @@ project "ChaosEngine"
             "CHAOS_PLATFORM_WINDOWS"
         }
         
+        filter "configurations:Debug"
+            defines "CHAOS_DEBUG"
+            runtime "Debug"
+            symbols "on"
+
+        filter "configurations:Release"
+            defines "CHAOS_RELEASE"
+            runtime "Release"
+            optimize "on"
+
+        filter "configurations:Distribution"
+            defines "CHAOS_DISTRIBUTION"
+            runtime "Release"
+            optimize "on"
+
+project "ControlEditor"
+    location "ControlEditor"
+    kind "ConsoleApp"
+    language "C++"
+    cppdialect "C++17"
+    staticruntime "on"
+
+    targetdir ("bin/".. outputdir .. "/%{prj.name}")
+    objdir ("int/".. outputdir .. "/%{prj.name}")
+
+    files
+    {
+        "%{prj.name}/src/**.h",
+        "%{prj.name}/src/**.cpp"
+    }
+
+    includedirs
+    {
+        "ChaosEngine/src",
+        "ChaosEngine/vendor",
+        "ChaosEngine/vendor/spdlog/include",
+        "%{IncludeDir.Vulkan}",
+        "%{IncludeDir.ImGUI}"
+    }
+
+    links
+    {
+        "ChaosEngine"
+    }
+
+    filter "system:windows"
+        systemversion "latest"
+
+        defines
+        {
+            "CHAOS_PLATFORM_WINDOWS"
+        }
+
         filter "configurations:Debug"
             defines "CHAOS_DEBUG"
             runtime "Debug"
