@@ -58,9 +58,6 @@ public:
 	//Test entity
 	Chaos::Entity entity;
 	Chaos::Entity entity2;
-	//Test camera
-	Chaos::Camera mainCam;
-	Chaos::Camera otherCam;
 	bool switched = false;
 
 	Chaos::Render* render;
@@ -103,20 +100,6 @@ public:
 			xDir = 0;
 		}
 
-		if (Chaos::Input::IsKeyPressed(KEY_F))
-		{
-			if (switched)
-			{
-				Chaos::Application::Get().SetMainCamera(&mainCam);
-			}
-			else
-			{
-				Chaos::Application::Get().SetMainCamera(&otherCam);
-			}
-			x = Chaos::Application::Get().GetMainCamera()->GetPosition().X;
-			y = Chaos::Application::Get().GetMainCamera()->GetPosition().Y;
-		}
-
 		//Delta time is passed to each layer by the Application class 
 		x += xDir * (moveSpeed * deltaTime);
 		y += yDir * (moveSpeed * deltaTime);
@@ -144,8 +127,6 @@ public:
 		//sub sprite example
 		renderer.DrawQuad(Chaos::Vec2(4.f, 0.f), Chaos::Vec2(1.f, 1.f), playersub);	//draws the bottom right quarter of the player sprite
 
-		//Camera movement example (not fully implemented)
-		Chaos::Application::Get().GetMainCamera()->SetPosition(Chaos::Vec3( x, y, 0.f));	// moves camera based on directional input from W A S D keys 
 
 		//Entity test
 		entity.GetTransform()->Position() = Chaos::Vec2(x,y); //changes the entity's position to be the same as the cameras. Changing this changes where the Render component renders the entity 
@@ -172,8 +153,6 @@ public:
 		}
 		render->SetTexture(player);
 		//scene.StartScene();
-		mainCam = *Chaos::Application::Get().GetMainCamera();
-		otherCam = Chaos::Camera();
 	}
 
 	void OnDetach() override

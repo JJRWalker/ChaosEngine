@@ -14,9 +14,9 @@ namespace Chaos
 		Vec2& Scale() { return m_scale; }
 
 		// Inherited via Component
-		virtual void Start() const override;
-		virtual void Update() const override;
-		virtual void Destroy() const override;
+		virtual void Start() override;
+		virtual void Update() override;
+		virtual void Destroy() override;
 	private:
 		Vec2 m_position = Vec2::Zero();
 		Vec2 m_rotation = Vec2::Zero();

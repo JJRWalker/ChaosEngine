@@ -17,8 +17,9 @@
 #include <Chaos/Entity/Components/Render.h>
 namespace Chaos
 {
-	EditorLayer::EditorLayer()
+	EditorLayer::EditorLayer() : m_cameraController(*Application::Get().GetMainCameraEntity()->GetTransform(), *Application::Get().GetMainCamera())
 	{
+		
 		m_debugName = "ControlEditorLayer";
 	}
 	void EditorLayer::OnAttach()
@@ -29,13 +30,12 @@ namespace Chaos
 		entity.AddComponent<Render>();
 		entity.GetTransform()->Position() = { 0,0 };
 		entity.GetTransform()->Scale() = Vec2(1, 1);
-		entity.GetTransform()->Position() = Vec2(Application::Get().GetMainCamera()->GetPosition().X, Application::Get().GetMainCamera()->GetPosition().Y);
+		entity.GetTransform()->Position() = Vec2(Application::Get().GetMainCameraEntity()->GetTransform()->Position().X, Application::Get().GetMainCameraEntity()->GetTransform()->Position().Y);
 
-		LOGCORE_INFO("entity: {0},{1} Camera: {2},{3},{4}", entity.GetTransform()->Position().X,
+		LOGCORE_INFO("entity: {0},{1} Camera: {2},{3}", entity.GetTransform()->Position().X,
 			entity.GetTransform()->Position().Y,
-			Application::Get().GetMainCamera()->GetPosition().X,
-			Application::Get().GetMainCamera()->GetPosition().Y,
-			Application::Get().GetMainCamera()->GetPosition().Z);
+			Application::Get().GetMainCameraEntity()->GetTransform()->Position().X,
+			Application::Get().GetMainCameraEntity()->GetTransform()->Position().Y);
 	}
 	void EditorLayer::OnDetach()
 	{
@@ -43,10 +43,12 @@ namespace Chaos
 	void EditorLayer::OnUpdate(float deltaTime)
 	{
 		m_time = deltaTime;
+		m_cameraController.Update(deltaTime, m_ViewportSize);
 		entity.Update();
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{
+		m_cameraController.OnEvent(event);
 	}
 	void EditorLayer::OnImGuiUpdate()
 	{
@@ -125,11 +127,11 @@ namespace Chaos
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
 		ImGui::Begin("viewport");
 
-		ImVec2 viewportSize = ImGui::GetContentRegionAvail();
+		m_ViewportSize = { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y };
 
 		if (m_veiwportImageId != nullptr)
 		{
-			ImGui::Image(m_veiwportImageId, { viewportSize.x, viewportSize.y }, ImVec2{ 0, -1 }, ImVec2{ 1, 0 });
+			ImGui::Image(m_veiwportImageId, { m_ViewportSize.X, m_ViewportSize.Y }, ImVec2{ 0, -1 }, ImVec2{ 1, 0 });
 		}
 		ImGui::End();
 		ImGui::PopStyleVar();

@@ -10,8 +10,8 @@ namespace Chaos
 {
 	struct DebugInfo
 	{
-		int TotalQuadsDrawn = 0;
-		int NumOfDrawCalls = 0;
+		size_t TotalQuadsDrawn = 0;
+		uint32_t NumOfDrawCalls = 0;
 	};
 
 	class Renderer

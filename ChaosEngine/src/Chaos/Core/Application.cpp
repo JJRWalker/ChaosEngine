@@ -6,6 +6,7 @@
 #include "Chaos/Input/Input.h"
 #include "Chaos/Renderer/Texture.h"
 #include "Chaos/Renderer/Renderer.h"
+#include "Chaos/Entity/Entity.h"
 #include "Chaos/Entity/Components/Camera.h"
 #include "Chaos/Debug/ImGuiLayer.h"
 #include "GLFW/glfw3.h"
@@ -25,7 +26,9 @@ namespace Chaos
 		m_window = std::unique_ptr<Window>(Window::Create());
 		m_window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 		//Creating a default camera
-		m_mainCamera = new Camera();
+		m_mainCameraEntity = new Entity("Main Camera");
+		m_mainCameraEntity->AddComponent<Camera>();
+		m_mainCamera = m_mainCameraEntity->GetComponent<Camera>();
 		//Creating renderer
 		m_renderer = std::unique_ptr<Renderer>(Renderer::Create());
 		//Creating test overlay layer
@@ -47,13 +50,10 @@ namespace Chaos
 			m_deltaTime = time - m_timeLastFrame;
 			m_timeLastFrame = time;
 
+			m_mainCamera->SetAspectRatio(m_window->GetAspectRatio());
+
 			for (Layer* layer : m_layerStack)
 				layer->OnUpdate(m_deltaTime);			
-
-
-			m_window->OnUpdate();
-
-			m_renderer->DrawFrame();
 			
 			if (m_renderingImGui)
 			{
@@ -63,6 +63,9 @@ namespace Chaos
 					layer->OnImGuiUpdate();
 				m_guiLayer->End();
 			}
+			m_mainCamera->Update();
+			m_window->OnUpdate();
+			m_renderer->DrawFrame();
 			//LOGCORE_INFO("Time to renderframe: {0} FPS: {1}", mDeltaTime, 1 / mDeltaTime);
 		}
 	}

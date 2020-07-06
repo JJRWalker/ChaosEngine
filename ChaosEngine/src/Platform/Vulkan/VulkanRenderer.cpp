@@ -1564,125 +1564,122 @@ namespace Chaos
 	//Draw called once every game loop to display the data passed to it that loop
 	void VulkanRenderer::DrawFrame()
 	{
-		m_debugInfo.NumOfDrawCalls = m_buffers.size();
 		if (m_vertices.size() > 0)
 			CreateBuffersAndClearResources(m_buffers.size());
-		if (m_buffers.size() > 0)
+
+		m_debugInfo.NumOfDrawCalls = m_buffers.size();
+
+		//DRAW
+		m_waitingOnFences = true;
+		vkWaitForFences(m_device, 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
+		vkResetFences(m_device, 1, &m_inFlightFences[m_currentFrame]);
+		m_waitingOnFences = false;
+
+		VkResult result = vkAcquireNextImageKHR(m_device, m_swapchain, UINT64_MAX, m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, &m_imageIndex);
+
+		if (result == VK_ERROR_OUT_OF_DATE_KHR)
 		{
-			//DRAW
-			m_waitingOnFences = true;
-			vkWaitForFences(m_device, 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
-			vkResetFences(m_device, 1, &m_inFlightFences[m_currentFrame]);
-			m_waitingOnFences = false;
-
-			VkResult result = vkAcquireNextImageKHR(m_device, m_swapchain, UINT64_MAX, m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, &m_imageIndex);
-
-			if (result == VK_ERROR_OUT_OF_DATE_KHR)
-			{
-				RecreateSwapchain();
-				return;
-			}
-			else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
-			{
-				LOGCORE_ERROR("VULKAN: failed to aquire swapchain image!");
-			}
-
-			UpdateUniformBuffers();
-			CreateCommandBuffers();
-
-			//Check if a previous frame is using the same image
-			if (m_imagesInFlight[m_imageIndex] != VK_NULL_HANDLE)
-			{
-				vkWaitForFences(m_device, 1, &m_imagesInFlight[m_imageIndex], VK_TRUE, UINT64_MAX);
-			}
-
-			m_imagesInFlight[m_imageIndex] = m_inFlightFences[m_currentFrame];
-
-			//Adding the command buffers to the submit buffer, if there is an imgui buffer also attach imgui command buffers for drawing UI
-			//Potential change: add check to see if a bool for rendering UI is true, would allow for toggling UI on and off. Could be done at a higher level
-			std::vector<VkCommandBuffer> submitCommandBuffers = { m_commandBuffers[m_imageIndex] };
-			if (m_imGuiCommandBuffers.size() > 0 && m_renderingGUI)
-			{
-				submitCommandBuffers.push_back(m_imGuiCommandBuffers[m_imageIndex]);
-			}
-			VkSubmitInfo submitInfo = {};
-			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
-			VkSemaphore waitSemaphores[] = { m_imageAvailableSemaphores[m_currentFrame] };
-			VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-			submitInfo.waitSemaphoreCount = 1;
-			submitInfo.pWaitSemaphores = waitSemaphores;
-			submitInfo.pWaitDstStageMask = waitStages;
-
-			submitInfo.commandBufferCount = (uint32_t)submitCommandBuffers.size();
-			submitInfo.pCommandBuffers = submitCommandBuffers.data();
-
-			VkSemaphore signalSemaphore[] = { m_renderFinishedSemaphores[m_currentFrame] };
-			submitInfo.signalSemaphoreCount = 1;
-			submitInfo.pSignalSemaphores = signalSemaphore;
-
-			vkResetFences(m_device, 1, &m_inFlightFences[m_currentFrame]);
-
-			if (vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, m_inFlightFences[m_currentFrame]) != VK_SUCCESS)
-			{
-				LOGCORE_ERROR("VULKAN: failed to submit draw command buffer!");
-			}
-
-			VkPresentInfoKHR presentInfo = {};
-			presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-
-			presentInfo.waitSemaphoreCount = 1;
-			presentInfo.pWaitSemaphores = signalSemaphore;
-
-			VkSwapchainKHR swapChains[] = { m_swapchain };
-			presentInfo.swapchainCount = 1;
-			presentInfo.pSwapchains = swapChains;
-			presentInfo.pImageIndices = &m_imageIndex;
-			presentInfo.pResults = nullptr;
-
-			result = vkQueuePresentKHR(m_presentQueue, &presentInfo);
-
-			//if the swapchain has been invalidated or the frame buffer has been resized, then recreate it
-			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_framebufferResized)
-			{
-				m_framebufferResized = false;
-				RecreateSwapchain();
-				return;
-			}
-			else if (result != VK_SUCCESS)
-			{
-				LOGCORE_ERROR("VULKAN: failed to present swapchain image");
-			}
-
-			m_currentFrame = (m_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-			vkQueueWaitIdle(m_presentQueue);	//Waiting for the queue to be idle before clean up
-
-
-			//Cleaning up resources after rendering a frame
-			vkFreeCommandBuffers(m_device, m_commandPool, static_cast<uint32_t>(m_commandBuffers.size()), m_commandBuffers.data());
-
-			if (m_renderingGUI)
-			{
-				vkFreeCommandBuffers(m_device, *m_imGuiCommandPool, static_cast<uint32_t>(m_imGuiCommandBuffers.size()), m_imGuiCommandBuffers.data());
-				for (auto framebuffer : *m_imGuiFrameBuffer) {
-					vkDestroyFramebuffer(m_device, framebuffer, nullptr);
-				}
-			}
-
-			//TODO: change to only free dynamic buffers
-			for (size_t i = 0; i < m_buffers.size(); ++i)
-			{
-				vkDestroyBuffer(m_device, m_buffers[i].VertexBuffer, nullptr);
-				vkFreeMemory(m_device, m_buffers[i].VertexBufferMemory, nullptr);
-				vkDestroyBuffer(m_device, m_buffers[i].IndexBuffer, nullptr);
-				vkFreeMemory(m_device, m_buffers[i].IndexBufferMemory, nullptr);
-			}
-
-			m_buffers.clear(); //TODO: change to only clear dynamic buffers
-			m_imGuiCommandBuffers.clear();
-
+			RecreateSwapchain();
+			return;
+		}
+		else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+		{
+			LOGCORE_ERROR("VULKAN: failed to aquire swapchain image!");
 		}
 
+		UpdateUniformBuffers();
+		CreateCommandBuffers();
+
+		//Check if a previous frame is using the same image
+		if (m_imagesInFlight[m_imageIndex] != VK_NULL_HANDLE)
+		{
+			vkWaitForFences(m_device, 1, &m_imagesInFlight[m_imageIndex], VK_TRUE, UINT64_MAX);
+		}
+
+		m_imagesInFlight[m_imageIndex] = m_inFlightFences[m_currentFrame];
+
+		//Adding the command buffers to the submit buffer, if there is an imgui buffer also attach imgui command buffers for drawing UI
+		//Potential change: add check to see if a bool for rendering UI is true, would allow for toggling UI on and off. Could be done at a higher level
+		std::vector<VkCommandBuffer> submitCommandBuffers = { m_commandBuffers[m_imageIndex] };
+		if (m_imGuiCommandBuffers.size() > 0 && m_renderingGUI)
+		{
+			submitCommandBuffers.push_back(m_imGuiCommandBuffers[m_imageIndex]);
+		}
+		VkSubmitInfo submitInfo = {};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+		VkSemaphore waitSemaphores[] = { m_imageAvailableSemaphores[m_currentFrame] };
+		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+		submitInfo.waitSemaphoreCount = 1;
+		submitInfo.pWaitSemaphores = waitSemaphores;
+		submitInfo.pWaitDstStageMask = waitStages;
+
+		submitInfo.commandBufferCount = (uint32_t)submitCommandBuffers.size();
+		submitInfo.pCommandBuffers = submitCommandBuffers.data();
+
+		VkSemaphore signalSemaphore[] = { m_renderFinishedSemaphores[m_currentFrame] };
+		submitInfo.signalSemaphoreCount = 1;
+		submitInfo.pSignalSemaphores = signalSemaphore;
+
+		vkResetFences(m_device, 1, &m_inFlightFences[m_currentFrame]);
+
+		if (vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, m_inFlightFences[m_currentFrame]) != VK_SUCCESS)
+		{
+			LOGCORE_ERROR("VULKAN: failed to submit draw command buffer!");
+		}
+
+		VkPresentInfoKHR presentInfo = {};
+		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+		presentInfo.waitSemaphoreCount = 1;
+		presentInfo.pWaitSemaphores = signalSemaphore;
+
+		VkSwapchainKHR swapChains[] = { m_swapchain };
+		presentInfo.swapchainCount = 1;
+		presentInfo.pSwapchains = swapChains;
+		presentInfo.pImageIndices = &m_imageIndex;
+		presentInfo.pResults = nullptr;
+
+		result = vkQueuePresentKHR(m_presentQueue, &presentInfo);
+
+		//if the swapchain has been invalidated or the frame buffer has been resized, then recreate it
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_framebufferResized)
+		{
+			m_framebufferResized = false;
+			RecreateSwapchain();
+			return;
+		}
+		else if (result != VK_SUCCESS)
+		{
+			LOGCORE_ERROR("VULKAN: failed to present swapchain image");
+		}
+
+		m_currentFrame = (m_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+		vkQueueWaitIdle(m_presentQueue);	//Waiting for the queue to be idle before clean up
+
+
+		//Cleaning up resources after rendering a frame
+		vkFreeCommandBuffers(m_device, m_commandPool, static_cast<uint32_t>(m_commandBuffers.size()), m_commandBuffers.data());
+
+		if (m_renderingGUI)
+		{
+			vkFreeCommandBuffers(m_device, *m_imGuiCommandPool, static_cast<uint32_t>(m_imGuiCommandBuffers.size()), m_imGuiCommandBuffers.data());
+			for (auto framebuffer : *m_imGuiFrameBuffer) {
+				vkDestroyFramebuffer(m_device, framebuffer, nullptr);
+			}
+		}
+
+		//TODO: change to only free dynamic buffers
+		for (size_t i = 0; i < m_buffers.size(); ++i)
+		{
+			vkDestroyBuffer(m_device, m_buffers[i].VertexBuffer, nullptr);
+			vkFreeMemory(m_device, m_buffers[i].VertexBufferMemory, nullptr);
+			vkDestroyBuffer(m_device, m_buffers[i].IndexBuffer, nullptr);
+			vkFreeMemory(m_device, m_buffers[i].IndexBufferMemory, nullptr);
+		}
+
+		m_buffers.clear(); //TODO: change to only clear dynamic buffers
+		m_imGuiCommandBuffers.clear();
 	}
 
 	VkSurfaceFormatKHR VulkanRenderer::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)

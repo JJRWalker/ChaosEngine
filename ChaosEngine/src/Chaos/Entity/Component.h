@@ -6,8 +6,8 @@ namespace Chaos
 	class IComponent
 	{
 	public:
-		virtual void Start() const = 0;
-		virtual void Update() const = 0;
-		virtual void Destroy() const = 0;
+		virtual void Start() = 0;
+		virtual void Update() = 0;
+		virtual void Destroy() = 0;
 	};
 }

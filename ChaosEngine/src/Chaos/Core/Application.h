@@ -10,6 +10,7 @@ namespace Chaos
 {
 	class Renderer;
 	class Camera;
+	class Entity;
 	class Application
 	{
 	public:
@@ -29,6 +30,7 @@ namespace Chaos
 		inline Window& GetWindow() { return *m_window; }
 		inline class Renderer& GetRenderer() { return *m_renderer; }
 		inline Camera* GetMainCamera() { return m_mainCamera; }
+		inline Entity* GetMainCameraEntity() { return m_mainCameraEntity; }
 		inline void SetMainCamera(Camera* cam) { m_mainCamera = cam; }
 		inline void SetRenderingImGui(bool state) { m_renderingImGui = state; }
 
@@ -40,6 +42,7 @@ namespace Chaos
 		std::unique_ptr<Window> m_window;
 		std::unique_ptr<Renderer> m_renderer;
 		Camera* m_mainCamera;
+		Entity* m_mainCameraEntity;
 
 		LayerStack m_layerStack;
 

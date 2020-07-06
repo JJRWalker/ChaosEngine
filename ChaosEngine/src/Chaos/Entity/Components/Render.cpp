@@ -5,16 +5,16 @@
 
 namespace Chaos
 {
-	void Render::Start() const
+	void Render::Start() 
 	{
 	}
 
-	void Render::Update() const
+	void Render::Update() 
 	{
 		Application::Get().GetRenderer().DrawQuad(m_entity->GetTransform()->Position(), m_entity->GetTransform()->Scale(), m_texture);
 	}
 
-	void Render::Destroy() const
+	void Render::Destroy() 
 	{
 		 
 	}

@@ -120,12 +120,12 @@ namespace Chaos
 
 		const char* GetName() { return m_name; }
 		size_t GetEntityID() { return m_entityID; }
-		Ref<Transform> GetTransform() { return m_transform; }
+		Transform* GetTransform() { return m_transform; }
 
 	private:
 		size_t m_entityID;
 		const char* m_name;
-		Ref<Transform> m_transform = CreateRef<Transform>();	
+		Transform* m_transform = new Transform();	
 		std::vector<IComponent*> m_components;
 	};
 }
