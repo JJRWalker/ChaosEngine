@@ -7,19 +7,19 @@
 #include <GLM/glm/glm.hpp>
 #include <array>
 
+#include "Chaos/DataTypes/Vec3.h"
+
 namespace Chaos
 {
 	class VulkanTexture;
 	class Vec2;
-	class Vec3;
 	class Vec4;
 
 	struct VulkanVertex {
-		Vec2 pos;
+		Vec3 pos;
 		Vec4 color;
 		Vec2 texCoord;
 		float texIndex;
-		float rotation;
 
 		static VkVertexInputBindingDescription GetBindingDescriptions() {
 			VkVertexInputBindingDescription bindingDescription = {};
@@ -30,12 +30,12 @@ namespace Chaos
 			return bindingDescription;
 		}
 
-		static std::array<VkVertexInputAttributeDescription, 5> GetAttributeDescriptions() {
-			std::array<VkVertexInputAttributeDescription, 5> attributeDescriptions = {};
+		static std::array<VkVertexInputAttributeDescription, 4> GetAttributeDescriptions() {
+			std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions = {};
 
 			attributeDescriptions[0].binding = 0;
 			attributeDescriptions[0].location = 0;
-			attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+			attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
 			attributeDescriptions[0].offset = offsetof(VulkanVertex, pos);
 
 			attributeDescriptions[1].binding = 0;
@@ -53,10 +53,7 @@ namespace Chaos
 			attributeDescriptions[3].format = VK_FORMAT_R32_SFLOAT;
 			attributeDescriptions[3].offset = offsetof(VulkanVertex, texIndex);
 
-			attributeDescriptions[4].binding = 0;
-			attributeDescriptions[4].location = 4;
-			attributeDescriptions[4].format = VK_FORMAT_R32_SFLOAT;
-			attributeDescriptions[4].offset = offsetof(VulkanVertex, rotation);
+
 
 			return attributeDescriptions;
 		}
@@ -117,10 +114,17 @@ namespace Chaos
 		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec4& colour, Ref<Texture> texture, float tilingFactor) override;
 		virtual void DrawQuad(Vec2& position, Vec2& scale, Ref<Texture> texture, float tilingFactor) override;
 		virtual void DrawQuad(Vec2& position, Vec2& scale, Ref<SubTexture> subTexture) override;
+		//with rotation
+		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec2& rotation, Ref<Texture> texture) override;
+		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<Texture> texture) override;
+		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<Texture> texture, float tilingFactor) override;
+		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec2& rotation, Ref<SubTexture> subTexture) override;
+		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<SubTexture> subTtexture) override;
+
 		virtual void DrawFrame() override;
 		virtual void WindowResized() override { m_framebufferResized = true; }
 		virtual bool HasTexture(char* filePath, Ref<Texture> outTexture) override; //Takes in a file path and a texture, returns true and sets the ref of inputted texture if one exists
-		virtual DebugInfo& GetDebugInfo() override { return m_debugInfo; }
+		virtual RenderData& GetDebugInfo() override { return m_debugInfo; }
 
 		VkSampler& GetTexSampler() { return m_textureSampler; }
 		std::vector<VkImageView>& GetRenderedFrames() { return m_renderedFrameViews; }
@@ -274,7 +278,12 @@ namespace Chaos
 		const std::vector<const char*> m_validationLayers = { "VK_LAYER_KHRONOS_validation" };
 		const std::vector<const char*> m_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
+		const glm::vec4 QUAD_VERTEX_POSITIONS[4] = { glm::vec4(-0.5f, -0.5f, 0.0f, 1.0f) ,
+													glm::vec4(0.5f, -0.5f, 0.0f, 1.0f),
+													glm::vec4(0.5f, 0.5f, 0.0f, 1.0f),
+													glm::vec4(-0.5f, 0.5f, 0.0f, 1.0f) };
+
 		//DEBUG VARS
-		DebugInfo m_debugInfo;
+		RenderData m_debugInfo;
 	};
 }

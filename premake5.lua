@@ -115,9 +115,11 @@ project "ControlEditor"
 
     includedirs
     {
+        "%{prj.name}/src",
+        "%{prj.name}/vendor",
+        "ChaosEngine/vendor/spdlog/include",
         "ChaosEngine/src",
         "ChaosEngine/vendor",
-        "ChaosEngine/vendor/spdlog/include",
         "%{IncludeDir.Vulkan}",
         "%{IncludeDir.ImGUI}"
     }

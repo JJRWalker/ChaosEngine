@@ -8,13 +8,13 @@
 
 namespace Chaos
 {
-	struct DebugInfo
+	struct RenderData
 	{
 		size_t TotalQuadsDrawn = 0;
 		size_t NumOfDrawCalls = 0;
 	};
 
-	class Renderer
+	class Renderer							
 	{
 		friend class ImGuiLayer;
 		friend class VulkanTexture;
@@ -29,10 +29,17 @@ namespace Chaos
 		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec4& colour, Ref<Texture> texture, float tilingFactor) = 0;
 		virtual void DrawQuad(Vec2& position, Vec2& scale, Ref<Texture> texture, float tilingFactor) = 0;
 		virtual void DrawQuad(Vec2& position, Vec2& scale, Ref<SubTexture> subTexture) = 0;
+
+		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec2& rotation, Ref<Texture> texture) = 0;
+		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<Texture> texture) = 0;
+		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<Texture> texture, float tilingFactor) = 0;
+		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec2& rotation, Ref<SubTexture> subTexture) = 0;
+		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<SubTexture> subTexture) = 0;
+
 		virtual void DrawFrame() = 0;
 		virtual void WindowResized() = 0;
 		virtual bool HasTexture(char* filePath, Ref<Texture> outTexture) = 0;
-		virtual DebugInfo& GetDebugInfo() = 0;
+		virtual RenderData& GetDebugInfo() = 0;
 
 	private:
 		static RendererAPI s_rendererAPI;		

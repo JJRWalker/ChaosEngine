@@ -39,6 +39,10 @@ namespace Chaos
 			{
 				dir.X = 0;
 			}
+			if (Input::IsKeyPressed(KEY_E))
+			{
+				m_cameraTransfrom.Rotation().X += 1 * deltaTime;
+			}
 
 			m_cameraTransfrom.Position() = { m_cameraTransfrom.Position().X + (dir.X * m_moveSpeed * deltaTime), m_cameraTransfrom.Position().Y + (dir.Y * m_moveSpeed * deltaTime) };
 		}

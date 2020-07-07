@@ -210,7 +210,7 @@ namespace Chaos
 			
 			ImGui::DragFloat2("Position", *pos, 0.01f);
 
-			ImGui::DragFloat2("Rotation", *rotation, 0.01f, -180, 180);
+			ImGui::DragFloat2("Rotation", *rotation, 1.0f, -180, 180);
 
 			ImGui::DragFloat2("Scale", *scale, 0.01f);
 

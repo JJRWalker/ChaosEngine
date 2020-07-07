@@ -43,7 +43,7 @@ namespace Chaos
 		float m_aspectRatio = 1.77f;
 
 		glm::mat4 m_projection = glm::mat4();
-		glm::mat4 m_view = glm::mat4();
+		glm::mat4 m_view = glm::mat4(1.0f);
 		glm::mat4 m_model = glm::mat4();
 
 	};
