@@ -21,6 +21,7 @@ namespace Chaos
 		virtual void Start() override;
 		virtual void Update() override;
 		virtual void Destroy()  override;
+		virtual char* ToString() override { return "Camera"; }
 
 		void SetBounds(Vec4 bounds) { m_bounds = bounds; Recalculate(); }
 		Vec4 GetBounds() { return m_bounds; }
@@ -30,6 +31,7 @@ namespace Chaos
 
 		glm::mat4 GetProjection() { return m_projection; }
 		glm::mat4 GetView() { return m_view; }
+		glm::mat4 GetModel() { return m_model; }
 
 	private:
 		void Recalculate();
@@ -42,7 +44,7 @@ namespace Chaos
 
 		glm::mat4 m_projection = glm::mat4();
 		glm::mat4 m_view = glm::mat4();
-
+		glm::mat4 m_model = glm::mat4();
 
 	};
 }

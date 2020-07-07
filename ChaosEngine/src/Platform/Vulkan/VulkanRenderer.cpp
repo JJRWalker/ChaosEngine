@@ -311,7 +311,7 @@ namespace Chaos
 #pragma endregion
 
 	//Checks if the renderer currently has the texture in the specified file path stored, if it does it will return true and set old texture to that texture. Else returns false if none exists 
-	bool VulkanRenderer::HasTexture(const char* filePath, Ref<Texture> outTexture)
+	bool VulkanRenderer::HasTexture(char* filePath, Ref<Texture> outTexture)
 	{
 		for (auto& t : m_texturesToBind)
 		{
@@ -1544,12 +1544,13 @@ namespace Chaos
 		for (size_t i = 0; i < m_swapchainImages.size(); ++i)
 		{
 			UniformBufferObject ubo = {};
-			//ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+			//ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 			//ubo.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 			//ubo.proj = glm::ortho(-5.0f * (float)mSwapchainExtent.width / (float)mSwapchainExtent.height, 5.0f * (float)mSwapchainExtent.width / (float)mSwapchainExtent.height, 5.0f, -5.0f, -5.0f, 5.0f); //glm::perspective(glm::radians(45.0f), (float)swapchainExtent.width / (float)swapchainExtent.height, 0.1f, 1000.0f);
 
-
+			
 			ubo.view = Application::Get().GetMainCamera()->GetView();
+			ubo.model = Application::Get().GetMainCamera()->GetModel();
 			ubo.proj = Application::Get().GetMainCamera()->GetProjection();
 
 			void* data;

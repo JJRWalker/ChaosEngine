@@ -6,6 +6,7 @@
 #include "Chaos/Core/Application.h"
 #include "Platform/Vulkan/VulkanRenderer.h"
 #include "Platform/Vulkan/VulkanTexture.h"
+#include "Chaos/Core/Scene.h"
 
 #ifndef GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_NONE
@@ -18,45 +19,45 @@
 namespace Chaos
 {
 	EditorLayer::EditorLayer() : m_cameraController(*Application::Get().GetMainCameraEntity()->GetTransform(), *Application::Get().GetMainCamera())
-	{
-		
+	{		
 		m_debugName = "ControlEditorLayer";
 	}
 	void EditorLayer::OnAttach()
 	{
+		m_scene.StartScene();
+
 		VulkanRenderer& renderer = dynamic_cast<VulkanRenderer&>(Application::Get().GetRenderer());
 		m_veiwportImageId = (ImTextureID)ImGui_ImplVulkan_AddTexture(renderer.GetTexSampler(), renderer.GetRenderedFrames()[renderer.GetCurrentFrame()], VK_IMAGE_LAYOUT_UNDEFINED);
-
-		entity.AddComponent<Render>();
-		entity.GetTransform()->Position() = { 0,0 };
-		entity.GetTransform()->Scale() = Vec2(1, 1);
-		entity.GetTransform()->Position() = Vec2(Application::Get().GetMainCameraEntity()->GetTransform()->Position().X, Application::Get().GetMainCameraEntity()->GetTransform()->Position().Y);
-
-		LOGCORE_INFO("entity: {0},{1} Camera: {2},{3}", entity.GetTransform()->Position().X,
-			entity.GetTransform()->Position().Y,
-			Application::Get().GetMainCameraEntity()->GetTransform()->Position().X,
-			Application::Get().GetMainCameraEntity()->GetTransform()->Position().Y);
 	}
 	void EditorLayer::OnDetach()
 	{
+		m_scene.EndScene();
 	}
 	void EditorLayer::OnUpdate(float deltaTime)
 	{
+		m_scene.Update();
 		m_time = deltaTime;
-		m_cameraController.Update(deltaTime, m_ViewportSize);
-		entity.Update();
+		m_cameraController.Update(deltaTime, m_ViewportSize, m_viewportFocused);
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{
-		m_cameraController.OnEvent(event);
+		m_cameraController.OnEvent(event, m_viewportHovered);
 	}
 	void EditorLayer::OnImGuiUpdate()
 	{
 		static bool show = true;
 		//ImGui::ShowDemoWindow(&show);
-		VulkanRenderer& renderer = dynamic_cast<VulkanRenderer&>(Application::Get().GetRenderer());
 
-#if !CHAOS_RELEASE
+		CreateDocker();
+		CreateViewPort();
+		CreateSceneHierarchy();
+		CreateSettings();
+		CreateInspector();
+	}
+
+
+	void EditorLayer::CreateDocker()
+	{
 		// Note: Switch this to true to enable dockspace
 		static bool dockspaceOpen = true;
 		static bool opt_fullscreen_persistant = true;
@@ -117,13 +118,46 @@ namespace Chaos
 			ImGui::EndMenuBar();
 		}
 		ImGui::End();
+	}
 
-		ImGui::Begin("Settings");
-		ImGui::Text("FPS: %f", 1 / m_time);
-		ImGui::Text("Quads: %d", renderer.GetDebugInfo().TotalQuadsDrawn);
-		ImGui::Text("Draw calls: %d", renderer.GetDebugInfo().NumOfDrawCalls);
+	void EditorLayer::CreateSceneHierarchy()
+	{
+		//Listing entities in editor scene pannel
+		ImGui::Begin("Scene");
+
+		static ImGuiTreeNodeFlags baseFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
+		for (size_t i = 0; i < m_scene.GetEntities().size(); ++i)
+		{
+			bool nodeClicked = false;
+			auto entity = m_scene.GetEntities()[i];
+			ImGuiTreeNodeFlags nodeFlags = baseFlags;
+			if (IsSelected(entity))
+				nodeFlags |= ImGuiTreeNodeFlags_Selected;
+
+			nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+			ImGui::TreeNodeEx((void*)(intptr_t)i, nodeFlags, "%s", entity->GetName());
+			if (ImGui::IsItemClicked())
+				nodeClicked = true;
+
+			if (nodeClicked)
+			{
+				if (ImGui::GetIO().KeyCtrl)
+				{
+					m_selectedEntities.push_back(entity);         // CTRL+click to toggle
+				}
+				else //if (!(selection_mask & (1 << node_clicked))) // Depending on selection behavior you want, this commented bit preserve selection when clicking on item that is part of the selection
+				{
+					m_selectedEntities.clear();
+					m_selectedEntities.push_back(entity);	// Click to single-select
+				}
+			}
+		}
+
 		ImGui::End();
+	}
 
+	void EditorLayer::CreateViewPort()
+	{
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
 		ImGui::Begin("viewport");
 
@@ -133,41 +167,93 @@ namespace Chaos
 		{
 			ImGui::Image(m_veiwportImageId, { m_ViewportSize.X, m_ViewportSize.Y }, ImVec2{ 0, -1 }, ImVec2{ 1, 0 });
 		}
+		m_viewportFocused = ImGui::IsWindowFocused();
+		m_viewportHovered = ImGui::IsWindowHovered();
+
 		ImGui::End();
 		ImGui::PopStyleVar();
-#endif
-		// FIXME-VIEWPORT: Select a default viewport
-		const float DISTANCE = 10.0f;
-		static int corner = 2;
-		if (corner != -1)
-		{
-			ImGuiViewport* viewport = ImGui::GetMainViewport();
-			ImVec2 window_pos = ImVec2((corner & 1) ? (viewport->Pos.x + viewport->Size.x - DISTANCE) : (viewport->Pos.x + DISTANCE), (corner & 2) ? (viewport->Pos.y + viewport->Size.y - DISTANCE) : (viewport->Pos.y + DISTANCE));
-			ImVec2 window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
-			ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-			ImGui::SetNextWindowViewport(viewport->ID);
-		}
-		//ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
-		if (ImGui::Begin("FPS counter", &show, (corner != -1 ? ImGuiWindowFlags_NoMove : 0) | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
-		{
-			ImGui::Text("FPS: %f", 1 / m_time);
-			ImGui::Text("Quads: %d", renderer.GetDebugInfo().TotalQuadsDrawn);
-			ImGui::Text("Draw calls: %d", renderer.GetDebugInfo().NumOfDrawCalls);
+	}
 
-			if (ImGui::BeginPopupContextWindow())
-			{
-				if (ImGui::MenuItem("Custom", NULL, corner == -1)) corner = -1;
-				if (ImGui::MenuItem("Top-left", NULL, corner == 0)) corner = 0;
-				if (ImGui::MenuItem("Top-right", NULL, corner == 1)) corner = 1;
-				if (ImGui::MenuItem("Bottom-left", NULL, corner == 2)) corner = 2;
-				if (ImGui::MenuItem("Bottom-right", NULL, corner == 3)) corner = 3;
-				if (&show && ImGui::MenuItem("Close")) show = false;
-				ImGui::EndPopup();
-			}
-		}
+	void EditorLayer::CreateSettings()
+	{
+		VulkanRenderer& renderer = dynamic_cast<VulkanRenderer&>(Application::Get().GetRenderer());
+		ImGui::Begin("Settings");
+		ImGui::Text("FPS: %f", 1 / m_time);
+		ImGui::Text("Quads: %d", renderer.GetDebugInfo().TotalQuadsDrawn);
+		ImGui::Text("Draw calls: %d", renderer.GetDebugInfo().NumOfDrawCalls);
 		ImGui::End();
 
-
 		renderer.GetDebugInfo().TotalQuadsDrawn = 0;
+	}
+
+	void EditorLayer::CreateInspector()
+	{
+		ImGui::Begin("Inspector");
+		//if there is something selected (for now selects the last one to modify)
+		if (m_selectedEntities.size() > 0)
+		{
+			Entity* entity = m_selectedEntities[m_selectedEntities.size() - 1];
+
+			//Display name
+			ImGui::InputText("Name", entity->GetName(), MAX_ENTITY_NAME_LENGTH);
+			ImGui::Text("id: %d", entity->GetEntityID());
+			ImGui::Separator();
+
+			ImGui::Text("Transform");
+			//display transform component
+			float* pos[2] = { &entity->GetTransform()->Position().X, &entity->GetTransform()->Position().Y };
+			float* rotation[2] = { &entity->GetTransform()->Rotation().X, &entity->GetTransform()->Rotation().Y};
+			float* scale[2] = { &entity->GetTransform()->Scale().X, &entity->GetTransform()->Scale().Y };
+
+			ImGui::Separator();
+			ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, { -2, 2 });
+			
+			ImGui::DragFloat2("Position", *pos, 0.01f);
+
+			ImGui::DragFloat2("Rotation", *rotation, 0.01f, -180, 180);
+
+			ImGui::DragFloat2("Scale", *scale, 0.01f);
+
+			ImGui::PopStyleVar();
+
+			ImGui::Separator();
+
+			for (auto* component : entity->GetAllComponents())
+			{
+				//Should be generic, however right now I just wanted to implement some UI for changing sprites
+				ImGui::Text(component->ToString());
+
+				Render* render = dynamic_cast<Render*>(component);
+
+				char filePath[128] = "";
+				strcpy_s(filePath, render->GetTexture()->GetFilePath());
+
+				if (ImGui::InputText("Texture Path", filePath, MAX_ENTITY_NAME_LENGTH, ImGuiInputTextFlags_EnterReturnsTrue))
+				{
+					if (render->GetTexture() != Texture::GetBlank())
+					{
+						render->GetTexture()->Load(filePath);
+					}
+					else
+					{
+						render->SetTexture(Texture::Create(filePath));
+					}
+				}
+
+				ImGui::Separator();
+			}
+			//for each component display info
+		}
+		ImGui::End();
+	}
+
+	bool EditorLayer::IsSelected(Entity* entity)
+	{
+		for (auto e : m_selectedEntities)
+		{
+			if (e->GetEntityID() == entity->GetEntityID())
+				return true;
+		}
+		return false;
 	}
 }

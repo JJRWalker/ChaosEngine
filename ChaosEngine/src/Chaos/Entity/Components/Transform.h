@@ -17,6 +17,8 @@ namespace Chaos
 		virtual void Start() override;
 		virtual void Update() override;
 		virtual void Destroy() override;
+		virtual char* ToString() override { return "Transform"; }
+
 	private:
 		Vec2 m_position = Vec2::Zero();
 		Vec2 m_rotation = Vec2::Zero();

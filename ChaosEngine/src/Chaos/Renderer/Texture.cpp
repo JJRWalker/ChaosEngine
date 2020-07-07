@@ -8,7 +8,7 @@
 namespace Chaos
 {
 	Ref<Texture> Texture::s_blankTexture = nullptr;
-	Ref<Texture> Texture::Create(const char* filePath)
+	Ref<Texture> Texture::Create(char* filePath)
 	{
 		switch (Renderer::GetAPI())
 		{

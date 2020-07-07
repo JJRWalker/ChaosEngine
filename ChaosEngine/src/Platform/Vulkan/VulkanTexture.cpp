@@ -51,13 +51,13 @@ namespace Chaos
 	}
 
 	//Constructor Calls load function
-	VulkanTexture::VulkanTexture(const char* filePath) : m_filePath(filePath), m_renderer(dynamic_cast<VulkanRenderer&>(Application::Get().GetRenderer()))
+	VulkanTexture::VulkanTexture(char* filePath) : m_filePath(filePath), m_renderer(dynamic_cast<VulkanRenderer&>(Application::Get().GetRenderer()))
 	{
 		Load(filePath);
 	}
 
 	//tries to load the texture specified, if a texture is already loaded, it will call unload first
-	void VulkanTexture::Load(const char* filePath)
+	void VulkanTexture::Load(char* filePath)
 	{
 
 		if (!std::filesystem::exists(filePath))

@@ -31,7 +31,7 @@ namespace Chaos
 		virtual void DrawQuad(Vec2& position, Vec2& scale, Ref<SubTexture> subTexture) = 0;
 		virtual void DrawFrame() = 0;
 		virtual void WindowResized() = 0;
-		virtual bool HasTexture(const char* filePath, Ref<Texture> outTexture) = 0;
+		virtual bool HasTexture(char* filePath, Ref<Texture> outTexture) = 0;
 		virtual DebugInfo& GetDebugInfo() = 0;
 
 	private:

@@ -6,7 +6,7 @@
 
 namespace Chaos
 {
-	Ref<SubTexture> SubTexture::Create(const char* path, Vec2 coordinates, Vec2 size)
+	Ref<SubTexture> SubTexture::Create(char* path, Vec2 coordinates, Vec2 size)
 	{
 		switch (Renderer::GetAPI())
 		{

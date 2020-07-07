@@ -6,37 +6,6 @@
 
 //NOTE: this is a quick and dirty implementation to test functionality, not representitive of the product
 
-//NOTE: This is just an example of how I imagine this goes on behind the scenes, not in use
-class GameScene : public Chaos::Scene
-{
-public:
-	GameScene()
-	{
-	}
-
-	void StartScene() override
-	{
-		for (int i = 0; i < 10; ++i)
-		{
-			entites.push_back(Chaos::Entity());
-			entites[i].AddComponent<Chaos::Render>();
-		}
-	}
-
-	void Update() override
-	{
-		for (auto& entity : entites)
-		{
-			entity.GetTransform()->Position().Y += 0.01f;
-		}
-		for (auto& entity : entites)
-		{
-			entity.Update();
-		}
-	}
-private:
-	std::vector<Chaos::Entity> entites;
-};
 
 class ExampleLayer : public Chaos::Layer
 {
@@ -64,9 +33,6 @@ public:
 
 	float x = 0;
 	float y = 0;
-
-	//scene
-	GameScene scene;	//SCENE SHOULD NOT BE IN LAYERS, LAYERS SHOULD BE IN SCENES
 
 	//reference to renderer to be abstracted
 	Chaos::Renderer& renderer = Chaos::Application::Get().GetRenderer();
@@ -133,7 +99,6 @@ public:
 		entity2.GetTransform()->Position().Y += 0.1f * deltaTime;
 		entity.Update();
 		entity2.Update();
-		//scene.Update();
 	}
 
 	void OnAttach() override
@@ -152,7 +117,6 @@ public:
 			refrender.SetTexture(test);
 		}
 		render->SetTexture(player);
-		//scene.StartScene();
 	}
 
 	void OnDetach() override

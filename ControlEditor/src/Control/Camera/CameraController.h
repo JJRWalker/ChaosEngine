@@ -1,5 +1,6 @@
 #pragma once
 #include "Chaos/Events/MouseEvent.h"
+#include "Chaos/Events/KeyEvent.h"
 
 namespace Chaos
 {
@@ -10,9 +11,10 @@ namespace Chaos
 	{
 	public: 
 		CameraController(Transform& transform, Camera& camera) : m_cameraTransfrom(transform), m_camera(camera) {};
-		void Update(float deltaTime, Vec2 viewportSize);
-		void OnEvent(Event& e);
+		void Update(float deltaTime, Vec2 viewportSize, bool viewportFocused);
+		void OnEvent(Event& e, bool viewportHovered);
 		bool OnMouseScroll(MouseScrollEvent& e);
+		bool OnKeyPress(KeyPressedEvent& e);
 	private:
 		Transform& m_cameraTransfrom;
 		Camera& m_camera;

@@ -6,7 +6,7 @@
 
 namespace Chaos
 {
-	VulkanSubTexture::VulkanSubTexture(const char* filePath, Vec2 coordinates, Vec2 size) : m_filePath(filePath), m_coordinates(coordinates)
+	VulkanSubTexture::VulkanSubTexture(char* filePath, Vec2 coordinates, Vec2 size) : m_filePath(filePath), m_coordinates(coordinates)
 	{
 		//Check if the renderer already has the texture in it's list of textures to bind, if it does it will set the main texture reference to that texture
 		//if it doesn't it will create a new ref to a new texture 

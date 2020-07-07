@@ -7,12 +7,13 @@ namespace Chaos
 {
 	//static count of all entities, incremented each time an entity is created. Can be used to limit how many entities can be created in the future
 	static size_t sEntityCount = 0;
+	static const size_t MAX_ENTITY_NAME_LENGTH = 128;
 
 	class Entity
 	{
 	public:
-		Entity() : m_name("entity"), m_entityID(sEntityCount) { ++sEntityCount; LOGCORE_TRACE("Entity Created with ID {0} Name {1}", m_entityID, m_name); }
-		Entity(const char* name) : m_name(name), m_entityID(sEntityCount) { ++sEntityCount; };
+		Entity() : m_name("entity"), m_entityID(sEntityCount) { ++sEntityCount; }
+		Entity(char* name) : m_entityID(sEntityCount) { ++sEntityCount; strcpy_s(m_name, name); };
 		~Entity()
 		{
 			Destroy();
@@ -38,7 +39,6 @@ namespace Chaos
 			for (auto& c : m_components)
 			{
 				c->Destroy();
-				delete c;
 			}
 		}
 
@@ -118,13 +118,34 @@ namespace Chaos
 			return false;
 		}
 
-		const char* GetName() { return m_name; }
+		template<typename T>
+		bool HasComponent()
+		{
+			if (std::is_base_of<IComponent, T>::value)
+			{
+				for (IComponent* c : m_components)
+				{
+					T* component = dynamic_cast<T*>(c); //this will return a nullptr if the cast was not possible
+					if (component != nullptr)
+					{
+						return true;
+					}
+				}
+				LOGCORE_WARN("Component could not be found on Entity: {1} ID: {2}", m_name, m_entityID);
+				return false;
+			}
+			LOGCORE_WARN("Component given to template TryGetComponent() is not derived from type component");
+			return false;
+		}
+
+		char* GetName() { return m_name; }
 		size_t GetEntityID() { return m_entityID; }
+		std::vector<IComponent*>& GetAllComponents() { return m_components; }
 		Transform* GetTransform() { return m_transform; }
 
 	private:
 		size_t m_entityID;
-		const char* m_name;
+		char m_name[MAX_ENTITY_NAME_LENGTH];
 		Transform* m_transform = new Transform();	
 		std::vector<IComponent*> m_components;
 	};

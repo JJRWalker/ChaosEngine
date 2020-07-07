@@ -8,7 +8,12 @@ namespace Chaos
 	class Scene
 	{
 	public:
-		virtual void StartScene() = 0;
-		virtual void Update() = 0;
+		virtual void StartScene();
+		virtual void Update();
+		virtual void EndScene();
+
+		std::vector<Entity*>& GetEntities() { return m_entities; }
+	protected:
+		std::vector<Entity*> m_entities;
 	};
 }

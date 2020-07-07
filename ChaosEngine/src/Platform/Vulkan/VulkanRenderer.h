@@ -19,6 +19,7 @@ namespace Chaos
 		Vec4 color;
 		Vec2 texCoord;
 		float texIndex;
+		float rotation;
 
 		static VkVertexInputBindingDescription GetBindingDescriptions() {
 			VkVertexInputBindingDescription bindingDescription = {};
@@ -29,8 +30,8 @@ namespace Chaos
 			return bindingDescription;
 		}
 
-		static std::array<VkVertexInputAttributeDescription, 4> GetAttributeDescriptions() {
-			std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions = {};
+		static std::array<VkVertexInputAttributeDescription, 5> GetAttributeDescriptions() {
+			std::array<VkVertexInputAttributeDescription, 5> attributeDescriptions = {};
 
 			attributeDescriptions[0].binding = 0;
 			attributeDescriptions[0].location = 0;
@@ -51,6 +52,11 @@ namespace Chaos
 			attributeDescriptions[3].location = 3;
 			attributeDescriptions[3].format = VK_FORMAT_R32_SFLOAT;
 			attributeDescriptions[3].offset = offsetof(VulkanVertex, texIndex);
+
+			attributeDescriptions[4].binding = 0;
+			attributeDescriptions[4].location = 4;
+			attributeDescriptions[4].format = VK_FORMAT_R32_SFLOAT;
+			attributeDescriptions[4].offset = offsetof(VulkanVertex, rotation);
 
 			return attributeDescriptions;
 		}
@@ -113,7 +119,7 @@ namespace Chaos
 		virtual void DrawQuad(Vec2& position, Vec2& scale, Ref<SubTexture> subTexture) override;
 		virtual void DrawFrame() override;
 		virtual void WindowResized() override { m_framebufferResized = true; }
-		virtual bool HasTexture(const char* filePath, Ref<Texture> outTexture) override; //Takes in a file path and a texture, returns true and sets the ref of inputted texture if one exists
+		virtual bool HasTexture(char* filePath, Ref<Texture> outTexture) override; //Takes in a file path and a texture, returns true and sets the ref of inputted texture if one exists
 		virtual DebugInfo& GetDebugInfo() override { return m_debugInfo; }
 
 		VkSampler& GetTexSampler() { return m_textureSampler; }
