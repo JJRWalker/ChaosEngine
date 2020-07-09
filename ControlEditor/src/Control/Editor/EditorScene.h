@@ -7,6 +7,5 @@ namespace Chaos
 	{
 	public:
 		virtual void StartScene() override;
-		virtual void Update() override;
 	};
 }

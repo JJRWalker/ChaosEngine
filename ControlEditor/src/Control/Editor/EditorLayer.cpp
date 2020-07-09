@@ -14,12 +14,13 @@
 #include <GLFW/include/GLFW/glfw3.h>
 #include <GLM/glm/glm.hpp>
 
+
 //temp
 #include <Chaos/Entity/Components/Render.h>
 namespace Chaos
 {
 	EditorLayer::EditorLayer() : m_cameraController(*Application::Get().GetMainCameraEntity()->GetTransform(), *Application::Get().GetMainCamera())
-	{		
+	{
 		m_debugName = "ControlEditorLayer";
 	}
 	void EditorLayer::OnAttach()
@@ -53,6 +54,10 @@ namespace Chaos
 		CreateSceneHierarchy();
 		CreateSettings();
 		CreateInspector();
+
+		if (m_profilerOpen)
+			CreateProfiler();
+
 	}
 
 
@@ -112,6 +117,15 @@ namespace Chaos
 				//ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen_persistant);
 
 				if (ImGui::MenuItem("Exit")) Chaos::Application::Get().Close();
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::BeginMenu("Window"))
+			{
+				if (ImGui::MenuItem("Profiler"))
+				{
+					m_profilerOpen ? m_profilerOpen = false : m_profilerOpen = true; //toggles profiler bool
+				}
 				ImGui::EndMenu();
 			}
 
@@ -177,10 +191,11 @@ namespace Chaos
 	void EditorLayer::CreateSettings()
 	{
 		VulkanRenderer& renderer = dynamic_cast<VulkanRenderer&>(Application::Get().GetRenderer());
-		ImGui::Begin("Settings");
+		ImGui::Begin("Stats");
 		ImGui::Text("FPS: %f", 1 / m_time);
 		ImGui::Text("Quads: %d", renderer.GetDebugInfo().TotalQuadsDrawn);
 		ImGui::Text("Draw calls: %d", renderer.GetDebugInfo().NumOfDrawCalls);
+
 		ImGui::End();
 
 		renderer.GetDebugInfo().TotalQuadsDrawn = 0;
@@ -202,12 +217,12 @@ namespace Chaos
 			ImGui::Text("Transform");
 			//display transform component
 			float* pos[2] = { &entity->GetTransform()->Position().X, &entity->GetTransform()->Position().Y };
-			float* rotation[2] = { &entity->GetTransform()->Rotation().X, &entity->GetTransform()->Rotation().Y};
+			float* rotation[2] = { &entity->GetTransform()->Rotation().X, &entity->GetTransform()->Rotation().Y };
 			float* scale[2] = { &entity->GetTransform()->Scale().X, &entity->GetTransform()->Scale().Y };
 
 			ImGui::Separator();
 			ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, { -2, 2 });
-			
+
 			ImGui::DragFloat2("Position", *pos, 0.01f);
 
 			ImGui::DragFloat2("Rotation", *rotation, 1.0f, -180, 180);
@@ -246,6 +261,17 @@ namespace Chaos
 		}
 		ImGui::End();
 	}
+
+	void EditorLayer::CreateProfiler()
+	{
+		ImGui::Begin("Profiler");
+		for (auto p : Timer::GetTimers())
+		{
+			ImGui::Text("%s : %f ms", p.first, p.second);
+		}
+		ImGui::End();
+	}
+
 
 	bool EditorLayer::IsSelected(Entity* entity)
 	{

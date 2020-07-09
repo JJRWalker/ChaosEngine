@@ -1331,6 +1331,9 @@
     <ClCompile Include="src\Chaos\Debug\ImGuiLayer.cpp">
       <Filter>src\Chaos\Debug</Filter>
     </ClCompile>
+    <ClCompile Include="src\Chaos\Debug\Timer.cpp">
+      <Filter>src\Chaos\Debug</Filter>
+    </ClCompile>
     <ClCompile Include="src\Chaos\Entity\Components\Camera.cpp">
       <Filter>src\Chaos\Entity\Components</Filter>
     </ClCompile>

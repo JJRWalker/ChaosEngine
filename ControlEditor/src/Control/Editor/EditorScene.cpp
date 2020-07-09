@@ -23,14 +23,5 @@ namespace Chaos
 		}
 
 	}
-	void EditorScene::Update()
-	{
-		for (auto entity : m_entities)
-		{
-			if (entity->GetComponent<Render>() != nullptr)
-			{
-				entity->GetComponent<Render>()->Update();
-			}
-		}
-	}
+
 }

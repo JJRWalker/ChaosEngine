@@ -283,6 +283,8 @@ namespace Chaos
 													glm::vec4(0.5f, 0.5f, 0.0f, 1.0f),
 													glm::vec4(-0.5f, 0.5f, 0.0f, 1.0f) };
 
+		const uint16_t QUAD_INDICES[6] = { 0,1,2,2,3,0 };
+
 		//DEBUG VARS
 		RenderData m_debugInfo;
 	};

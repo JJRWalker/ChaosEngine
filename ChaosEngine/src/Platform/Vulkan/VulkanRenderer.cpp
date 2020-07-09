@@ -132,6 +132,8 @@ namespace Chaos
 
 	void VulkanRenderer::DrawQuad(Vec2& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<Texture> texture, float tilingFactor)
 	{
+		PROFILED_FUNC();
+
 		float imageIndex = (float)m_texturesToBind.size();
 		for (size_t i = 0; i < m_texturesToBind.size(); ++i)
 		{
@@ -142,6 +144,7 @@ namespace Chaos
 			}
 		}
 
+
 		glm::mat4 transform = glm::translate(glm::mat4(1), { position.X, position.Y, 0 })
 			* glm::rotate(glm::mat4(1), glm::radians(rotation.X), { 0, 0, 1 })
 			* glm::scale(glm::mat4(1), { scale.X, scale.Y, 0.0f });
@@ -151,7 +154,8 @@ namespace Chaos
 									   transform * QUAD_VERTEX_POSITIONS[2],
 									   transform * QUAD_VERTEX_POSITIONS[3]};
 
-		//Creates local vector to store all the verts for the quad using the position and scale given.
+
+		//pushing our vertexes to the back using the transformed vertex positions
 		m_vertices.push_back(VulkanVertex{ {vertexPositions[0].x, vertexPositions[0].y, vertexPositions[0].z}, colour, Vec2(0.01f, tilingFactor), imageIndex });
 		m_vertices.push_back(VulkanVertex{ {vertexPositions[1].x, vertexPositions[1].y, vertexPositions[1].z}, colour, Vec2(tilingFactor, tilingFactor), imageIndex });
 		m_vertices.push_back(VulkanVertex{ {vertexPositions[2].x, vertexPositions[2].y, vertexPositions[2].z}, colour, Vec2(tilingFactor, 0.01f), imageIndex });
@@ -166,6 +170,7 @@ namespace Chaos
 
 		m_indOffset += 4;
 
+		//if our image was not found, the index will be the same as the size of the vector, so push the texture to the back
 		if (imageIndex == m_texturesToBind.size())
 		{
 			m_texturesToBind.push_back((Ref<VulkanTexture>&)texture);
@@ -179,6 +184,7 @@ namespace Chaos
 			CreateBuffersAndClearResources(m_buffers.size() - 1);
 		}
 		m_debugInfo.TotalQuadsDrawn++;
+
 	}
 
 	void VulkanRenderer::DrawQuad(Vec2& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<SubTexture> subTexture)
@@ -193,11 +199,20 @@ namespace Chaos
 			}
 		}
 
-		//Creates local vector to store all the verts for the quad using the position and scale given.
-		m_vertices.push_back(VulkanVertex{ Vec3(position.X - 1, position.Y - 1, 0), colour, subTexture->GetTexCoords()[3], imageIndex });
-		m_vertices.push_back(VulkanVertex{ Vec3(position.X + 1, position.Y - 1, 0), colour, subTexture->GetTexCoords()[2], imageIndex });
-		m_vertices.push_back(VulkanVertex{ Vec3(position.X + 1, position.Y + 1, 0), colour, subTexture->GetTexCoords()[1], imageIndex });
-		m_vertices.push_back(VulkanVertex{ Vec3(position.X - 1, position.Y + 1, 0), colour, subTexture->GetTexCoords()[0], imageIndex });
+		glm::mat4 transform = glm::translate(glm::mat4(1), { position.X, position.Y, 0 })
+			* glm::rotate(glm::mat4(1), glm::radians(rotation.X), { 0, 0, 1 })
+			* glm::scale(glm::mat4(1), { scale.X, scale.Y, 0.0f });
+
+		glm::vec4 vertexPositions[4] = { transform * QUAD_VERTEX_POSITIONS[0],
+									   transform * QUAD_VERTEX_POSITIONS[1],
+									   transform * QUAD_VERTEX_POSITIONS[2],
+									   transform * QUAD_VERTEX_POSITIONS[3] };
+
+
+		m_vertices.push_back(VulkanVertex{ {vertexPositions[0].x, vertexPositions[0].y, vertexPositions[0].z}, colour, subTexture->GetTexCoords()[3], imageIndex });
+		m_vertices.push_back(VulkanVertex{ {vertexPositions[1].x, vertexPositions[1].y, vertexPositions[1].z}, colour, subTexture->GetTexCoords()[2], imageIndex });
+		m_vertices.push_back(VulkanVertex{ {vertexPositions[2].x, vertexPositions[2].y, vertexPositions[2].z}, colour, subTexture->GetTexCoords()[1], imageIndex });
+		m_vertices.push_back(VulkanVertex{ {vertexPositions[3].x, vertexPositions[3].y, vertexPositions[3].z}, colour, subTexture->GetTexCoords()[0], imageIndex });
 
 		m_indices.push_back(0 + m_indOffset);
 		m_indices.push_back(1 + m_indOffset);
@@ -903,6 +918,7 @@ namespace Chaos
 
 	void VulkanRenderer::CreateBuffersAndClearResources(size_t insertIndex)
 	{
+		PROFILED_FUNC();
 		CreateIndexedBuffer(m_vertices, m_indices, BufferType::Dynamic, insertIndex);
 		m_buffers[insertIndex].TexturesToBind = m_texturesToBind;
 		m_texturesToBind.clear();
@@ -1033,7 +1049,7 @@ namespace Chaos
 	//Creating command buffers each frame, loads vertex, index and texture data from mRenderQueue and records commands to draw.
 	void VulkanRenderer::CreateCommandBuffers()
 	{
-
+		PROFILED_FUNC();
 		//Resizing vectors to contain the new buffers
 		m_commandBuffers.resize(m_renderedFrameBuffers.size());
 
@@ -1049,6 +1065,7 @@ namespace Chaos
 			LOGCORE_ERROR("VULKAN: failed to allocate command buffers!");
 			return;
 		}
+
 
 		for (size_t i = 0; i < m_renderedFrameBuffers.size(); i++)
 		{
@@ -1096,7 +1113,6 @@ namespace Chaos
 				vkCmdBindDescriptorSets(m_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSets[m_buffers[x].DescriptorIndex], 0, nullptr);
 
 				vkCmdDrawIndexed(m_commandBuffers[i], static_cast<uint32_t>(m_buffers[x].IndexCount), 1, 0, 0, 0);
-
 			}
 			vkCmdEndRenderPass(m_commandBuffers[i]);
 			if (vkEndCommandBuffer(m_commandBuffers[i]) != VK_SUCCESS)
@@ -1121,9 +1137,7 @@ namespace Chaos
 
 			vkCmdCopyImage(command, m_renderedFrames[i], VK_IMAGE_LAYOUT_UNDEFINED, m_swapchainImages[i], VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, 1, &copy);
 			EndSingleTimeCommands(command);
-
 		}
-
 	}
 
 	//Creating objects that allow the program to wait until an asyncronus task has been completed
@@ -1479,6 +1493,7 @@ namespace Chaos
 	//Draw called once every game loop to display the data passed to it that loop
 	void VulkanRenderer::DrawFrame()
 	{
+		PROFILED_FUNC();
 		if (m_vertices.size() > 0)
 			CreateBuffersAndClearResources(m_buffers.size());
 

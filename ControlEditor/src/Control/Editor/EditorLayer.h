@@ -25,12 +25,14 @@ namespace Chaos
 		void CreateViewPort();
 		void CreateSettings();
 		void CreateInspector();
+		void CreateProfiler();
 
 		bool IsSelected(Entity* entity);
 	private:
 		float m_time = 0.0f;
 		bool m_viewportHovered = false;
 		bool m_viewportFocused = false;
+		bool m_profilerOpen = true;
 
 		ImTextureID m_veiwportImageId;
 		Vec2 m_ViewportSize;

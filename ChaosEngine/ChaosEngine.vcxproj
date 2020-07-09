@@ -568,6 +568,7 @@
     <ClCompile Include="src\Chaos\Core\Scene.cpp" />
     <ClCompile Include="src\Chaos\Debug\ImGuiBuild.cpp" />
     <ClCompile Include="src\Chaos\Debug\ImGuiLayer.cpp" />
+    <ClCompile Include="src\Chaos\Debug\Timer.cpp" />
     <ClCompile Include="src\Chaos\Entity\Components\Camera.cpp" />
     <ClCompile Include="src\Chaos\Entity\Components\Render.cpp" />
     <ClCompile Include="src\Chaos\Entity\Components\Transform.cpp" />

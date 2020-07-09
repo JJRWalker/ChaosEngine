@@ -21,6 +21,7 @@ namespace Chaos
 	Application* CreateApplication()
 	{
 		return new Control();
+		#define CHAOS_PROFILE
 	}
 }
 

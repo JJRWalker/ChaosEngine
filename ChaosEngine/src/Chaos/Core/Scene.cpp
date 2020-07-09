@@ -12,6 +12,8 @@ namespace Chaos
 	}
 	void Scene::Update()
 	{
+		PROFILED_FUNC();
+
 		for (auto& entity : m_entities)
 		{
 			entity->Update();
