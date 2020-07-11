@@ -9,8 +9,8 @@ namespace Chaos
 {
 	void Camera::Recalculate()
 	{
-		m_view = glm::lookAt(glm::vec3(m_entity->GetTransform()->Position().X, m_entity->GetTransform()->Position().Y, 1), glm::vec3(m_entity->GetTransform()->Position().X, m_entity->GetTransform()->Position().Y, -1), glm::vec3(0.0f, 1.0f, 0.0f));
-		m_model = glm::rotate(glm::mat4(1.0f), glm::radians(m_entity->GetTransform()->Rotation().X), glm::vec3(0.0f, 0.0f, 1.0f));
+		m_view = glm::lookAt(glm::vec3(GetEntity()->GetTransform()->Position().X, GetEntity()->GetTransform()->Position().Y, 1), glm::vec3(GetEntity()->GetTransform()->Position().X, GetEntity()->GetTransform()->Position().Y, -1), glm::vec3(0.0f, 1.0f, 0.0f));
+		m_model = glm::rotate(glm::mat4(1.0f), glm::radians(GetEntity()->GetTransform()->Rotation().X), glm::vec3(0.0f, 0.0f, 1.0f));
 		m_projection = glm::ortho(m_bounds.X * m_aspectRatio,
 			m_bounds.Y * m_aspectRatio,
 			m_bounds.Z, m_bounds.W, -1.0f, 1.0f);
@@ -21,7 +21,7 @@ namespace Chaos
 	}
 	void Camera::Update() 
 	{
-		if (m_entity)
+		if (GetEntity())
 		{
 			Recalculate();
 		}

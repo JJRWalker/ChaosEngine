@@ -12,16 +12,16 @@
 namespace Chaos
 {
 	//Eventually this class will inherit from a Component interface so it can be attached to a game object a la unity
-	class Camera : public IComponent
+	class Camera : public Component
 	{
 	public:
-		Camera(Entity* owner) : m_entity(owner) { Recalculate(); }
-
+		COMPONENT();
+		Camera() { };
+		
 		// Inherited via IComponent
 		virtual void Start() override;
 		virtual void Update() override;
 		virtual void Destroy()  override;
-		virtual char* ToString() override { return "Camera"; }
 
 		void SetBounds(Vec4 bounds) { m_bounds = bounds; Recalculate(); }
 		Vec4 GetBounds() { return m_bounds; }
@@ -37,8 +37,6 @@ namespace Chaos
 		void Recalculate();
 
 	private:
-		Entity* m_entity;
-
 		Vec4 m_bounds = Vec4(-5.0f, 5.0f, -5.0f, 5.0f);
 		float m_aspectRatio = 1.77f;
 

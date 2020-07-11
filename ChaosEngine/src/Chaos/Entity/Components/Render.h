@@ -9,24 +9,20 @@
 //TODO: Add change colour functionality, Subtextures, tiling factor
 namespace Chaos
 {
-	class Render : public IComponent
+	class Render : public Component
 	{
 	public:
-		Render(Entity* owner) : m_entity(owner)
-		{
-		}
+		COMPONENT();
 		Render() {};
-
 		// Inherited via Component
 		virtual void Start() override;
 		virtual void Update() override;
 		virtual void Destroy() override;
-		virtual char* ToString() override { return "Render"; }
+		
 
 		void SetTexture(Ref<Texture> tex) { m_texture = tex; }
 		Ref<Texture> GetTexture() { return m_texture; }
 	private:
-		Entity* m_entity = nullptr;
 		Ref<Texture> m_texture = Texture::GetBlank();	//Setting default texture (loads blank)
 	};
 }

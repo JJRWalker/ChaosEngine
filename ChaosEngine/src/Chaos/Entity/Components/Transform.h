@@ -5,19 +5,16 @@
 
 namespace Chaos
 {
-	class Transform : public IComponent
+	class Transform : public Component
 	{
 	public:
+		COMPONENT();
 		Transform() {};
 		Vec2& Position() { return m_position; }
 		Vec2& Rotation() { return m_rotation; }
 		Vec2& Scale() { return m_scale; }
 
 		// Inherited via Component
-		virtual void Start() override;
-		virtual void Update() override;
-		virtual void Destroy() override;
-		virtual char* ToString() override { return "Transform"; }
 
 	private:
 		Vec2 m_position = Vec2::Zero();

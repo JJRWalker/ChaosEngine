@@ -58,6 +58,7 @@ namespace Chaos
 		if (m_profilerOpen)
 			CreateProfiler();
 
+
 	}
 
 
@@ -237,24 +238,26 @@ namespace Chaos
 			{
 				//Should be generic, however right now I just wanted to implement some UI for changing sprites
 				ImGui::Text(component->ToString());
+				ImGui::Text("id: %d", component->GetComponentID());
 
 				Render* render = dynamic_cast<Render*>(component);
-
-				char filePath[128] = "";
-				strcpy_s(filePath, render->GetTexture()->GetFilePath());
-
-				if (ImGui::InputText("Texture Path", filePath, MAX_ENTITY_NAME_LENGTH, ImGuiInputTextFlags_EnterReturnsTrue))
+				if (render != nullptr)
 				{
-					if (render->GetTexture() != Texture::GetBlank())
+					char filePath[128] = "";
+					strcpy_s(filePath, render->GetTexture()->GetFilePath());
+
+					if (ImGui::InputText("Texture Path", filePath, MAX_ENTITY_NAME_LENGTH, ImGuiInputTextFlags_EnterReturnsTrue))
 					{
-						render->GetTexture()->Load(filePath);
-					}
-					else
-					{
-						render->SetTexture(Texture::Create(filePath));
+						if (render->GetTexture() != Texture::GetBlank())
+						{
+							render->GetTexture()->Load(filePath);
+						}
+						else
+						{
+							render->SetTexture(Texture::Create(filePath));
+						}
 					}
 				}
-
 				ImGui::Separator();
 			}
 			//for each component display info

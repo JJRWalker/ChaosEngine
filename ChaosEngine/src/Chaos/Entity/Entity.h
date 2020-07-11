@@ -1,7 +1,7 @@
 #pragma once
 #include "chaospch.h"
-#include "Component.h"
 #include "Components/Transform.h"	//Only components included are those that do not have a reference to their owner
+#include "ECSManager.h"
 
 namespace Chaos
 {
@@ -11,32 +11,33 @@ namespace Chaos
 
 	class Entity
 	{
+		friend class ECSManager;
+
 	public:
-		Entity() : m_name("entity"), m_entityID(sEntityCount) { ++sEntityCount; }
-		Entity(char* name) : m_entityID(sEntityCount) { ++sEntityCount; strcpy_s(m_name, name); };
+		Entity() : m_name("entity") { ECSManager::AddEntity(this); ECSManager::AddComponent(m_entityID, m_transform); }
+		Entity(char* name) { strcpy_s(m_name, name); ECSManager::AddEntity(this); ECSManager::AddComponent(m_entityID, m_transform); }
 		~Entity()
 		{
 			Destroy();
-			m_components.clear();
 		}
 
 		void Start() 
 		{
-			for (auto& c : m_components)
+			for (auto* c : GetAllComponents())
 			{
 				c->Start();
 			}
 		}
 		void Update() 
 		{
-			for (auto& c : m_components)
+			for (auto* c : GetAllComponents())
 			{
 				c->Update();
 			}
 		}
 		void Destroy()
 		{
-			for (auto& c : m_components)
+			for (auto* c : GetAllComponents())
 			{
 				c->Destroy();
 			}
@@ -46,10 +47,10 @@ namespace Chaos
 		template<typename T>
 		void AddComponent()
 		{
-			if (std::is_base_of<IComponent, T>::value)
+			if (std::is_base_of<Component, T>::value)
 			{
-				T* component = new T(this);
-				m_components.push_back(component);
+				T* component = new T();
+				ECSManager::AddComponent(m_entityID, component);
 			}
 			else
 			{
@@ -60,7 +61,8 @@ namespace Chaos
 		template<typename T>
 		T* GetComponent()
 		{
-			for (IComponent* c : m_components)
+			std::vector<Component*> components = ECSManager::GetComponentsFromIDs(ECSManager::GetComponentsOnEntity(m_entityID));
+			for (Component* c : components)
 			{
 				T* component = dynamic_cast<T*>(c); //this will return a nullptr if the cast was not possible
 				if (component != nullptr)
@@ -76,9 +78,10 @@ namespace Chaos
 		template<typename T>
 		bool TryGetComponent(T* outComponent)
 		{
-			if (std::is_base_of<IComponent, T>::value)
+			if (std::is_base_of<Component, T>::value)
 			{
-				for (IComponent* c : m_components)
+				std::vector<Component*> components = ECSManager::GetComponentsFromIDs(ECSManager::GetComponentsOnEntity(m_entityID));
+				for (Component* c : components)
 				{
 					T* component = dynamic_cast<T*>(c); //this will return a nullptr if the cast was not possible
 					if (component != nullptr)
@@ -100,9 +103,10 @@ namespace Chaos
 		bool TryGetComponent(T& outComponent)
 		{
 			LOGCORE_ERROR("Attempting to pass a reference into the outComponent of TryGetComponent, This is not yet supported! Please use a raw pointer");
-			if (std::is_base_of<IComponent, T>::value)
+			if (std::is_base_of<Component, T>::value)
 			{
-				for (IComponent* c : m_components)
+				std::vector<Component*> components = ECSManager::GetComponentsFromIDs(ECSManager::GetComponentsOnEntity(m_entityID));
+				for (Component* c : components)
 				{
 					T* component = dynamic_cast<T*>(c); //this will return a nullptr if the cast was not possible
 					if (component != nullptr)
@@ -121,9 +125,10 @@ namespace Chaos
 		template<typename T>
 		bool HasComponent()
 		{
-			if (std::is_base_of<IComponent, T>::value)
+			if (std::is_base_of<Component, T>::value)
 			{
-				for (IComponent* c : m_components)
+				std::vector<Component*> components = ECSManager::GetComponentsFromIDs(ECSManager::GetComponentsOnEntity(m_entityID));
+				for (Component* c : components)
 				{
 					T* component = dynamic_cast<T*>(c); //this will return a nullptr if the cast was not possible
 					if (component != nullptr)
@@ -140,13 +145,12 @@ namespace Chaos
 
 		char* GetName() { return m_name; }
 		size_t GetEntityID() { return m_entityID; }
-		std::vector<IComponent*>& GetAllComponents() { return m_components; }
+		std::vector<Component*> GetAllComponents() { return ECSManager::GetComponentsFromIDs(ECSManager::GetComponentsOnEntity(m_entityID));; }
 		Transform* GetTransform() { return m_transform; }
 
 	private:
-		size_t m_entityID;
+		uint32_t m_entityID;
 		char m_name[MAX_ENTITY_NAME_LENGTH];
-		Transform* m_transform = new Transform();	
-		std::vector<IComponent*> m_components;
+		Transform* m_transform = new Transform();
 	};
 }
