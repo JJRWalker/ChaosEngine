@@ -55,22 +55,22 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>..\bin\Debug-windows-x86_64\Game\</OutDir>
-    <IntDir>..\int\Debug-windows-x86_64\Game\</IntDir>
+    <OutDir>..\build\bin\Debug-windows-x86_64\Game\</OutDir>
+    <IntDir>..\build\int\Debug-windows-x86_64\Game\</IntDir>
     <TargetName>Game</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\bin\Release-windows-x86_64\Game\</OutDir>
-    <IntDir>..\int\Release-windows-x86_64\Game\</IntDir>
+    <OutDir>..\build\bin\Release-windows-x86_64\Game\</OutDir>
+    <IntDir>..\build\int\Release-windows-x86_64\Game\</IntDir>
     <TargetName>Game</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\bin\Distribution-windows-x86_64\Game\</OutDir>
-    <IntDir>..\int\Distribution-windows-x86_64\Game\</IntDir>
+    <OutDir>..\build\bin\Distribution-windows-x86_64\Game\</OutDir>
+    <IntDir>..\build\int\Distribution-windows-x86_64\Game\</IntDir>
     <TargetName>Game</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>

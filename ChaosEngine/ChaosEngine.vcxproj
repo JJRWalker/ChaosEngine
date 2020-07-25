@@ -54,20 +54,20 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>..\bin\Debug-windows-x86_64\ChaosEngine\</OutDir>
-    <IntDir>..\int\Debug-windows-x86_64\ChaosEngine\</IntDir>
+    <OutDir>..\build\bin\Debug-windows-x86_64\ChaosEngine\</OutDir>
+    <IntDir>..\build\int\Debug-windows-x86_64\ChaosEngine\</IntDir>
     <TargetName>ChaosEngine</TargetName>
     <TargetExt>.lib</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>..\bin\Release-windows-x86_64\ChaosEngine\</OutDir>
-    <IntDir>..\int\Release-windows-x86_64\ChaosEngine\</IntDir>
+    <OutDir>..\build\bin\Release-windows-x86_64\ChaosEngine\</OutDir>
+    <IntDir>..\build\int\Release-windows-x86_64\ChaosEngine\</IntDir>
     <TargetName>ChaosEngine</TargetName>
     <TargetExt>.lib</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'">
-    <OutDir>..\bin\Distribution-windows-x86_64\ChaosEngine\</OutDir>
-    <IntDir>..\int\Distribution-windows-x86_64\ChaosEngine\</IntDir>
+    <OutDir>..\build\bin\Distribution-windows-x86_64\ChaosEngine\</OutDir>
+    <IntDir>..\build\int\Distribution-windows-x86_64\ChaosEngine\</IntDir>
     <TargetName>ChaosEngine</TargetName>
     <TargetExt>.lib</TargetExt>
   </PropertyGroup>

@@ -120,6 +120,9 @@
     <ClInclude Include="src\Chaos\Entity\Components\Transform.h">
       <Filter>src\Chaos\Entity\Components</Filter>
     </ClInclude>
+    <ClInclude Include="src\Chaos\Entity\ECSManager.h">
+      <Filter>src\Chaos\Entity</Filter>
+    </ClInclude>
     <ClInclude Include="src\Chaos\Entity\Entity.h">
       <Filter>src\Chaos\Entity</Filter>
     </ClInclude>
@@ -1311,7 +1314,6 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp">
       <Filter>vendor\glm\glm</Filter>
     </ClInclude>
-    <ClInclude Include="src\Chaos\Entity\ECSManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chaos\Core\Application.cpp">
@@ -1344,6 +1346,9 @@
     <ClCompile Include="src\Chaos\Entity\Components\Transform.cpp">
       <Filter>src\Chaos\Entity\Components</Filter>
     </ClCompile>
+    <ClCompile Include="src\Chaos\Entity\ECSManager.cpp">
+      <Filter>src\Chaos\Entity</Filter>
+    </ClCompile>
     <ClCompile Include="src\Chaos\Renderer\Renderer.cpp">
       <Filter>src\Chaos\Renderer</Filter>
     </ClCompile>
@@ -1374,6 +1379,5 @@
     <ClCompile Include="src\chaospch.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\Chaos\Entity\ECSManager.cpp" />
   </ItemGroup>
 </Project>

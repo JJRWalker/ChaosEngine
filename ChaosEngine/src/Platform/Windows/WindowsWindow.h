@@ -3,7 +3,7 @@
 #ifndef GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_NONE
 #endif // !GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
+#include <GLFW/include/GLFW/glfw3.h>
 
 namespace Chaos
 {
