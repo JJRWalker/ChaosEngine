@@ -1,6 +1,7 @@
 .vs/**
 **/out/**
-bin/**
-int/**
+build/**
+**.vcxproj
+**.vcxproj.filters
 ChaosEngine/vendor/*/int
 ChaosEngine/vendor/*/bin

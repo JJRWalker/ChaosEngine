@@ -36,8 +36,8 @@ project "ChaosEngine"
     cppdialect "C++17"
     staticruntime "on"
 
-    targetdir ("bin/".. outputdir .. "/%{prj.name}")
-    objdir ("int/".. outputdir .. "/%{prj.name}")
+    targetdir ("build/bin/".. outputdir .. "/%{prj.name}")
+    objdir ("build/int/".. outputdir .. "/%{prj.name}")
     
     pchheader "chaospch.h"
     pchsource "ChaosEngine/src/chaospch.cpp"
@@ -104,8 +104,8 @@ project "ControlEditor"
     cppdialect "C++17"
     staticruntime "on"
 
-    targetdir ("bin/".. outputdir .. "/%{prj.name}")
-    objdir ("int/".. outputdir .. "/%{prj.name}")
+    targetdir ("build/bin/".. outputdir .. "/%{prj.name}")
+    objdir ("build/int/".. outputdir .. "/%{prj.name}")
 
     files
     {
@@ -159,8 +159,8 @@ project "Game"
     cppdialect "C++17"
     staticruntime "on"
 
-    targetdir ("bin/".. outputdir .. "/%{prj.name}")
-    objdir ("int/".. outputdir .. "/%{prj.name}")
+    targetdir ("build/bin/".. outputdir .. "/%{prj.name}")
+    objdir ("build/int/".. outputdir .. "/%{prj.name}")
 
     files
     {

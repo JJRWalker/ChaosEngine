@@ -17,7 +17,7 @@ namespace Chaos
 
 		Entity* GetEntity() { return ECSManager::GetEntityFromComponent(m_componentID); }
 		uint32_t GetComponentID() { return m_componentID; }
-		virtual const char* ToString() { return "Uninitalised Component.ToString()"; }
+		virtual const char* ToString() { return typeid(*this).name(); }
 
 	private:
 		uint32_t m_componentID;

@@ -12,7 +12,6 @@ namespace Chaos
 	class Render : public Component
 	{
 	public:
-		COMPONENT();
 		Render() {};
 		// Inherited via Component
 		virtual void Start() override;

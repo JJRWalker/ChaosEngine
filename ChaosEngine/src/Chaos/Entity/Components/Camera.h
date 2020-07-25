@@ -15,7 +15,6 @@ namespace Chaos
 	class Camera : public Component
 	{
 	public:
-		COMPONENT();
 		Camera() { };
 		
 		// Inherited via IComponent
