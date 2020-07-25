@@ -1,4 +1,6 @@
 @echo off
+Call "shell"
+
 mkdir "build/cmd/int"
 pushd "build/cmd/int"
 
@@ -45,3 +47,5 @@ if 1%ms% lss 100 set ms=0%ms%
 :: Mission accomplished
 set /a totalsecs = %hours%*3600 + %mins%*60 + %secs%
 echo build took %hours%:%mins%:%secs%.%ms% (%totalsecs%.%ms%s total)
+
+PAUSE

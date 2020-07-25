@@ -1,4 +1,7 @@
 @echo off
+
+Call "shell"
+
 mkdir "build/cmd/int"
 pushd "build/cmd/int"
 
@@ -24,7 +27,7 @@ cl -Zi -c ../../../Game/game.cpp /I ../../../Game/src  /I ../../../chaosengine/s
 popd
 pushd "build/cmd/bin"
 
-link ..\int\gameapp.obj Chaos.lib ..\..\..\ChaosEngine\vendor\GLFW\bin\Release-windows-x86_64\GLFW\glfw.lib ..\..\..\ChaosEngine\vendor\Vulkan\Lib\vulkan-1.lib ..\..\..\ChaosEngine\vendor\ImGUI\bin\Release-windows-x86_64\imgui\imgui.lib gdi32.lib shell32.lib msvcrtd.lib /NODEFAULTLIB:LIBCMTD /NODEFAULTLIB:LIBCMT
+link ..\int\game.obj Chaos.lib ..\..\..\ChaosEngine\vendor\GLFW\bin\Release-windows-x86_64\GLFW\glfw.lib ..\..\..\ChaosEngine\vendor\Vulkan\Lib\vulkan-1.lib ..\..\..\ChaosEngine\vendor\ImGUI\bin\Release-windows-x86_64\imgui\imgui.lib gdi32.lib shell32.lib msvcrtd.lib /NODEFAULTLIB:LIBCMTD /NODEFAULTLIB:LIBCMT
 
 popd
 
@@ -46,3 +49,5 @@ if 1%ms% lss 100 set ms=0%ms%
 :: Mission accomplished
 set /a totalsecs = %hours%*3600 + %mins%*60 + %secs%
 echo build took %hours%:%mins%:%secs%.%ms% (%totalsecs%.%ms%s total)
+
+PAUSE
