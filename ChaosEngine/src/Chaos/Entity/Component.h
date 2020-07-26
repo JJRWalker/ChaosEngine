@@ -17,9 +17,12 @@ namespace Chaos
 
 		Entity* GetEntity() { return ECSManager::GetEntityFromComponent(m_componentID); }
 		uint32_t GetComponentID() { return m_componentID; }
+		bool GetActive() {return m_active;}
+		void SetActive(bool value){m_active = value;}
 		virtual const char* ToString() { return typeid(*this).name(); }
 
-	private:
+	protected:
 		uint32_t m_componentID;
+		bool m_active = true;
 	};
 }

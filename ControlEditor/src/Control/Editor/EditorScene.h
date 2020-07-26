@@ -8,10 +8,14 @@
 
 namespace Chaos
 {
+	class System;
 	class EditorScene : public Scene
 	{
 	public:
 		virtual void StartScene() override;
+		virtual void Update() override;
 		void GenerateLevel();
+	private:
+		std::vector<System*> m_systems;
 	};
 }

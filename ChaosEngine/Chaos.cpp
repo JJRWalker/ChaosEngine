@@ -30,6 +30,9 @@
 #include <Chaos/Entity/Components/Render.cpp>
 #include <Chaos/Entity/Components/CellularAutomata.cpp>
 
+//===SYSTEMS====================================
+#include <Chaos/Entity/Systems/RenderSystem.cpp>
+
 //===RENDERER===================================
 #include <Chaos/Renderer/RendererAPI.cpp>
 #include <Chaos/Renderer/Renderer.cpp>

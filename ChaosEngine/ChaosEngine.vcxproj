@@ -166,6 +166,8 @@
     <ClInclude Include="src\Chaos\Entity\Components\Transform.h" />
     <ClInclude Include="src\Chaos\Entity\ECSManager.h" />
     <ClInclude Include="src\Chaos\Entity\Entity.h" />
+    <ClInclude Include="src\Chaos\Entity\System.h" />
+    <ClInclude Include="src\Chaos\Entity\Systems\RenderSystem.h" />
     <ClInclude Include="src\Chaos\Events\ApplicationEvent.h" />
     <ClInclude Include="src\Chaos\Events\Event.h" />
     <ClInclude Include="src\Chaos\Events\KeyEvent.h" />
@@ -576,6 +578,7 @@
     <ClCompile Include="src\Chaos\Entity\Components\Render.cpp" />
     <ClCompile Include="src\Chaos\Entity\Components\Transform.cpp" />
     <ClCompile Include="src\Chaos\Entity\ECSManager.cpp" />
+    <ClCompile Include="src\Chaos\Entity\Systems\RenderSystem.cpp" />
     <ClCompile Include="src\Chaos\Renderer\Renderer.cpp" />
     <ClCompile Include="src\Chaos\Renderer\RendererAPI.cpp" />
     <ClCompile Include="src\Chaos\Renderer\SubTexture.cpp" />

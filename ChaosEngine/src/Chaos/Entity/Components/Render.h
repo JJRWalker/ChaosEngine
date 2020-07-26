@@ -21,10 +21,9 @@ namespace Chaos
 
 		void SetTexture(Ref<Texture> tex) { m_texture = tex; }
 		Ref<Texture> GetTexture() { return m_texture; }
-	  bool GetActive() {return m_active;}
-	  void SetActive(bool value){m_active = value;}
+
 	private:
 		Ref<Texture> m_texture = Texture::GetBlank();	//Setting default texture (loads blank)
-	  bool m_active = true;
+		
 	};
 }

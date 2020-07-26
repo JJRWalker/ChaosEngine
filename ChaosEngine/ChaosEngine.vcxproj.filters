@@ -1315,6 +1315,8 @@
       <Filter>vendor\glm\glm</Filter>
     </ClInclude>
     <ClInclude Include="src\Chaos\Entity\Components\CellularAutomata.h" />
+    <ClInclude Include="src\Chaos\Entity\System.h" />
+    <ClInclude Include="src\Chaos\Entity\Systems\RenderSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chaos\Core\Application.cpp">
@@ -1381,5 +1383,6 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\Chaos\Entity\Components\CellularAutomata.cpp" />
+    <ClCompile Include="src\Chaos\Entity\Systems\RenderSystem.cpp" />
   </ItemGroup>
 </Project>
