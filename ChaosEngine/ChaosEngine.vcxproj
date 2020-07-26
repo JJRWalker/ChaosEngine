@@ -161,6 +161,7 @@
     <ClInclude Include="src\Chaos\Debug\Timer.h" />
     <ClInclude Include="src\Chaos\Entity\Component.h" />
     <ClInclude Include="src\Chaos\Entity\Components\Camera.h" />
+    <ClInclude Include="src\Chaos\Entity\Components\CellularAutomata.h" />
     <ClInclude Include="src\Chaos\Entity\Components\Render.h" />
     <ClInclude Include="src\Chaos\Entity\Components\Transform.h" />
     <ClInclude Include="src\Chaos\Entity\ECSManager.h" />
@@ -571,6 +572,7 @@
     <ClCompile Include="src\Chaos\Debug\ImGuiLayer.cpp" />
     <ClCompile Include="src\Chaos\Debug\Timer.cpp" />
     <ClCompile Include="src\Chaos\Entity\Components\Camera.cpp" />
+    <ClCompile Include="src\Chaos\Entity\Components\CellularAutomata.cpp" />
     <ClCompile Include="src\Chaos\Entity\Components\Render.cpp" />
     <ClCompile Include="src\Chaos\Entity\Components\Transform.cpp" />
     <ClCompile Include="src\Chaos\Entity\ECSManager.cpp" />

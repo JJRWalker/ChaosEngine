@@ -197,6 +197,11 @@ namespace Chaos
 		ImGui::Text("Quads: %d", renderer.GetDebugInfo().TotalQuadsDrawn);
 		ImGui::Text("Draw calls: %d", renderer.GetDebugInfo().NumOfDrawCalls);
 
+		if (ImGui::Button("Generate Level"))
+		{
+			m_scene.GenerateLevel();
+		}
+
 		ImGui::End();
 
 		renderer.GetDebugInfo().TotalQuadsDrawn = 0;

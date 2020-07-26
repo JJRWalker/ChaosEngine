@@ -11,7 +11,10 @@ namespace Chaos
 
 	void Render::Update() 
 	{
+	  if (m_active)
+	    {
 		Application::Get().GetRenderer().DrawQuad(GetEntity()->GetTransform()->Position(), GetEntity()->GetTransform()->Scale(), GetEntity()->GetTransform()->Rotation(), m_texture);
+	    }
 	}
 
 	void Render::Destroy() 

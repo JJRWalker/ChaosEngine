@@ -1,3 +1,4 @@
+
 //Unity build file for easy compilation outside of visual studio
 #include <chaospch.h>
 #include <Chaos.h>
@@ -27,6 +28,7 @@
 #include <Chaos/Entity/Components/Camera.cpp>
 #include <Chaos/Entity/Components/Transform.cpp>
 #include <Chaos/Entity/Components/Render.cpp>
+#include <Chaos/Entity/Components/CellularAutomata.cpp>
 
 //===RENDERER===================================
 #include <Chaos/Renderer/RendererAPI.cpp>

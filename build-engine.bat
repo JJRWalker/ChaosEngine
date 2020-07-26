@@ -6,15 +6,16 @@ pushd "build/cmd/int"
 ::TIMER TAKEN FROM  https://stackoverflow.com/questions/673523/how-do-i-measure-execution-time-of-a-command-on-the-windows-command-line
 set start=%time%
 
-pushd "build/cmd/int"
-cl -Zi -c ../../../ControlEditor/control.cpp /I ../../../chaosengine/src /I ../../../chaosengine/vendor /I ../../../chaosengine/vendor/spdlog/include /I ../../../chaosengine/vendor/imgui /I ../../../chaosengine/vendor/glfw/include /I ../../../controleditor/src /D "CHAOS_PLATFORM_WINDOWS" /D "CHAOS_RELEASE" /EHsc  /MT /std:c++17
+cl -Zi  /EHsc /c ..\..\..\chaosengine\chaos.cpp ..\..\..\chaosengine\src\chaospch.cpp /I ..\..\..\chaosengine\vendor\spdlog\include /I ..\..\..\chaosengine\src /I ..\..\..\chaosengine\vendor /I ..\..\..\chaosengine\vendor\imgui /I ..\..\..\chaosengine\vendor\glfw\include /std:c++17 /D "CHAOS_PLATFORM_WINDOWS" /D "CHAOS_RELEASE" /MT
 
 popd
 
 mkdir "build/cmd/bin"
 pushd "build/cmd/bin"
 
-link ..\int\control.obj Chaos.lib ..\..\..\ChaosEngine\vendor\GLFW\bin\Release-windows-x86_64\GLFW\glfw.lib ..\..\..\ChaosEngine\vendor\Vulkan\Lib\vulkan-1.lib ..\..\..\ChaosEngine\vendor\ImGUI\bin\Release-windows-x86_64\imgui\imgui.lib gdi32.lib shell32.lib msvcrtd.lib /NODEFAULTLIB:LIBCMTD /NODEFAULTLIB:LIBCMT
+lib ..\int\chaos.obj ..\int\chaospch.obj
+MOVE ..\int\chaos.lib ..\bin
+
 popd
 
 set end=%time%
@@ -36,7 +37,3 @@ if 1%ms% lss 100 set ms=0%ms%
 set /a totalsecs = %hours%*3600 + %mins%*60 + %secs%
 echo build took %hours%:%mins%:%secs%.%ms% (%totalsecs%.%ms%s total)
 
-pushd "build/cmd/bin"
-
-start  control.exe
-popd
