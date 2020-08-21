@@ -1317,6 +1317,7 @@
     <ClInclude Include="src\Chaos\Entity\Components\CellularAutomata.h" />
     <ClInclude Include="src\Chaos\Entity\System.h" />
     <ClInclude Include="src\Chaos\Entity\Systems\RenderSystem.h" />
+    <ClInclude Include="src\Chaos\DataTypes\Quad.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chaos\Core\Application.cpp">

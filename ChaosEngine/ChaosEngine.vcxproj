@@ -154,6 +154,7 @@
     <ClInclude Include="src\Chaos\Core\Scene.h" />
     <ClInclude Include="src\Chaos\Core\Time.h" />
     <ClInclude Include="src\Chaos\Core\Window.h" />
+    <ClInclude Include="src\Chaos\DataTypes\Quad.h" />
     <ClInclude Include="src\Chaos\DataTypes\Vec2.h" />
     <ClInclude Include="src\Chaos\DataTypes\Vec3.h" />
     <ClInclude Include="src\Chaos\DataTypes\Vec4.h" />

@@ -92,151 +92,166 @@ namespace Chaos
 
 #pragma region DRAW QUAD
 	//Called from outside the renderer class whenever the user wants to add anything to the render queue
-	void VulkanRenderer::DrawQuad(Vec2& position, Vec2& scale, Ref<Texture> texture)
+	void VulkanRenderer::DrawQuad(Vec3& position, Vec2& scale, Ref<Texture> texture)
 	{
 		DrawQuad(position, scale, Vec2(0, 0), Vec4(1.0f, 1.0f, 1.0f, 1.0f), texture, 1);
 	}
 
-	void VulkanRenderer::DrawQuad(Vec2& position, Vec2& scale, Vec4& colour, Ref<Texture> texture)
+	void VulkanRenderer::DrawQuad(Vec3& position, Vec2& scale, Vec4& colour, Ref<Texture> texture)
 	{
 		DrawQuad(position, scale, Vec2(0, 0), colour, texture, 1);
 	}
 
-	void VulkanRenderer::DrawQuad(Vec2& position, Vec2& scale, Vec4& colour, Ref<Texture> texture, float tilingFactor)
+	void VulkanRenderer::DrawQuad(Vec3& position, Vec2& scale, Vec4& colour, Ref<Texture> texture, float tilingFactor)
 	{
 		DrawQuad(position, scale, Vec2(0, 0), colour, texture, tilingFactor);
 	}
 
-	void VulkanRenderer::DrawQuad(Vec2& position, Vec2& scale, Ref<Texture> texture, float tilingFactor)
+	void VulkanRenderer::DrawQuad(Vec3& position, Vec2& scale, Ref<Texture> texture, float tilingFactor)
 	{
 		DrawQuad(position, scale, Vec2(0, 0), Vec4(1.0f, 1.0f, 1.0f, 1.0f), texture, tilingFactor);	}
 
-	void VulkanRenderer::DrawQuad(Vec2& position, Vec2& scale, Ref<SubTexture> subTexture)
+	void VulkanRenderer::DrawQuad(Vec3& position, Vec2& scale, Ref<SubTexture> subTexture)
 	{
 		DrawQuad(position, scale, Vec2(0,0), Vec4(1.0f, 1.0f, 1.0f, 1.0f), subTexture);
 
 	}
-	void VulkanRenderer::DrawQuad(Vec2& position, Vec2& scale, Vec2& rotation, Ref<Texture> texture)
+	void VulkanRenderer::DrawQuad(Vec3& position, Vec2& scale, Vec2& rotation, Ref<Texture> texture)
 	{
 		DrawQuad(position, scale, rotation, Vec4(1.0f, 1.0f, 1.0f, 1.0f), texture, 1);
 	}
-	void VulkanRenderer::DrawQuad(Vec2& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<Texture> texture)
+	void VulkanRenderer::DrawQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<Texture> texture)
 	{
 		DrawQuad(position, scale, rotation, colour, texture, 1);
 	}
 
-	void VulkanRenderer::DrawQuad(Vec2& position, Vec2& scale, Vec2& rotation, Ref<SubTexture> subTexture)
+	void VulkanRenderer::DrawQuad(Vec3& position, Vec2& scale, Vec2& rotation, Ref<SubTexture> subTexture)
 	{
 		DrawQuad(position, scale, rotation, Vec4(1.0f, 1.0f, 1.0f, 1.0f), subTexture);
 	}
 
-	void VulkanRenderer::DrawQuad(Vec2& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<Texture> texture, float tilingFactor)
+	void VulkanRenderer::DrawQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<Texture> texture, float tilingFactor)
 	{
-		PROFILED_FUNC();
+		m_quads.push_back({ position, scale, rotation, colour, texture, nullptr, tilingFactor });
+		//AddQuadToRenderQueue({ Vec3(position.X, position.Y, 0), scale, rotation, colour, texture, nullptr, tilingFactor });
+	}
 
-		float imageIndex = (float)m_texturesToBind.size();
-		for (size_t i = 0; i < m_texturesToBind.size(); ++i)
+	void VulkanRenderer::DrawQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<SubTexture> subTexture)
+	{
+		m_quads.push_back({ position, scale, rotation, colour, nullptr, subTexture, 1 });
+		//AddQuadToRenderQueue({ Vec3(position.X, position.Y, 0), scale, rotation, colour, nullptr, subTexture, 1});
+	}
+
+	void VulkanRenderer::AddQuadToRenderQueue(Quad quad)
+	{
+		//will return null if the texture variable has not been set (i.e. not a subtexture) so do everything as if it weren't a subtexture
+		if (quad.tex.get())
 		{
-			if (m_texturesToBind[i].get()->GetFilePath() == texture.get()->GetFilePath())
+			float imageIndex = (float)m_texturesToBind.size();
+			for (size_t i = 0; i < m_texturesToBind.size(); ++i)
 			{
-				imageIndex = (float)i;
-				break;
+				if (m_texturesToBind[i].get()->GetFilePath() == quad.tex.get()->GetFilePath())
+				{
+					imageIndex = (float)i;
+					break;
+				}
 			}
+
+
+			glm::mat4 transform = glm::translate(glm::mat4(1), { quad.Position.X, quad.Position.Y, 0 })
+				* glm::rotate(glm::mat4(1), glm::radians(quad.Position.X), { 0, 0, 1 })
+				* glm::scale(glm::mat4(1), { quad.Scale.X, quad.Scale.Y, 0.0f });
+
+			glm::vec4 vertexPositions[4] = { transform * QUAD_VERTEX_POSITIONS[0],
+										   transform * QUAD_VERTEX_POSITIONS[1],
+										   transform * QUAD_VERTEX_POSITIONS[2],
+										   transform * QUAD_VERTEX_POSITIONS[3] };
+
+
+			//pushing our vertexes to the back using the transformed vertex positions
+			m_vertices.push_back(VulkanVertex{ {vertexPositions[0].x, vertexPositions[0].y, vertexPositions[0].z}, quad.Colour, Vec2(0.01f, quad.tilingFactor), imageIndex });
+			m_vertices.push_back(VulkanVertex{ {vertexPositions[1].x, vertexPositions[1].y, vertexPositions[1].z}, quad.Colour, Vec2(quad.tilingFactor, quad.tilingFactor), imageIndex });
+			m_vertices.push_back(VulkanVertex{ {vertexPositions[2].x, vertexPositions[2].y, vertexPositions[2].z}, quad.Colour, Vec2(quad.tilingFactor, 0.01f), imageIndex });
+			m_vertices.push_back(VulkanVertex{ {vertexPositions[3].x, vertexPositions[3].y, vertexPositions[3].z}, quad.Colour, Vec2(0.01f, 0.01f), imageIndex });
+
+			m_indices.push_back(0 + m_indOffset);
+			m_indices.push_back(1 + m_indOffset);
+			m_indices.push_back(2 + m_indOffset);
+			m_indices.push_back(2 + m_indOffset);
+			m_indices.push_back(3 + m_indOffset);
+			m_indices.push_back(0 + m_indOffset);
+
+			m_indOffset += 4;
+
+			//if our image was not found, the index will be the same as the size of the vector, so push the texture to the back
+			if (imageIndex == m_texturesToBind.size())
+			{
+				m_texturesToBind.push_back((Ref<VulkanTexture>&)quad.tex);
+			}
+
+			m_renderCount++;
+
+			if (m_texturesToBind.size() == MAX_TEXTURES_PER_DRAW || m_renderCount == MAX_OBJECTS_PER_DRAW)
+			{
+				m_buffers.resize(m_buffers.size() + 1);
+				CreateBuffersAndClearResources(m_buffers.size() - 1);
+			}
+			m_debugInfo.TotalQuadsDrawn++;
+
 		}
-
-
-		glm::mat4 transform = glm::translate(glm::mat4(1), { position.X, position.Y, 0 })
-			* glm::rotate(glm::mat4(1), glm::radians(rotation.X), { 0, 0, 1 })
-			* glm::scale(glm::mat4(1), { scale.X, scale.Y, 0.0f });
-
-		glm::vec4 vertexPositions[4] = { transform * QUAD_VERTEX_POSITIONS[0],
-									   transform * QUAD_VERTEX_POSITIONS[1],
-									   transform * QUAD_VERTEX_POSITIONS[2],
-									   transform * QUAD_VERTEX_POSITIONS[3]};
-
-
-		//pushing our vertexes to the back using the transformed vertex positions
-		m_vertices.push_back(VulkanVertex{ {vertexPositions[0].x, vertexPositions[0].y, vertexPositions[0].z}, colour, Vec2(0.01f, tilingFactor), imageIndex });
-		m_vertices.push_back(VulkanVertex{ {vertexPositions[1].x, vertexPositions[1].y, vertexPositions[1].z}, colour, Vec2(tilingFactor, tilingFactor), imageIndex });
-		m_vertices.push_back(VulkanVertex{ {vertexPositions[2].x, vertexPositions[2].y, vertexPositions[2].z}, colour, Vec2(tilingFactor, 0.01f), imageIndex });
-		m_vertices.push_back(VulkanVertex{ {vertexPositions[3].x, vertexPositions[3].y, vertexPositions[3].z}, colour, Vec2(0.01f, 0.01f), imageIndex });
-
-		m_indices.push_back(0 + m_indOffset);
-		m_indices.push_back(1 + m_indOffset);
-		m_indices.push_back(2 + m_indOffset);
-		m_indices.push_back(2 + m_indOffset);
-		m_indices.push_back(3 + m_indOffset);
-		m_indices.push_back(0 + m_indOffset);
-
-		m_indOffset += 4;
-
-		//if our image was not found, the index will be the same as the size of the vector, so push the texture to the back
-		if (imageIndex == m_texturesToBind.size())
+		else
 		{
-			m_texturesToBind.push_back((Ref<VulkanTexture>&)texture);
-		}
+			float imageIndex = (float)m_texturesToBind.size();
+			for (size_t i = 0; i < m_texturesToBind.size(); ++i)
+			{
+				if (m_texturesToBind[i].get()->GetFilePath() == quad.subTex.get()->GetFilePath())
+				{
+					imageIndex = (float)i;
+					break;
+				}
+			}
 
-		m_renderCount++;
+			glm::mat4 transform = glm::translate(glm::mat4(1), { quad.Position.X, quad.Position.Y, 0 })
+				* glm::rotate(glm::mat4(1), glm::radians(quad.Rotation.X), { 0, 0, 1 })
+				* glm::scale(glm::mat4(1), { quad.Scale.X, quad.Scale.Y, 0.0f });
 
-		if (m_texturesToBind.size() == MAX_TEXTURES_PER_DRAW || m_renderCount == MAX_OBJECTS_PER_DRAW)
-		{
-			m_buffers.resize(m_buffers.size() + 1);
-			CreateBuffersAndClearResources(m_buffers.size() - 1);
+			glm::vec4 vertexPositions[4] = { transform * QUAD_VERTEX_POSITIONS[0],
+										   transform * QUAD_VERTEX_POSITIONS[1],
+										   transform * QUAD_VERTEX_POSITIONS[2],
+										   transform * QUAD_VERTEX_POSITIONS[3] };
+
+
+			m_vertices.push_back(VulkanVertex{ {vertexPositions[0].x, vertexPositions[0].y, vertexPositions[0].z}, quad.Colour, quad.subTex->GetTexCoords()[3], imageIndex });
+			m_vertices.push_back(VulkanVertex{ {vertexPositions[1].x, vertexPositions[1].y, vertexPositions[1].z}, quad.Colour, quad.subTex->GetTexCoords()[2], imageIndex });
+			m_vertices.push_back(VulkanVertex{ {vertexPositions[2].x, vertexPositions[2].y, vertexPositions[2].z}, quad.Colour, quad.subTex->GetTexCoords()[1], imageIndex });
+			m_vertices.push_back(VulkanVertex{ {vertexPositions[3].x, vertexPositions[3].y, vertexPositions[3].z}, quad.Colour, quad.subTex->GetTexCoords()[0], imageIndex });
+
+			m_indices.push_back(0 + m_indOffset);
+			m_indices.push_back(1 + m_indOffset);
+			m_indices.push_back(2 + m_indOffset);
+			m_indices.push_back(2 + m_indOffset);
+			m_indices.push_back(3 + m_indOffset);
+			m_indices.push_back(0 + m_indOffset);
+
+			m_indOffset += 4;
+
+			if (imageIndex == m_texturesToBind.size())
+			{
+				m_texturesToBind.push_back((Ref<VulkanTexture>&)quad.subTex->GetMainTexture());
+			}
+
+			m_renderCount++;
+
+			if (m_texturesToBind.size() == MAX_TEXTURES_PER_DRAW || m_renderCount == MAX_OBJECTS_PER_DRAW)
+			{
+				m_buffers.resize(m_buffers.size() + 1);
+				CreateBuffersAndClearResources(m_buffers.size() - 1);
+			}
+			m_debugInfo.TotalQuadsDrawn++;
 		}
-		m_debugInfo.TotalQuadsDrawn++;
 
 	}
 
-	void VulkanRenderer::DrawQuad(Vec2& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<SubTexture> subTexture)
-	{
-		float imageIndex = (float)m_texturesToBind.size();
-		for (size_t i = 0; i < m_texturesToBind.size(); ++i)
-		{
-			if (m_texturesToBind[i].get()->GetFilePath() == subTexture.get()->GetFilePath())
-			{
-				imageIndex = (float)i;
-				break;
-			}
-		}
-
-		glm::mat4 transform = glm::translate(glm::mat4(1), { position.X, position.Y, 0 })
-			* glm::rotate(glm::mat4(1), glm::radians(rotation.X), { 0, 0, 1 })
-			* glm::scale(glm::mat4(1), { scale.X, scale.Y, 0.0f });
-
-		glm::vec4 vertexPositions[4] = { transform * QUAD_VERTEX_POSITIONS[0],
-									   transform * QUAD_VERTEX_POSITIONS[1],
-									   transform * QUAD_VERTEX_POSITIONS[2],
-									   transform * QUAD_VERTEX_POSITIONS[3] };
-
-
-		m_vertices.push_back(VulkanVertex{ {vertexPositions[0].x, vertexPositions[0].y, vertexPositions[0].z}, colour, subTexture->GetTexCoords()[3], imageIndex });
-		m_vertices.push_back(VulkanVertex{ {vertexPositions[1].x, vertexPositions[1].y, vertexPositions[1].z}, colour, subTexture->GetTexCoords()[2], imageIndex });
-		m_vertices.push_back(VulkanVertex{ {vertexPositions[2].x, vertexPositions[2].y, vertexPositions[2].z}, colour, subTexture->GetTexCoords()[1], imageIndex });
-		m_vertices.push_back(VulkanVertex{ {vertexPositions[3].x, vertexPositions[3].y, vertexPositions[3].z}, colour, subTexture->GetTexCoords()[0], imageIndex });
-
-		m_indices.push_back(0 + m_indOffset);
-		m_indices.push_back(1 + m_indOffset);
-		m_indices.push_back(2 + m_indOffset);
-		m_indices.push_back(2 + m_indOffset);
-		m_indices.push_back(3 + m_indOffset);
-		m_indices.push_back(0 + m_indOffset);
-
-		m_indOffset += 4;
-
-		if (imageIndex == m_texturesToBind.size())
-		{
-			m_texturesToBind.push_back((Ref<VulkanTexture>&)subTexture->GetMainTexture());
-		}
-
-		m_renderCount++;
-
-		if (m_texturesToBind.size() == MAX_TEXTURES_PER_DRAW || m_renderCount == MAX_OBJECTS_PER_DRAW)
-		{
-			m_buffers.resize(m_buffers.size() + 1);
-			CreateBuffersAndClearResources(m_buffers.size() - 1);
-		}
-		m_debugInfo.TotalQuadsDrawn++;
-	}
 #pragma endregion
 
 	//Checks if the renderer currently has the texture in the specified file path stored, if it does it will return true and set old texture to that texture. Else returns false if none exists 
@@ -1494,6 +1509,15 @@ namespace Chaos
 	void VulkanRenderer::DrawFrame()
 	{
 		PROFILED_FUNC();
+
+		SortQuads();
+
+		for (int i = 0; i < m_quads.size(); ++i)
+		{
+			AddQuadToRenderQueue(m_quads[i]);
+		}
+
+		//creating buffer with leftover verts / inds and clearing up leftover resources
 		if (m_vertices.size() > 0)
 			CreateBuffersAndClearResources(m_buffers.size());
 
@@ -1610,6 +1634,7 @@ namespace Chaos
 
 		m_buffers.clear(); //TODO: change to only clear dynamic buffers
 		m_imGuiCommandBuffers.clear();
+		m_quads.clear();
 	}
 
 	VkSurfaceFormatKHR VulkanRenderer::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
@@ -1737,6 +1762,11 @@ namespace Chaos
 		}
 
 		return indices;
+	}
+
+	void VulkanRenderer::SortQuads()
+	{
+		std::sort(m_quads.begin(), m_quads.end());
 	}
 
 	std::vector<const char*> VulkanRenderer::GetRequiredExtensions() {

@@ -3,6 +3,7 @@
 #include "chaospch.h"
 #include "Chaos/Entity/Component.h"
 #include "Chaos/DataTypes/Vec2.h"
+#include "Chaos/DataTypes/Vec3.h"
 
 namespace Chaos
 {
@@ -10,7 +11,7 @@ namespace Chaos
 	{
 	public:
 		Transform() { };
-		Vec2& Position() { return m_position; }
+		Vec3& Position() { return m_position; }
 		Vec2& Rotation() { return m_rotation; }
 		Vec2& Scale() { return m_scale; }
 
@@ -18,7 +19,7 @@ namespace Chaos
 
 	private:
 
-		Vec2 m_position = Vec2::Zero();
+		Vec3 m_position = Vec3::Zero();
 		Vec2 m_rotation = Vec2::Zero();
 		Vec2 m_scale = Vec2(1.0f, 1.0f);
 		int x = 3;

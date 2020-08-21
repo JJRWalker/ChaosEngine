@@ -15,6 +15,23 @@ namespace Chaos
 	class Vec2;
 	class Vec4;
 
+	struct Quad
+	{
+		Vec3 Position = {0,0,0};
+		Vec2 Scale = {1,1};
+		Vec2 Rotation = {0, 0};
+		Vec4 Colour = {1,1,1,1};
+		Ref<Texture> tex;
+		Ref<SubTexture> subTex;
+		float tilingFactor = 1;
+
+		//we sort quads based on their z position. This z position works as a render queue position
+		bool operator < (const Quad& other) const
+		{
+			return Position.Z < other.Position.Z;
+		}
+	};
+
 	struct VulkanVertex {
 		Vec3 pos;
 		Vec4 color;
@@ -109,17 +126,17 @@ namespace Chaos
 		VulkanRenderer();
 		~VulkanRenderer();
 
-		virtual void DrawQuad(Vec2& position, Vec2& scale, Ref<Texture> texture) override;
-		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec4& colour, Ref<Texture> texture) override;
-		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec4& colour, Ref<Texture> texture, float tilingFactor) override;
-		virtual void DrawQuad(Vec2& position, Vec2& scale, Ref<Texture> texture, float tilingFactor) override;
-		virtual void DrawQuad(Vec2& position, Vec2& scale, Ref<SubTexture> subTexture) override;
+		virtual void DrawQuad(Vec3& position, Vec2& scale, Ref<Texture> texture) override;
+		virtual void DrawQuad(Vec3& position, Vec2& scale, Vec4& colour, Ref<Texture> texture) override;
+		virtual void DrawQuad(Vec3& position, Vec2& scale, Vec4& colour, Ref<Texture> texture, float tilingFactor) override;
+		virtual void DrawQuad(Vec3& position, Vec2& scale, Ref<Texture> texture, float tilingFactor) override;
+		virtual void DrawQuad(Vec3& position, Vec2& scale, Ref<SubTexture> subTexture) override;
 		//with rotation
-		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec2& rotation, Ref<Texture> texture) override;
-		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<Texture> texture) override;
-		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<Texture> texture, float tilingFactor) override;
-		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec2& rotation, Ref<SubTexture> subTexture) override;
-		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<SubTexture> subTtexture) override;
+		virtual void DrawQuad(Vec3& position, Vec2& scale, Vec2& rotation, Ref<Texture> texture) override;
+		virtual void DrawQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<Texture> texture) override;
+		virtual void DrawQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<Texture> texture, float tilingFactor) override;
+		virtual void DrawQuad(Vec3& position, Vec2& scale, Vec2& rotation, Ref<SubTexture> subTexture) override;
+		virtual void DrawQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<SubTexture> subTtexture) override;
 
 		virtual void DrawFrame() override;
 		virtual void WindowResized() override { m_framebufferResized = true; }
@@ -141,6 +158,8 @@ namespace Chaos
 		//Funcs
 		VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
 		void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT mDebugMessenger, const VkAllocationCallbacks* pAllocator);
+
+		void AddQuadToRenderQueue(Quad quad);
 
 		void InitVulkan();
 		void CreateInstance();
@@ -179,6 +198,7 @@ namespace Chaos
 		bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
 		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags props);
 		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
+		void SortQuads();
 
 		//VALIDATION
 		std::vector<const char*> GetRequiredExtensions();
@@ -209,6 +229,7 @@ namespace Chaos
 		void SetImGuiFramebuffer(std::vector<VkFramebuffer>* buffer) { m_imGuiFrameBuffer = buffer; }
 
 		//Variables
+		std::vector<Quad> m_quads;
 		std::vector<VulkanVertex> m_vertices;
 		std::vector<uint16_t> m_indices;
 
