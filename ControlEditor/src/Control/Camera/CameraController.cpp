@@ -44,7 +44,7 @@ namespace Chaos
 				m_cameraTransfrom.Rotation().X += 1 * deltaTime;
 			}
 
-			m_cameraTransfrom.Position() = { m_cameraTransfrom.Position().X + (dir.X * m_moveSpeed * deltaTime), m_cameraTransfrom.Position().Y + (dir.Y * m_moveSpeed * deltaTime) };
+			m_cameraTransfrom.Position() = { m_cameraTransfrom.Position().X + (dir.X * m_moveSpeed * deltaTime), m_cameraTransfrom.Position().Y + (dir.Y * m_moveSpeed * deltaTime), 0 };
 		}
 
 		m_aspectRatio = viewportSize.X / viewportSize.Y;

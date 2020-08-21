@@ -33,6 +33,7 @@ public:
 
 	float x = 0;
 	float y = 0;
+	float z = 0;
 
 	//reference to renderer to be abstracted
 	Chaos::Renderer& renderer = Chaos::Application::Get().GetRenderer();
@@ -65,6 +66,14 @@ public:
 		{
 			xDir = 0;
 		}
+		if (Chaos::Input::IsKeyPressed(KEY_Q))
+		{
+			z -= (moveSpeed * deltaTime);
+		}
+		else if (Chaos::Input::IsKeyPressed(KEY_E))
+		{
+			z += (moveSpeed * deltaTime);
+		}
 
 		//Delta time is passed to each layer by the Application class 
 		x += xDir * (moveSpeed * deltaTime);
@@ -84,18 +93,19 @@ public:
 		*/
 		
 		//Tiling example
-		renderer.DrawQuad(Chaos::Vec2(0.f, 0.f), Chaos::Vec2(20.f, 20.f), floor, 30); //this one tiles
-		renderer.DrawQuad(Chaos::Vec2(0.f, 0.f), Chaos::Vec2(1.f, 1.f), floor);	//this one does not
+		renderer.DrawQuad(Chaos::Vec3::Zero(), Chaos::Vec2(20.f, 20.f), floor, 30); //this one tiles
+		renderer.DrawQuad(Chaos::Vec3::Zero(), Chaos::Vec2(1.f, 1.f), floor);	//this one does not
 
 		//Coloured sprite example
-		renderer.DrawQuad(Chaos::Vec2(0, 0), Chaos::Vec2(1.f, 1.f), Chaos::Vec4(1.0f, 0.1f, 0.1f, 0.9f), player);	//tinted red 
+		renderer.DrawQuad(Chaos::Vec3::Zero(), Chaos::Vec2(1.f, 1.f), Chaos::Vec4(1.0f, 0.1f, 0.1f, 0.9f), player);	//tinted red 
 
 		//sub sprite example
-		renderer.DrawQuad(Chaos::Vec2(4.f, 0.f), Chaos::Vec2(1.f, 1.f), playersub);	//draws the bottom right quarter of the player sprite
+		renderer.DrawQuad(Chaos::Vec3(4.f, 0.f, 0.1f), Chaos::Vec2(1.f, 1.f), playersub);	//draws the bottom right quarter of the player sprite
 
 
 		//Entity test
-		entity.GetTransform()->Position() = Chaos::Vec2(x,y); //changes the entity's position to be the same as the cameras. Changing this changes where the Render component renders the entity 
+		entity.GetTransform()->Position() = Chaos::Vec3(x,y,z); //changes the entity's position to be the same as the cameras. Changing this changes where the Render component renders the entity 
+		//LOGCORE_TRACE("{0} {1} {2}", entity.GetTransform()->Position().X, entity.GetTransform()->Position().Y, entity.GetTransform()->Position().Z);
 		entity2.GetTransform()->Position().Y += 0.1f * deltaTime;
 		entity.Update();
 		entity2.Update();
