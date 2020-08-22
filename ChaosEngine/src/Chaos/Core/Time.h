@@ -1,27 +1,34 @@
 #pragma once
 
-#include <ctime>
-#include <chrono>
-
-//NOT CURRENTLY USED
-//will be implemented if a more advanced delta time is needed as currently it would just be a wrapper around a float
+//Stores all time based variables so they don't have to be explicitly passed to layers / can be gotten from anywhere in the applciation
+//updated in Application.cpp
 namespace Chaos
 {
-	class TimeStep
+	class Time
 	{
+		friend class Application;
 	public:
-		TimeStep(float time = 0.0f)
-			: m_time(time)
-		{
-
+		//inits all resources, must be done before the first frame, default timescale is 1
+		static void Init() {
+			m_deltaTime = 0.0f;
+			m_fixedDeltaTime = 0.22f;
+			m_time = 0.0f;
+			m_timeLastFrame = 0.0f;
+			m_timeScale = 1.0f;
 		}
 
-		float DeltaTime();
+		inline static float GetDeltaTime() { return m_deltaTime * m_timeScale; }
+		inline static float GetUnscaledDeltaTime() { return m_deltaTime; }
+		inline static float GetFixedDeltaTime() { return m_fixedDeltaTime * m_timeScale; }
+		inline static float GetUnscaledFixedDeltaTime() { return m_fixedDeltaTime; }
 
-		void StartDeltaTiming();
-		void EndDeltaTiming();
-
+		inline static void SetTimeScale(float value) { m_timeScale = value; }
+		inline static void SetFixedDeltaTimestep(float value) { m_fixedDeltaTime = value; }
 	private:
-		float m_time;
+		static float m_deltaTime;
+		static float m_fixedDeltaTime;
+		static float m_timeScale;
+		static float m_time;
+		static float m_timeLastFrame;
 	};
 }

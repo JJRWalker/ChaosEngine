@@ -1385,5 +1385,6 @@
     </ClCompile>
     <ClCompile Include="src\Chaos\Entity\Components\CellularAutomata.cpp" />
     <ClCompile Include="src\Chaos\Entity\Systems\RenderSystem.cpp" />
+    <ClCompile Include="src\Chaos\Core\Time.cpp" />
   </ItemGroup>
 </Project>

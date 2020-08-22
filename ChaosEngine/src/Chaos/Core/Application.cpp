@@ -9,7 +9,7 @@
 #include "Chaos/Entity/Entity.h"
 #include "Chaos/Entity/Components/Camera.h"
 #include "Chaos/Debug/ImGuiLayer.h"
-#include "GLFW/glfw3.h"
+#include "Chaos/Core/Time.h"
 
 //inspired by The Cherno's Game engine series, however has and will continue to diverge
 namespace Chaos
@@ -25,16 +25,22 @@ namespace Chaos
 		//Creating a window
 		m_window = std::unique_ptr<Window>(Window::Create());
 		m_window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
+
 		//Creating a default camera
 		m_mainCameraEntity = new Entity("Main Camera");
 		m_mainCameraEntity->AddComponent<Camera>();
 		m_mainCamera = m_mainCameraEntity->GetComponent<Camera>();
+
 		//Creating renderer
 		m_renderer = std::unique_ptr<Renderer>(Renderer::Create());
+
 		//Creating test overlay layer
 		m_guiLayer = new ImGuiLayer();
 		//Push test overlay layer
 		PushOverlay(m_guiLayer);
+
+		//init time
+		Time::Init();
 	}
 
 	Application::~Application()
@@ -46,14 +52,14 @@ namespace Chaos
 	{
 		while (m_running)
 		{
-			float time = (float)glfwGetTime();
-			m_deltaTime = time - m_timeLastFrame;
-			m_timeLastFrame = time;
+			Time::m_time = m_window->GetWindowTime();
+			Time::m_deltaTime = Time::m_time - Time::m_timeLastFrame;
+			Time::m_timeLastFrame = Time::m_time;
 
 			m_mainCamera->SetAspectRatio(m_window->GetAspectRatio());
 
 			for (Layer* layer : m_layerStack)
-				layer->OnUpdate(m_deltaTime);			
+				layer->OnUpdate(Time::m_deltaTime);			
 			
 			if (m_renderingImGui)
 			{

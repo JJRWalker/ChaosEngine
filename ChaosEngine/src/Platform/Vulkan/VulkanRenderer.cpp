@@ -142,6 +142,14 @@ namespace Chaos
 		//AddQuadToRenderQueue({ Vec3(position.X, position.Y, 0), scale, rotation, colour, nullptr, subTexture, 1});
 	}
 
+	void VulkanRenderer::DrawScreenSpaceQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<Texture> texture, float tilingFactor)
+	{
+	}
+
+	void VulkanRenderer::DrawScreenSpaceQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<SubTexture> subTexture)
+	{
+	}
+
 	void VulkanRenderer::AddQuadToRenderQueue(Quad quad)
 	{
 		//will return null if the texture variable has not been set (i.e. not a subtexture) so do everything as if it weren't a subtexture
