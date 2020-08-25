@@ -24,11 +24,11 @@ Features currently implemented:
 * Textures and texture mapping
 * Sub Textures (allows for the use of sprite sheets)
 * Debug GUI (using ImGui, currently causes some issues on certain hardware, see note below)
-* Basic Entity Component framework (users can write their own components and add them to entities)
+* Basic Entity Component framework (users can write their own components and add them to entities)  
+* Editor UI (Has some basic functionality such as changing transform and sprite rendered however cannot save / load yet)
 
 ## Next steps
 * Scene system (will also help optimise renderer)
-* Editor UI (potentially using a seperate project so it is detachable from the main engine)
 * Cameras
 * Expand number of base components (e.g. renderer component, camera component, collider)
 * Basic collision system (quads on quads)
