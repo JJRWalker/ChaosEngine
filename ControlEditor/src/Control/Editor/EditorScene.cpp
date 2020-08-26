@@ -23,7 +23,7 @@ namespace Chaos
 			Entity* nodeEnt = new Entity("Node Entity");
 			nodeEnt->AddComponent<Render>();
 			nodeEnt->GetComponent<Render>()->SetActive(node.Alive);
-			nodeEnt->GetTransform()->Position() = Vec3(node.X - 5, node.Y - 5, 0);
+			nodeEnt->GetTransform()->Position() = Vec3(node.X - 5.0f, node.Y - 5.0f, 0.0f);
 			m_entities.push_back(nodeEnt);
 			//LOGCORE_TRACE("{0}", node.Neighbours.size());
 		  }

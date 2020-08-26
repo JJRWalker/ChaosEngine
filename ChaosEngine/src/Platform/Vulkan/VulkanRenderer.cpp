@@ -142,12 +142,58 @@ namespace Chaos
 		//AddQuadToRenderQueue({ Vec3(position.X, position.Y, 0), scale, rotation, colour, nullptr, subTexture, 1});
 	}
 
+	void VulkanRenderer::DrawLine(Vec2& startPoint, Vec2& endPoint, Vec4& colour, float weight, float renderOrder)
+	{
+		//getting the vector representation of the line
+		Vec2 line = endPoint - startPoint;
+		//adding half of the line to the start point to get the center
+		Vec2 lineCenter = startPoint + (line / 2);
+		//using weight provided and start and end point to work out scale
+		Vec2 scale = Vec2(weight, line.Magnitude());
+		//working out rotation using up vector
+		float theta = Vec2::Angle(Vec2(0.0f, 1.0f), line);
+		Vec2 rotation = Vec2(theta, 0.0f);
+
+		DrawQuad(Vec3(lineCenter.X, lineCenter.Y, renderOrder), scale, rotation, colour, Texture::GetBlank());
+	}
+
+	//draws quad using the position as a percentage of screen space (from between [0,0] and [1,1] z component used as render order
 	void VulkanRenderer::DrawScreenSpaceQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<Texture> texture, float tilingFactor)
 	{
+		//get the Camera position
+		Vec3 screenPosition = Application::Get().GetMainCameraEntity()->GetTransform()->Position();
+		Vec4& cameraBounds = Application::Get().GetMainCamera()->GetBounds();
+		//subtract camera bounds from the coords (starting point bottom left)
+		screenPosition = Vec3(screenPosition.X - (cameraBounds.Right * Application::Get().GetMainCamera()->GetAspectRatio()), 
+							screenPosition.Y - cameraBounds.Top, position.Z); 
+
+		//add the position multiplied by the bounds to the bottom left screen position (should be passed in as a number from 1 - 0 for each component)
+		//pass in raw position Z position for render order
+		screenPosition = Vec3(screenPosition.X + (position.X * (cameraBounds.Right * 2 * Application::Get().GetMainCamera()->GetAspectRatio())),
+								screenPosition.Y + (position.Y * (cameraBounds.Top * 2)),
+								position.Z);
+
+		//draw the quad at that position
+		DrawQuad(screenPosition, scale, rotation, colour, texture, tilingFactor);
 	}
 
 	void VulkanRenderer::DrawScreenSpaceQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<SubTexture> subTexture)
 	{
+		//get the Camera position
+		Vec3 screenPosition = Application::Get().GetMainCameraEntity()->GetTransform()->Position();
+		Vec4& cameraBounds = Application::Get().GetMainCamera()->GetBounds();
+		//subtract camera bounds from the coords (starting point bottom left)
+		screenPosition = Vec3(screenPosition.X - (cameraBounds.Right * Application::Get().GetMainCamera()->GetAspectRatio()),
+			screenPosition.Y - cameraBounds.Top, position.Z);
+
+		//add the position multiplied by the bounds to the bottom left screen position (should be passed in as a number from 1 - 0 for each component)
+		//pass in raw position Z position for render order
+		screenPosition = Vec3(screenPosition.X + (position.X * (cameraBounds.Right * 2 * Application::Get().GetMainCamera()->GetAspectRatio())),
+			screenPosition.Y + (position.Y * (cameraBounds.Top * 2)),
+			position.Z);
+
+		//draw the quad at that position
+		DrawQuad(screenPosition, scale, rotation, colour, subTexture);
 	}
 
 	void VulkanRenderer::AddQuadToRenderQueue(Quad quad)
@@ -167,7 +213,7 @@ namespace Chaos
 
 
 			glm::mat4 transform = glm::translate(glm::mat4(1), { quad.Position.X, quad.Position.Y, 0 })
-				* glm::rotate(glm::mat4(1), glm::radians(quad.Position.X), { 0, 0, 1 })
+				* glm::rotate(glm::mat4(1), glm::radians(-quad.Rotation.X), { 0, 0, 1 })
 				* glm::scale(glm::mat4(1), { quad.Scale.X, quad.Scale.Y, 0.0f });
 
 			glm::vec4 vertexPositions[4] = { transform * QUAD_VERTEX_POSITIONS[0],
@@ -220,7 +266,7 @@ namespace Chaos
 			}
 
 			glm::mat4 transform = glm::translate(glm::mat4(1), { quad.Position.X, quad.Position.Y, 0 })
-				* glm::rotate(glm::mat4(1), glm::radians(quad.Rotation.X), { 0, 0, 1 })
+				* glm::rotate(glm::mat4(1), glm::radians(-quad.Rotation.X), { 0, 0, 1 })
 				* glm::scale(glm::mat4(1), { quad.Scale.X, quad.Scale.Y, 0.0f });
 
 			glm::vec4 vertexPositions[4] = { transform * QUAD_VERTEX_POSITIONS[0],
@@ -1774,6 +1820,8 @@ namespace Chaos
 
 	void VulkanRenderer::SortQuads()
 	{
+		//TODO: change to some custom sorting algorithem. Currently sorts based on z position
+		//3DTODO: if wanting to change to 3D need to reneder based on distance from the camera
 		std::sort(m_quads.begin(), m_quads.end());
 	}
 

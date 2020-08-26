@@ -19,6 +19,7 @@
 #include "Chaos/DataTypes/Vec2.h"
 #include "Chaos/DataTypes/Vec3.h"
 #include "Chaos/DataTypes/Vec4.h"
+#include "Chaos/DataTypes/Ray2D.h"
 
 //===DEBUG==============================================
 #include "Chaos/Debug/ImGuiLayer.h"
@@ -32,6 +33,8 @@
 #include "Chaos/Entity/Components/Camera.h"
 #include "Chaos/Entity/Components/Transform.h"
 #include "Chaos/Entity/Components/Render.h"
+#include "Chaos/Entity/Components/UIImage.h"
+#include "Chaos/Entity/Components/BoxCollider2D.h"
 
 //===RENDERING==========================================
 #include "Chaos/Renderer/Renderer.h"

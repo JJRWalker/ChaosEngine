@@ -136,7 +136,6 @@ namespace Chaos
 						return true;
 					}
 				}
-				LOGCORE_WARN("Component could not be found on Entity: {1} ID: {2}", m_name, m_entityID);
 				return false;
 			}
 			LOGCORE_WARN("Component given to template TryGetComponent() is not derived from type component");

@@ -6,7 +6,6 @@
 
 //NOTE: this is a quick and dirty implementation to test functionality, not representitive of the product
 
-
 class ExampleLayer : public Chaos::Layer
 {
 public:
@@ -29,6 +28,9 @@ public:
 	Chaos::Entity entity2;
 	bool switched = false;
 
+	//UI entity test
+	Chaos::Entity uiImage;
+
 	Chaos::Render* render;
 
 	float x = 0;
@@ -38,8 +40,15 @@ public:
 	//reference to renderer to be abstracted
 	Chaos::Renderer& renderer = Chaos::Application::Get().GetRenderer();
 
+	Chaos::Scene m_scene;
+
+	//Ray
+	Chaos::RayHit2DInfo* rayHitInfo;
+
 	void OnUpdate(float deltaTime) override
 	{
+		//rayHitInfo = Chaos::Ray2D::Cast(Chaos::Vec2::Zero(), Chaos::Vec2(1,1), 1);
+		//Chaos::Ray2D::DrawRay(Chaos::Vec2::Zero(), Chaos::Vec2(1, 1), 1);
 		//Inefficent input checking, TODO: change to axis based input system / expand
 		if (Chaos::Input::IsKeyPressed(KEY_W))
 		{
@@ -68,11 +77,11 @@ public:
 		}
 		if (Chaos::Input::IsKeyPressed(KEY_Q))
 		{
-			z -= (moveSpeed * deltaTime);
+			z -= (10 * deltaTime);
 		}
 		else if (Chaos::Input::IsKeyPressed(KEY_E))
 		{
-			z += (moveSpeed * deltaTime);
+			z += (10 * deltaTime);
 		}
 
 		//Delta time is passed to each layer by the Application class 
@@ -104,11 +113,12 @@ public:
 
 
 		//Entity test
-		entity.GetTransform()->Position() = Chaos::Vec3(x,y,z); //changes the entity's position to be the same as the cameras. Changing this changes where the Render component renders the entity 
+		entity.GetTransform()->Position() = Chaos::Vec3(x,y,1); //changes the entity's position to be the same as the cameras. Changing this changes where the Render component renders the entity 
+		entity.GetTransform()->Rotation() = Chaos::Vec2(z, 0);
+		entity2.GetTransform()->Position() = Chaos::Vec3(-1.0, -1.0f, 1);
 		//LOGCORE_TRACE("{0} {1} {2}", entity.GetTransform()->Position().X, entity.GetTransform()->Position().Y, entity.GetTransform()->Position().Z);
 		entity2.GetTransform()->Position().Y += 0.1f * deltaTime;
-		entity.Update();
-		entity2.Update();
+		m_scene.Update();
 	}
 
 	void OnAttach() override
@@ -117,8 +127,10 @@ public:
 		//Adding component to entity example
 		entity.AddComponent<Chaos::Render>();
 		entity.GetComponent<Chaos::Render>()->SetTexture(test);	//setting the texture for the render component (defaults to blank) 
+		entity.AddComponent<Chaos::BoxCollider2D>();
 		entity2.AddComponent<Chaos::Render>();
 		entity2.GetComponent<Chaos::Render>()->SetTexture(player);	//setting the texture for the render component (defaults to blank) 
+		entity2.AddComponent<Chaos::BoxCollider2D>();
 		render = entity.GetComponent <Chaos::Render> ();
 		Chaos::Render& refrender = Chaos::Render();
 		if (entity2.TryGetComponent(refrender))
@@ -127,6 +139,15 @@ public:
 			refrender.SetTexture(test);
 		}
 		render->SetTexture(player);
+		//UI
+		uiImage.AddComponent<Chaos::UIImage>();
+		uiImage.GetTransform()->Position() = Chaos::Vec3(0.75f, 0.75f, 1000);
+		uiImage.GetComponent<Chaos::UIImage>()->Colour() = Chaos::Vec4(1.0f, 0.1f, 0.1f, 0.3f);
+
+
+		m_scene.AddEntity(&entity);
+		m_scene.AddEntity(&entity2);
+		m_scene.AddEntity(&uiImage);
 	}
 
 	void OnDetach() override

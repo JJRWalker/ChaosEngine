@@ -1,11 +1,12 @@
 #include "chaospch.h"
 #include "Scene.h"
+#include "Chaos/Entity/Components/Collider.h"
 
 namespace Chaos
 {
 	void Scene::StartScene()
 	{
-		for (auto& entity : m_entities)
+		for (auto* entity : m_entities)
 		{
 			entity->Start();
 		}
@@ -14,14 +15,35 @@ namespace Chaos
 	{
 		PROFILED_FUNC();
 
-		for (auto& entity : m_entities)
+		for (auto* entity : m_entities)
 		{
 			entity->Update();
+
+			if (entity->HasComponent<Collider>())
+			{
+				m_collidableEntities.push_back(entity);
+			}
 		}
+
+		//update colisions
+		for (auto* entity : m_collidableEntities)
+		{
+			for (auto* other : m_collidableEntities)
+			{
+				if (entity != other)
+				{
+					entity->GetComponent<Collider>()->CollideWith(*other->GetComponent<Collider>());
+				}
+			}
+		}
+		//Clearing collidables to be readded next update
+		//not really efficent, but if we add colliders during runtime they won't be added to the list yet...
+		//TODO: improve efficentcy by adding to this vector only when a new collider component is added
+		m_collidableEntities.clear();
 	}
 	void Scene::EndScene()
 	{
-		for (auto& entity : m_entities)
+		for (auto* entity : m_entities)
 		{
 			entity->Destroy();
 		}

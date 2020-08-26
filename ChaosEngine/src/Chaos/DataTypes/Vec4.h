@@ -10,6 +10,25 @@ namespace Chaos
 		static Vec4 Zero() { return Vec4(0.0f, 0.0f, 0.0f, 0.0f); }
 
 	public:
-		float X, Y, Z, W;
+		union {
+			float X;
+			float Left;
+			float R;
+		};
+		union {
+			float Y;
+			float Right;
+			float G;
+		};
+		union {
+			float Z;
+			float Bottom;
+			float B;
+		};
+		union {
+			float W;
+			float Top;
+			float A;
+		};
 	};
 }

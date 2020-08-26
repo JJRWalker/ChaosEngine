@@ -12,8 +12,11 @@ namespace Chaos
 		virtual void Update();
 		virtual void EndScene();
 
+		void AddEntity(Entity* entity) { m_entities.push_back(entity); }
+
 		std::vector<Entity*>& GetEntities() { return m_entities; }
 	protected:
 		std::vector<Entity*> m_entities;
+		std::vector<Entity*> m_collidableEntities;
 	};
 }

@@ -1317,7 +1317,10 @@
     <ClInclude Include="src\Chaos\Entity\Components\CellularAutomata.h" />
     <ClInclude Include="src\Chaos\Entity\System.h" />
     <ClInclude Include="src\Chaos\Entity\Systems\RenderSystem.h" />
-    <ClInclude Include="src\Chaos\DataTypes\Quad.h" />
+    <ClInclude Include="src\Chaos\Entity\Components\BoxCollider2D.h" />
+    <ClInclude Include="src\Chaos\Entity\Components\Collider.h" />
+    <ClInclude Include="src\Chaos\DataTypes\Ray2D.h" />
+    <ClInclude Include="src\Chaos\Entity\Components\UIImage.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chaos\Core\Application.cpp">
@@ -1386,5 +1389,8 @@
     <ClCompile Include="src\Chaos\Entity\Components\CellularAutomata.cpp" />
     <ClCompile Include="src\Chaos\Entity\Systems\RenderSystem.cpp" />
     <ClCompile Include="src\Chaos\Core\Time.cpp" />
+    <ClCompile Include="src\Chaos\Entity\Components\BoxCollider2D.cpp" />
+    <ClCompile Include="src\Chaos\DataTypes\Ray2D.cpp" />
+    <ClCompile Include="src\Chaos\Entity\Components\UIImage.cpp" />
   </ItemGroup>
 </Project>
