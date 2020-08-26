@@ -18,6 +18,10 @@ namespace Chaos
 				GetEntity()->GetTransform()->Position().Y + m_offset.Y + m_bounds.Height > collider.GetEntity()->GetTransform()->Position().Y + collider.Offset().Y)
 			{
 				//LOGCORE_INFO("Collision detected {0} -> {1}", GetEntity()->GetName(), other.GetEntity()->GetName());
+				if (m_hitCallback)
+				{
+					m_hitCallback();	//if hit, do the specified callback
+				}
 				return true;
 			}
 		}break;

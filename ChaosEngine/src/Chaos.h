@@ -11,6 +11,7 @@
 #include "Chaos/Core/Scene.h"
 #include "Chaos/Core/Time.h"
 #include "Chaos/Core/Window.h"
+#include "Chaos/Core/SceneManager.h"
 
 //===INPUT==============================================
 #include "Chaos/Input/Input.h"

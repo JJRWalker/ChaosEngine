@@ -30,6 +30,7 @@ public:
 
 	//UI entity test
 	Chaos::Entity uiImage;
+	std::vector<Chaos::Entity> raycasterDisplay;
 
 	Chaos::Render* render;
 
@@ -47,8 +48,6 @@ public:
 
 	void OnUpdate(float deltaTime) override
 	{
-		//rayHitInfo = Chaos::Ray2D::Cast(Chaos::Vec2::Zero(), Chaos::Vec2(1,1), 1);
-		//Chaos::Ray2D::DrawRay(Chaos::Vec2::Zero(), Chaos::Vec2(1, 1), 1);
 		//Inefficent input checking, TODO: change to axis based input system / expand
 		if (Chaos::Input::IsKeyPressed(KEY_W))
 		{
@@ -102,14 +101,14 @@ public:
 		*/
 		
 		//Tiling example
-		renderer.DrawQuad(Chaos::Vec3::Zero(), Chaos::Vec2(20.f, 20.f), floor, 30); //this one tiles
-		renderer.DrawQuad(Chaos::Vec3::Zero(), Chaos::Vec2(1.f, 1.f), floor);	//this one does not
+		//renderer.DrawQuad(Chaos::Vec3::Zero(), Chaos::Vec2(20.f, 20.f), floor, 30); //this one tiles
+		//renderer.DrawQuad(Chaos::Vec3::Zero(), Chaos::Vec2(1.f, 1.f), floor);	//this one does not
 
 		//Coloured sprite example
-		renderer.DrawQuad(Chaos::Vec3::Zero(), Chaos::Vec2(1.f, 1.f), Chaos::Vec4(1.0f, 0.1f, 0.1f, 0.9f), player);	//tinted red 
+		//renderer.DrawQuad(Chaos::Vec3::Zero(), Chaos::Vec2(1.f, 1.f), Chaos::Vec4(1.0f, 0.1f, 0.1f, 0.9f), player);	//tinted red 
 
 		//sub sprite example
-		renderer.DrawQuad(Chaos::Vec3(4.f, 0.f, 0.1f), Chaos::Vec2(1.f, 1.f), playersub);	//draws the bottom right quarter of the player sprite
+		//renderer.DrawQuad(Chaos::Vec3(4.f, 0.f, 0.1f), Chaos::Vec2(1.f, 1.f), playersub);	//draws the bottom right quarter of the player sprite
 
 
 		//Entity test
@@ -118,7 +117,14 @@ public:
 		entity2.GetTransform()->Position() = Chaos::Vec3(-1.0, -1.0f, 1);
 		//LOGCORE_TRACE("{0} {1} {2}", entity.GetTransform()->Position().X, entity.GetTransform()->Position().Y, entity.GetTransform()->Position().Z);
 		entity2.GetTransform()->Position().Y += 0.1f * deltaTime;
-		m_scene.Update();
+
+		rayHitInfo = Chaos::Ray2D::Cast(Chaos::Vec2(x, y), Chaos::Vec2(xDir, yDir), 10);
+
+		if (rayHitInfo)
+		{
+			Chaos::Ray2D::DrawRay(Chaos::Vec2(x, y), Chaos::Vec2(xDir, yDir), rayHitInfo->Distance);
+			//LOGTRACE("Hit point: ({0}, {1})", rayHitInfo->Point.X, rayHitInfo->Point.Y);
+		}
 	}
 
 	void OnAttach() override
@@ -126,28 +132,34 @@ public:
 		//Stuff to do on start goes here
 		//Adding component to entity example
 		entity.AddComponent<Chaos::Render>();
-		entity.GetComponent<Chaos::Render>()->SetTexture(test);	//setting the texture for the render component (defaults to blank) 
-		entity.AddComponent<Chaos::BoxCollider2D>();
+		entity.GetComponent<Chaos::Render>()->SetTexture(player);	//setting the texture for the render component (defaults to blank) 
+		//entity.AddComponent<Chaos::BoxCollider2D>();
 		entity2.AddComponent<Chaos::Render>();
-		entity2.GetComponent<Chaos::Render>()->SetTexture(player);	//setting the texture for the render component (defaults to blank) 
+		entity2.GetComponent<Chaos::Render>()->SetTexture(test);	//setting the texture for the render component (defaults to blank) 
 		entity2.AddComponent<Chaos::BoxCollider2D>();
-		render = entity.GetComponent <Chaos::Render> ();
-		Chaos::Render& refrender = Chaos::Render();
-		if (entity2.TryGetComponent(refrender))
-		{
-			LOGINFO("Got render component from entity");
-			refrender.SetTexture(test);
-		}
-		render->SetTexture(player);
 		//UI
-		uiImage.AddComponent<Chaos::UIImage>();
-		uiImage.GetTransform()->Position() = Chaos::Vec3(0.75f, 0.75f, 1000);
-		uiImage.GetComponent<Chaos::UIImage>()->Colour() = Chaos::Vec4(1.0f, 0.1f, 0.1f, 0.3f);
+		/*uiImage.AddComponent<Chaos::UIImage>();
+		uiImage.GetTransform()->Position() = Chaos::Vec3(0.5f, 0.5f, 1000);
+		uiImage.GetTransform()->Scale() = Chaos::Vec2(1.0f * Chaos::Application::Get().GetMainCamera()->GetAspectRatio(), 1.0f);
+		uiImage.GetComponent<Chaos::UIImage>()->Colour() = Chaos::Vec4(1.0f, 0.1f, 0.1f, 0.3f);*/
 
+
+		//Setting up raycaster display 
+		//for (int i = 0; i < 100; ++i)
+		//{
+		//	Chaos::Entity* ent = new Chaos::Entity("RayCastDisplay");
+		//	ent->AddComponent<Chaos::UIImage>();
+		//	ent->GetTransform()->Position() = Chaos::Vec3(i * (1.0f / 100), 0.5f, 1000);
+		//	ent->GetTransform()->Scale() = Chaos::Vec2((1.0f / 100) * Chaos::Application::Get().GetMainCamera()->GetAspectRatio(), 1.0f);
+		//	ent->GetComponent<Chaos::UIImage>()->Colour() = Chaos::Vec4(0.1f, 0.1f, 0.1f, 1.0f);
+		//	m_scene.AddEntity(ent);
+		//}
 
 		m_scene.AddEntity(&entity);
 		m_scene.AddEntity(&entity2);
-		m_scene.AddEntity(&uiImage);
+		//m_scene.AddEntity(&uiImage);
+
+		Chaos::SceneManager::Load(m_scene);
 	}
 
 	void OnDetach() override

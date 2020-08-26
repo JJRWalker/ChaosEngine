@@ -1321,6 +1321,8 @@
     <ClInclude Include="src\Chaos\Entity\Components\Collider.h" />
     <ClInclude Include="src\Chaos\DataTypes\Ray2D.h" />
     <ClInclude Include="src\Chaos\Entity\Components\UIImage.h" />
+    <ClInclude Include="src\Chaos\Entity\Components\LineCollider2D.h" />
+    <ClInclude Include="src\Chaos\Core\SceneManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chaos\Core\Application.cpp">
@@ -1392,5 +1394,7 @@
     <ClCompile Include="src\Chaos\Entity\Components\BoxCollider2D.cpp" />
     <ClCompile Include="src\Chaos\DataTypes\Ray2D.cpp" />
     <ClCompile Include="src\Chaos\Entity\Components\UIImage.cpp" />
+    <ClCompile Include="src\Chaos\Entity\Components\LineCollider2D.cpp" />
+    <ClCompile Include="src\Chaos\Core\SceneManager.cpp" />
   </ItemGroup>
 </Project>

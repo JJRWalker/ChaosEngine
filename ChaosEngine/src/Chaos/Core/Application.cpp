@@ -10,6 +10,7 @@
 #include "Chaos/Entity/Components/Camera.h"
 #include "Chaos/Debug/ImGuiLayer.h"
 #include "Chaos/Core/Time.h"
+#include "Chaos/Core/SceneManager.h"
 
 //inspired by The Cherno's Game engine series, however has and will continue to diverge
 namespace Chaos
@@ -69,6 +70,7 @@ namespace Chaos
 					layer->OnImGuiUpdate();
 				m_guiLayer->End();
 			}
+			SceneManager::GetScene()->Update();
 			m_mainCamera->Update();
 			m_window->OnUpdate();
 			m_renderer->DrawFrame();

@@ -163,6 +163,10 @@ namespace Chaos
 		//get the Camera position
 		Vec3 screenPosition = Application::Get().GetMainCameraEntity()->GetTransform()->Position();
 		Vec4& cameraBounds = Application::Get().GetMainCamera()->GetBounds();
+
+		//scale based on a percentage of the viewport size ( [1,1] should encompass the whole screen without) does not factor in aspect ratio
+		Vec2 screenScale = Vec2(scale.X * cameraBounds.Right * 2, scale.Y * cameraBounds.Top * 2);
+
 		//subtract camera bounds from the coords (starting point bottom left)
 		screenPosition = Vec3(screenPosition.X - (cameraBounds.Right * Application::Get().GetMainCamera()->GetAspectRatio()), 
 							screenPosition.Y - cameraBounds.Top, position.Z); 
@@ -174,7 +178,7 @@ namespace Chaos
 								position.Z);
 
 		//draw the quad at that position
-		DrawQuad(screenPosition, scale, rotation, colour, texture, tilingFactor);
+		DrawQuad(screenPosition, screenScale, rotation, colour, texture, tilingFactor);
 	}
 
 	void VulkanRenderer::DrawScreenSpaceQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<SubTexture> subTexture)

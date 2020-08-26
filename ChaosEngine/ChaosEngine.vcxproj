@@ -152,6 +152,7 @@
     <ClInclude Include="src\Chaos\Core\LayerStack.h" />
     <ClInclude Include="src\Chaos\Core\Log.h" />
     <ClInclude Include="src\Chaos\Core\Scene.h" />
+    <ClInclude Include="src\Chaos\Core\SceneManager.h" />
     <ClInclude Include="src\Chaos\Core\Time.h" />
     <ClInclude Include="src\Chaos\Core\Window.h" />
     <ClInclude Include="src\Chaos\DataTypes\Ray2D.h" />
@@ -165,6 +166,7 @@
     <ClInclude Include="src\Chaos\Entity\Components\Camera.h" />
     <ClInclude Include="src\Chaos\Entity\Components\CellularAutomata.h" />
     <ClInclude Include="src\Chaos\Entity\Components\Collider.h" />
+    <ClInclude Include="src\Chaos\Entity\Components\LineCollider2D.h" />
     <ClInclude Include="src\Chaos\Entity\Components\Render.h" />
     <ClInclude Include="src\Chaos\Entity\Components\Transform.h" />
     <ClInclude Include="src\Chaos\Entity\Components\UIImage.h" />
@@ -574,6 +576,7 @@
     <ClCompile Include="src\Chaos\Core\LayerStack.cpp" />
     <ClCompile Include="src\Chaos\Core\Log.cpp" />
     <ClCompile Include="src\Chaos\Core\Scene.cpp" />
+    <ClCompile Include="src\Chaos\Core\SceneManager.cpp" />
     <ClCompile Include="src\Chaos\Core\Time.cpp" />
     <ClCompile Include="src\Chaos\DataTypes\Ray2D.cpp" />
     <ClCompile Include="src\Chaos\Debug\ImGuiBuild.cpp" />
@@ -582,6 +585,7 @@
     <ClCompile Include="src\Chaos\Entity\Components\BoxCollider2D.cpp" />
     <ClCompile Include="src\Chaos\Entity\Components\Camera.cpp" />
     <ClCompile Include="src\Chaos\Entity\Components\CellularAutomata.cpp" />
+    <ClCompile Include="src\Chaos\Entity\Components\LineCollider2D.cpp" />
     <ClCompile Include="src\Chaos\Entity\Components\Render.cpp" />
     <ClCompile Include="src\Chaos\Entity\Components\Transform.cpp" />
     <ClCompile Include="src\Chaos\Entity\Components\UIImage.cpp" />

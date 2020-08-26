@@ -20,7 +20,7 @@ namespace Chaos
 		static RayHit2DInfo* Cast(Vec2& origin, Vec2& direction, float distance);
 		//Renders a line that represents the ray, used for debugging, if you want to just draw a line, use DrawLine on the Renderer class instead
 		static void DrawRay(Vec2& origin, Vec2& direction, float distance);
-
 	private:
+		static bool ClipLine(float minBounds, float maxBounds, float origin, float end, float& fLow, float& fHigh);
 	};
 }
