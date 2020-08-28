@@ -1,4 +1,5 @@
 #pragma once
+#include "Chaos/Core/Math.h"
 
 namespace Chaos
 {
@@ -13,6 +14,15 @@ namespace Chaos
 		//Functions, nonstatic
 		float Magnitude() { return sqrtf((X * X) + (Y * Y)); }
 		Vec2 Normalised() { return *this / this->Magnitude(); }
+		void Rotate(float degrees)
+		{
+			Vec2 result = Vec2::Zero();
+			degrees *= -0.0174533f;
+			result.X = (X * cos(degrees)) - (Y * sin(degrees));
+			result.Y = (X * sin(degrees)) + (Y * cos(degrees));
+
+			*this = result;
+		}
 
 #pragma region STATIC CLASS FUNCTIONS
 		//static class functions
@@ -30,8 +40,15 @@ namespace Chaos
 		static float Angle(Vec2 from, Vec2 to) 
 		{
 			float theta = Dot(from, to) / (from.Magnitude() * to.Magnitude());
-			theta = acos(theta);
-			theta *= 57.2958f;	//convert to degrees
+			
+			float r = acos(theta);
+			theta = r * Math::RAD_TO_DEGREES;	//convert to degrees
+
+			//sometimes the angle may be too small to be contained in a float, in this case, or any other invalid operation, return 0
+			if (isnan(theta))
+			{
+				return 0.0f;
+			}
 
 			//if cross x1y2 is less than x2y1 the rotation is counter clockwise
 			if (to.X * from.Y < to.Y * from.X)
@@ -39,7 +56,7 @@ namespace Chaos
 				theta *= -1;
 			}
 			return theta;
-		}
+		}		
 
 		static Vec2 Zero() { return Vec2(0.0f, 0.0f); }
 #pragma endregion
@@ -72,6 +89,13 @@ namespace Chaos
 		Vec2 operator * (const float multiplier) const {
 			float x = X * multiplier;
 			float y = Y * multiplier;
+
+			return Vec2(x, y);
+		}
+
+		Vec2 operator * (const Vec2 other) const {
+			float x = X * other.X;
+			float y = Y * other.Y;
 
 			return Vec2(x, y);
 		}

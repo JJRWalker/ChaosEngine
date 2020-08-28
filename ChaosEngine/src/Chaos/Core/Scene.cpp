@@ -26,14 +26,12 @@ namespace Chaos
 		}
 
 		//update colisions
-		for (auto* entity : m_collidableEntities)
+		for (int i = 0; i < m_collidableEntities.size(); ++i)
 		{
-			for (auto* other : m_collidableEntities)
+			//only need to update collisions with the items that come after in the list as we don't need to check the same two entities more than once
+			for (int j = i + 1; j < m_collidableEntities.size(); ++j)
 			{
-				if (entity != other)
-				{
-					entity->GetComponent<Collider>()->CollideWith(*other->GetComponent<Collider>());
-				}
+				m_collidableEntities[i]->GetComponent<Collider>()->CollideWith(*m_collidableEntities[j]->GetComponent<Collider>());
 			}
 		}
 		//Clearing collidables to be readded next update

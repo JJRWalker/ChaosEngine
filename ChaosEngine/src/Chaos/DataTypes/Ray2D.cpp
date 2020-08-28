@@ -42,10 +42,10 @@ namespace Chaos
 			
 					
 					if (!ClipLine(boxLeft, boxRight, origin.X, endPoint.X, fLow, fHigh))
-						return false;
+						continue;
 
 					if(!ClipLine(boxBottom, boxTop, origin.Y, endPoint.Y, fLow, fHigh))
-						return false;
+						continue;
 
 					Vec2 pointOfIntersection = origin + (ray * fLow);
 
@@ -74,6 +74,8 @@ namespace Chaos
 			hitInfo->Collider = hit;
 			hitInfo->Distance = shortestDistance;
 			hitInfo->Point = closestPoint;
+			hitInfo->Entity = hit->GetEntity();
+			hitInfo->Transform = hitInfo->Entity->GetTransform();
 		}
 
 		return hitInfo;

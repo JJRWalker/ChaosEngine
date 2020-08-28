@@ -10,7 +10,7 @@ namespace Chaos
 	public:
 		static void Load(Scene& scene) { s_currentScene = &scene; s_currentScene->StartScene(); }
 
-		static Scene* GetScene() { return s_currentScene; }
+		static Scene* GetScene() { if (!s_currentScene) { s_currentScene = new Scene(); } return s_currentScene; }
 
 	private:
 		static Scene* s_currentScene;

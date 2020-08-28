@@ -2,6 +2,7 @@
 #include "Chaos/Entity/ECSManager.h"
 #include "Component.h"
 #include "Entity.h"
+#include "Chaos/Core/SceneManager.h"
 
 namespace Chaos
 {
@@ -38,6 +39,7 @@ namespace Chaos
 		++s_entityID;
 		s_idEntityMap.insert({ entity->m_entityID, entity });
 		s_entityComponentMap.insert({ entity->m_entityID, std::vector<uint32_t>() });
+		SceneManager::GetScene()->AddEntity(entity);	//automatically add the entity being created to the current scene
 	}
 
 	std::vector<uint32_t>& ECSManager::GetComponentsOnEntity(uint32_t entityID)

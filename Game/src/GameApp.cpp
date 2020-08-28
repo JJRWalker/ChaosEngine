@@ -2,6 +2,8 @@
 #include <Chaos.h>
 #include <Chaos/Events/KeyEvent.h>
 #include <Chaos/Core/EntryPoint.h>
+#include "Components/PlayerController.h"
+#include "Chaos/Entity/Components/CellularAutomata.h"
 
 
 //NOTE: this is a quick and dirty implementation to test functionality, not representitive of the product
@@ -12,118 +14,87 @@ public:
 	ExampleLayer()
 		:Layer("Example") {}
 
-	float moveSpeed = 1.f;
-	int xDir = 0;
-	int yDir = 0;
-
-	//Defining textures
-	Chaos::Ref<Chaos::Texture> player = Chaos::Texture::Create("../Game/textures/sprite-test.png");
-	Chaos::Ref<Chaos::SubTexture> playersub = Chaos::SubTexture::Create(player, Chaos::Vec2(1, 1), Chaos::Vec2(160, 160));
-	Chaos::Ref<Chaos::Texture> floor = Chaos::Texture::Create("../Game/textures/Floor.jpg");
-	Chaos::Ref<Chaos::Texture> test = Chaos::Texture::Create("../Game/textures/test.png");
-	Chaos::Ref<Chaos::Texture> blank = Chaos::Texture::GetBlank();
-	Chaos::Ref<Chaos::Texture> test2 = Chaos::Texture::Create("../Game/textures/test2.png");
 	//Test entity
-	Chaos::Entity entity;
-	Chaos::Entity entity2;
-	bool switched = false;
-
-	//UI entity test
-	Chaos::Entity uiImage;
-	std::vector<Chaos::Entity> raycasterDisplay;
-
-	Chaos::Render* render;
-
-	float x = 0;
-	float y = 0;
-	float z = 0;
-
-	//reference to renderer to be abstracted
-	Chaos::Renderer& renderer = Chaos::Application::Get().GetRenderer();
-
-	Chaos::Scene m_scene;
+	Chaos::Entity player;
 
 	//Ray
 	Chaos::RayHit2DInfo* rayHitInfo;
 
+	Chaos::Vec2 line = Chaos::Vec2(0.0f, 1.0f);
+
+	static const int MAP_SIZE_X = 30;
+	static const int MAP_SIZE_Y = 30;
+	//char m_map[MAP_SIZE_X][MAP_SIZE_Y] = {
+	//										'w', 'w', 'w', 'w' ,'w', 'w', 'w', 'w', 'w', 'w' ,'w', 'w', 'w', 'w', 'w', 'w' ,'w', 'w', 'w', 'w', 
+	//										'w', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', 'w',
+	//										'w', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', 'w',
+	//										'w', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', 'w',
+	//										'w', '0', 'w', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', 'w', '0', 'w',
+	//										'w', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', 'w',
+	//										'w', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', 'w',
+	//										'w', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', 'w',
+	//										'w', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', 'w',
+	//										'w', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', 'w',
+	//										'w', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', 'w',
+	//										'w', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', 'w',
+	//										'w', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', 'w',
+	//										'w', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', 'w',
+	//										'w', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', 'w',
+	//										'w', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', 'w',
+	//										'w', '0', 'w', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', 'w', '0', 'w',
+	//										'w', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', 'w',
+	//										'w', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', '0', '0', '0' ,'0', '0', '0', 'w',
+	//										'w', 'w', 'w', 'w' ,'w', 'w', 'w', 'w', 'w', 'w' ,'w', 'w', 'w', 'w', 'w', 'w' ,'w', 'w', 'w', 'w'
+	//
+	//									};
+	char m_map[MAP_SIZE_X][MAP_SIZE_Y];
+
+	//Raycaster
+	std::vector<Chaos::Entity*> raycastDisplay;
+	const int RESOLUTION = 100;
+	const float FOV = 30;
+	const float SIGHT_DISTANCE = 10.0f;
+	const float COLOUR_DROPOFF = 10.0f;
+
 	void OnUpdate(float deltaTime) override
 	{
-		//Inefficent input checking, TODO: change to axis based input system / expand
-		if (Chaos::Input::IsKeyPressed(KEY_W))
-		{
-			yDir = 1;
-		}
-		else if (Chaos::Input::IsKeyPressed(KEY_S))
-		{
-			yDir = -1;
-		}
-		else
-		{
-			yDir = 0;
-		}
+		//Vision / rendering
+		line = player.GetComponent<PlayerController>()->GetForward();
+		line.Rotate(-FOV / 2);
 
-		if (Chaos::Input::IsKeyPressed(KEY_A))
+		for (int i = 0; i < RESOLUTION; ++i)
 		{
-			xDir = -1;
-		}
-		else if (Chaos::Input::IsKeyPressed(KEY_D))
-		{
-			xDir = 1;
-		}
-		else
-		{
-			xDir = 0;
-		}
-		if (Chaos::Input::IsKeyPressed(KEY_Q))
-		{
-			z -= (10 * deltaTime);
-		}
-		else if (Chaos::Input::IsKeyPressed(KEY_E))
-		{
-			z += (10 * deltaTime);
-		}
+			line.Rotate(FOV / RESOLUTION);
 
-		//Delta time is passed to each layer by the Application class 
-		x += xDir * (moveSpeed * deltaTime);
-		y += yDir * (moveSpeed * deltaTime);
+			rayHitInfo = Chaos::Ray2D::Cast(Chaos::Vec2(player.GetTransform()->Position().X, player.GetTransform()->Position().Y), line, SIGHT_DISTANCE);
 
-		//Stress test
-		//Inefficient, these draw calls should be made on the start of the scene and stored in a static buffer (one that isn't recreated every frame) as they do not move
-		/*
-		for (int x = 0; x < 100; ++x)
-		{			
-			for (int y = 0; y < 100; ++y)
+			if (rayHitInfo)
 			{
-				//Chaos::Timer timer("GameApp: StressTest"); //Timer example, logs to the console when it leaves scope
-				renderer.DrawQuad(Chaos::Vec2(x - 20, y - 20), Chaos::Vec2(1.f, 1.f), floor);
+				//Chaos::Ray2D::DrawRay(Chaos::Vec2(x, y), line, rayHitInfo->Distance);
+				float distance = rayHitInfo->Distance;
+
+				float a = Chaos::Vec2::Angle(player.GetComponent<PlayerController>()->GetForward(), line);
+
+				if (a != 0)
+				{
+					float r = cos(a * Chaos::Math::DEGREES_TO_RADS);
+					distance *= r;
+				}
+				float distanceScalar = (SIGHT_DISTANCE - distance) / SIGHT_DISTANCE;
+
+				raycastDisplay[i]->GetTransform()->Scale().Y = distanceScalar;
+
+				float colour =  (SIGHT_DISTANCE / (distance * distance));
+				//LOGTRACE("{0}", colour);
+				colour /= COLOUR_DROPOFF;
+				raycastDisplay[i]->GetComponent<Chaos::UIImage>()->Colour() = Chaos::Vec4(colour, colour, colour, 1.0f);
+				raycastDisplay[i]->GetTransform()->Position().Z = SIGHT_DISTANCE - distance;
 			}
-		}
-		*/
-		
-		//Tiling example
-		//renderer.DrawQuad(Chaos::Vec3::Zero(), Chaos::Vec2(20.f, 20.f), floor, 30); //this one tiles
-		//renderer.DrawQuad(Chaos::Vec3::Zero(), Chaos::Vec2(1.f, 1.f), floor);	//this one does not
-
-		//Coloured sprite example
-		//renderer.DrawQuad(Chaos::Vec3::Zero(), Chaos::Vec2(1.f, 1.f), Chaos::Vec4(1.0f, 0.1f, 0.1f, 0.9f), player);	//tinted red 
-
-		//sub sprite example
-		//renderer.DrawQuad(Chaos::Vec3(4.f, 0.f, 0.1f), Chaos::Vec2(1.f, 1.f), playersub);	//draws the bottom right quarter of the player sprite
-
-
-		//Entity test
-		entity.GetTransform()->Position() = Chaos::Vec3(x,y,1); //changes the entity's position to be the same as the cameras. Changing this changes where the Render component renders the entity 
-		entity.GetTransform()->Rotation() = Chaos::Vec2(z, 0);
-		entity2.GetTransform()->Position() = Chaos::Vec3(-1.0, -1.0f, 1);
-		//LOGCORE_TRACE("{0} {1} {2}", entity.GetTransform()->Position().X, entity.GetTransform()->Position().Y, entity.GetTransform()->Position().Z);
-		entity2.GetTransform()->Position().Y += 0.1f * deltaTime;
-
-		rayHitInfo = Chaos::Ray2D::Cast(Chaos::Vec2(x, y), Chaos::Vec2(xDir, yDir), 10);
-
-		if (rayHitInfo)
-		{
-			Chaos::Ray2D::DrawRay(Chaos::Vec2(x, y), Chaos::Vec2(xDir, yDir), rayHitInfo->Distance);
-			//LOGTRACE("Hit point: ({0}, {1})", rayHitInfo->Point.X, rayHitInfo->Point.Y);
+			else
+			{
+				//Chaos::Ray2D::DrawRay(Chaos::Vec2(x, y), line, 10);
+				raycastDisplay[i]->GetTransform()->Scale().Y = 0;
+			}
 		}
 	}
 
@@ -131,35 +102,32 @@ public:
 	{
 		//Stuff to do on start goes here
 		//Adding component to entity example
-		entity.AddComponent<Chaos::Render>();
-		entity.GetComponent<Chaos::Render>()->SetTexture(player);	//setting the texture for the render component (defaults to blank) 
-		//entity.AddComponent<Chaos::BoxCollider2D>();
-		entity2.AddComponent<Chaos::Render>();
-		entity2.GetComponent<Chaos::Render>()->SetTexture(test);	//setting the texture for the render component (defaults to blank) 
-		entity2.AddComponent<Chaos::BoxCollider2D>();
-		//UI
-		/*uiImage.AddComponent<Chaos::UIImage>();
-		uiImage.GetTransform()->Position() = Chaos::Vec3(0.5f, 0.5f, 1000);
-		uiImage.GetTransform()->Scale() = Chaos::Vec2(1.0f * Chaos::Application::Get().GetMainCamera()->GetAspectRatio(), 1.0f);
-		uiImage.GetComponent<Chaos::UIImage>()->Colour() = Chaos::Vec4(1.0f, 0.1f, 0.1f, 0.3f);*/
+		player.AddComponent<PlayerController>();
+		player.GetTransform()->Position() = Chaos::Vec3(5.f, 5.f, 0);
+
+
+		Chaos::Entity* backGround = new Chaos::Entity();
+		backGround->AddComponent<Chaos::UIImage>();
+		backGround->GetTransform()->Position() = Chaos::Vec3(0.5f, 0.5f, 0.0f);
+		backGround->GetComponent<Chaos::UIImage>()->Colour() = Chaos::Vec4(0.001f, 0.001f, 0.001f, 1.0f);
+		backGround->GetTransform()->Scale().X = Chaos::Application::Get().GetMainCamera()->GetAspectRatio();
+
+
+		GenerateLevel();
 
 
 		//Setting up raycaster display 
-		//for (int i = 0; i < 100; ++i)
-		//{
-		//	Chaos::Entity* ent = new Chaos::Entity("RayCastDisplay");
-		//	ent->AddComponent<Chaos::UIImage>();
-		//	ent->GetTransform()->Position() = Chaos::Vec3(i * (1.0f / 100), 0.5f, 1000);
-		//	ent->GetTransform()->Scale() = Chaos::Vec2((1.0f / 100) * Chaos::Application::Get().GetMainCamera()->GetAspectRatio(), 1.0f);
-		//	ent->GetComponent<Chaos::UIImage>()->Colour() = Chaos::Vec4(0.1f, 0.1f, 0.1f, 1.0f);
-		//	m_scene.AddEntity(ent);
-		//}
-
-		m_scene.AddEntity(&entity);
-		m_scene.AddEntity(&entity2);
+		for (int i = 0; i < RESOLUTION; ++i)
+		{
+			Chaos::Entity* ent = new Chaos::Entity("RayCastDisplay");
+			ent->AddComponent<Chaos::UIImage>();
+			ent->GetTransform()->Position() = Chaos::Vec3(i * (1.0f / RESOLUTION), 0.5f, 1000);
+			ent->GetTransform()->Scale() = Chaos::Vec2((1.0f / RESOLUTION) * Chaos::Application::Get().GetMainCamera()->GetAspectRatio(), 1.0f);
+			ent->GetComponent<Chaos::UIImage>()->Colour() = Chaos::Vec4(0.1f, 0.1f, 0.1f, 1.0f);
+			raycastDisplay.push_back(ent);
+		}
 		//m_scene.AddEntity(&uiImage);
 
-		Chaos::SceneManager::Load(m_scene);
 	}
 
 	void OnDetach() override
@@ -169,6 +137,47 @@ public:
 	void OnEvent(Chaos::Event& event) override
 	{
 		//On every window event
+	}
+
+	void GenerateLevel()
+	{
+		for (int xpos = 0; xpos < MAP_SIZE_X; ++xpos)
+		{
+			for (int ypos = 0; ypos < MAP_SIZE_Y; ++ypos)
+			{
+				if (xpos == 0 || xpos == MAP_SIZE_X - 1 || ypos == 0 || ypos == MAP_SIZE_Y - 1)
+				{
+					m_map[xpos][ypos] = 'w';
+				}
+			}
+		}
+
+		for (int xpos = 0; xpos < MAP_SIZE_X; ++xpos)
+		{
+			for (int ypos = 0; ypos < MAP_SIZE_Y; ++ypos)
+			{
+				if (m_map[xpos][ypos] == 'w')
+				{
+					Chaos::Entity* wall = new Chaos::Entity("Wall");
+					wall->AddComponent<Chaos::BoxCollider2D>();
+					wall->GetTransform()->Position() = Chaos::Vec3(xpos, ypos, 0.f);
+				}
+			}
+		}
+
+		//setting up level walls
+		for (int xpos = 0; xpos < MAP_SIZE_X; ++xpos)
+		{
+			for (int ypos = 0; ypos < MAP_SIZE_Y; ++ypos)
+			{
+				if (m_map[xpos][ypos] == 'w')
+				{
+					Chaos::Entity* wall = new Chaos::Entity("Wall");
+					wall->AddComponent<Chaos::BoxCollider2D>();
+					wall->GetTransform()->Position() = Chaos::Vec3(xpos, ypos, 0.f);
+				}
+			}
+		}
 	}
 };
 
@@ -184,7 +193,6 @@ public:
 	{
 
 	}
-
 };
 
 

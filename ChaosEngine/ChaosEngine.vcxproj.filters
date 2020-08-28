@@ -1323,6 +1323,7 @@
     <ClInclude Include="src\Chaos\Entity\Components\UIImage.h" />
     <ClInclude Include="src\Chaos\Entity\Components\LineCollider2D.h" />
     <ClInclude Include="src\Chaos\Core\SceneManager.h" />
+    <ClInclude Include="src\Chaos\Core\Math.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chaos\Core\Application.cpp">

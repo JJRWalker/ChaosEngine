@@ -12,6 +12,7 @@ namespace Chaos
 		float Distance;
 		Collider* Collider;
 		Transform* Transform;
+		Entity* Entity;
 	};
 	class Ray2D
 	{

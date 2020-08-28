@@ -151,6 +151,7 @@
     <ClInclude Include="src\Chaos\Core\Layer.h" />
     <ClInclude Include="src\Chaos\Core\LayerStack.h" />
     <ClInclude Include="src\Chaos\Core\Log.h" />
+    <ClInclude Include="src\Chaos\Core\Math.h" />
     <ClInclude Include="src\Chaos\Core\Scene.h" />
     <ClInclude Include="src\Chaos\Core\SceneManager.h" />
     <ClInclude Include="src\Chaos\Core\Time.h" />
