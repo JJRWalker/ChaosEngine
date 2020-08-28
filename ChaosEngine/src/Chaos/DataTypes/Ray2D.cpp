@@ -26,8 +26,18 @@ namespace Chaos
 			//test line collision with all colliders
 			if (entity->HasComponent<Collider>())
 			{
-				//check for collision, handle collision math here as we need to return more info than just a bool if it hit or not
 				Collider* collider = entity->GetComponent<Collider>();
+
+				Vec2 colliderPosition = { collider->Offset().X + entity->GetTransform()->Position().X, collider->Offset().Y + entity->GetTransform()->Position().Y };
+
+				//if the point is not in the direction of the ray, don't consider it
+				if (Vec2::Dot(ray, (colliderPosition - origin)) < 0)
+					continue;
+
+				//if collider is too far away, then don't check
+				if ((colliderPosition - origin).Magnitude() > distance)
+					continue;
+
 				switch (collider->GetType())
 				{
 				case ColliderType::BOX2D:
@@ -35,10 +45,10 @@ namespace Chaos
 					float fLow = 0.0f;
 					float fHigh = 1.0f;
 
-					float boxLeft =  collider->GetEntity()->GetTransform()->Position().X - (((BoxCollider2D*)collider)->GetBounds().Width / 2);
-					float boxRight =  collider->GetEntity()->GetTransform()->Position().X + (((BoxCollider2D*)collider)->GetBounds().Width / 2);
-					float boxBottom =  collider->GetEntity()->GetTransform()->Position().Y - (((BoxCollider2D*)collider)->GetBounds().Height / 2);
-					float boxTop =  collider->GetEntity()->GetTransform()->Position().Y + (((BoxCollider2D*)collider)->GetBounds().Height / 2);
+					float boxLeft = colliderPosition.X - (((BoxCollider2D*)collider)->GetBounds().Width / 2);
+					float boxRight = colliderPosition.X + (((BoxCollider2D*)collider)->GetBounds().Width / 2);
+					float boxBottom = colliderPosition.Y - (((BoxCollider2D*)collider)->GetBounds().Height / 2);
+					float boxTop = colliderPosition.Y + (((BoxCollider2D*)collider)->GetBounds().Height / 2);
 			
 					
 					if (!ClipLine(boxLeft, boxRight, origin.X, endPoint.X, fLow, fHigh))

@@ -51,9 +51,9 @@ public:
 
 	//Raycaster
 	std::vector<Chaos::Entity*> raycastDisplay;
-	const int RESOLUTION = 100;
+	const int RESOLUTION = 60;
 	const float FOV = 30;
-	const float SIGHT_DISTANCE = 10.0f;
+	const float SIGHT_DISTANCE = 20.0f;
 	const float COLOUR_DROPOFF = 10.0f;
 
 	void OnUpdate(float deltaTime) override
