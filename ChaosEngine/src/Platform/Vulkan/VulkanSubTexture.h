@@ -14,6 +14,8 @@ namespace Chaos
 		virtual ~VulkanSubTexture() {};
 
 		virtual char* GetFilePath() const override { return m_filePath; }
+		
+		virtual void SetTexCoords(Vec2 coordinates, Vec2 cellSize) override;
 
 		virtual const Vec2* GetTexCoords() const override { return m_texCoords; }
 		virtual const Ref<Texture> GetMainTexture() const override { return m_mainTexture; }

@@ -138,7 +138,7 @@ namespace Chaos
 
 	void VulkanRenderer::DrawQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<SubTexture> subTexture)
 	{
-		m_quads.push_back({ position, scale, rotation, colour, nullptr, subTexture, 1 });
+		m_quads.push_back({ position, scale, rotation, colour, nullptr, subTexture });
 		//AddQuadToRenderQueue({ Vec3(position.X, position.Y, 0), scale, rotation, colour, nullptr, subTexture, 1});
 	}
 

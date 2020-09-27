@@ -26,7 +26,7 @@ namespace Chaos
 
 #pragma region STATIC CLASS FUNCTIONS
 		//static class functions
-		static float Dot(Vec2 a, Vec2 b)
+		static float Dot(Vec2& a, Vec2& b)
 		{
 			return a.X * b.X + a.Y * b.Y;
 		}
@@ -37,7 +37,7 @@ namespace Chaos
 			return vec.Magnitude();
 		}
 
-		static float Angle(Vec2 from, Vec2 to) 
+		static float Angle(Vec2& from, Vec2& to) 
 		{
 			float theta = Dot(from, to) / (from.Magnitude() * to.Magnitude());
 			
@@ -63,7 +63,7 @@ namespace Chaos
 
 #pragma region OPERATORS
 		//addition operator, adds the two vector components to the other vector's componenets
-		Vec2 operator + (const Vec2& other) const {
+		inline Vec2 operator + (const Vec2& other) const {
 			float x = X + other.X;
 			float y = Y + other.Y;
 
@@ -71,7 +71,7 @@ namespace Chaos
 		};
 
 		//subtraction operator, subtracts the other vector components from this vector's components
-		Vec2 operator - (const Vec2& other) const {
+		inline  Vec2 operator - (const Vec2& other) const {
 			float x = X - other.X;
 			float y = Y - other.Y;
 
@@ -79,25 +79,31 @@ namespace Chaos
 		};
 
 		//division operator with float
-		Vec2 operator / (const float divisor) const {
+		inline Vec2 operator / (const float& divisor) const {
 			float x = X / divisor;
 			float y = Y / divisor;
 
 			return Vec2(x, y);
 		}
 
-		Vec2 operator * (const float multiplier) const {
+		inline Vec2 operator * (const float& multiplier) const {
 			float x = X * multiplier;
 			float y = Y * multiplier;
 
 			return Vec2(x, y);
 		}
 
-		Vec2 operator * (const Vec2 other) const {
+		inline Vec2 operator * (const Vec2& other) const {
 			float x = X * other.X;
 			float y = Y * other.Y;
 
 			return Vec2(x, y);
+		}
+
+		inline Vec2 operator = (const Vec2& other) {
+			X = other.X;
+			Y = other.Y;
+			return *this;
 		}
 #pragma endregion
 

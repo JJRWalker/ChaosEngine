@@ -11,6 +11,8 @@ namespace Chaos
 
 		virtual char* GetFilePath() const = 0;
 
+		virtual void SetTexCoords(Vec2 coordinates, Vec2 cellSize) = 0; 
+
 		virtual const Vec2* GetTexCoords() const = 0;
 		virtual const Ref<Texture> GetMainTexture() const = 0;
 

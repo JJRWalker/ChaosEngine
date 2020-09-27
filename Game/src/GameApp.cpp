@@ -4,7 +4,8 @@
 #include <Chaos/Core/EntryPoint.h>
 #include "Components/PlayerController.h"
 #include "Chaos/Entity/Components/CellularAutomata.h"
-
+#include <Chaos/Entity/Components/Animator.h>
+#include <Chaos/Entity/Components/Camera.h>
 
 //NOTE: this is a quick and dirty implementation to test functionality, not representitive of the product
 
@@ -58,76 +59,29 @@ public:
 
 	void OnUpdate(float deltaTime) override
 	{
-		//Vision / rendering
-		line = player.GetComponent<PlayerController>()->GetForward();
-		line.Rotate(-FOV / 2);
-
-		for (int i = 0; i < RESOLUTION; ++i)
-		{
-			line.Rotate(FOV / RESOLUTION);
-
-			rayHitInfo = Chaos::Ray2D::Cast(Chaos::Vec2(player.GetTransform()->Position().X, player.GetTransform()->Position().Y), line, SIGHT_DISTANCE);
-
-			if (rayHitInfo)
-			{
-				//Chaos::Ray2D::DrawRay(Chaos::Vec2(x, y), line, rayHitInfo->Distance);
-				float distance = rayHitInfo->Distance;
-
-				float a = Chaos::Vec2::Angle(player.GetComponent<PlayerController>()->GetForward(), line);
-
-				if (a != 0)
-				{
-					float r = cos(a * Chaos::Math::DEGREES_TO_RADS);
-					distance *= r;
-				}
-				float distanceScalar = (SIGHT_DISTANCE - distance) / SIGHT_DISTANCE;
-
-				raycastDisplay[i]->GetTransform()->Scale().Y = distanceScalar;
-
-				float colour =  (SIGHT_DISTANCE / (distance * distance));
-				//LOGTRACE("{0}", colour);
-				colour /= COLOUR_DROPOFF;
-				raycastDisplay[i]->GetComponent<Chaos::UIImage>()->Colour() = Chaos::Vec4(colour, colour, colour, 1.0f);
-				raycastDisplay[i]->GetTransform()->Position().Z = SIGHT_DISTANCE - distance;
-			}
-			else
-			{
-				//Chaos::Ray2D::DrawRay(Chaos::Vec2(x, y), line, 10);
-				raycastDisplay[i]->GetTransform()->Scale().Y = 0;
-			}
-		}
+		//Chaos::Application::Get().GetRenderer().DrawQuad(Chaos::Vec3(0, 0, 1), Chaos::Vec2(1, 1), Chaos::SubTexture::Create("../Game/textures/floor.jpg", Chaos::Vec2(0, 0), Chaos::Vec2(16, 16)));
 	}
 
 	void OnAttach() override
 	{
-		//Stuff to do on start goes here
-		//Adding component to entity example
-		player.AddComponent<PlayerController>();
-		player.GetTransform()->Position() = Chaos::Vec3(5.f, 5.f, 0);
+		player.AddComponent<Chaos::Animator>();
+		Chaos::Animation anim;
+		anim.SpriteSheet = Chaos::Texture::Create("../Game/textures/test-anim.png");
+		anim.Loop = true;
+		anim.TotalFrames = 9;
+		anim.PlaybackSpeed = 1;
+		anim.FrameRate = 9;
+		anim.FrameSize.X = 32.f;
+		anim.FrameSize.Y = 32.f;
+		anim.StartFrame = 1;
+
+		player.GetComponent<Chaos::Animator>()->SetAnimation(anim);
+		player.GetComponent<Chaos::Animator>()->Play();
 
 
-		Chaos::Entity* backGround = new Chaos::Entity();
-		backGround->AddComponent<Chaos::UIImage>();
-		backGround->GetTransform()->Position() = Chaos::Vec3(0.5f, 0.5f, 0.0f);
-		backGround->GetComponent<Chaos::UIImage>()->Colour() = Chaos::Vec4(0.001f, 0.001f, 0.001f, 1.0f);
-		backGround->GetTransform()->Scale().X = Chaos::Application::Get().GetMainCamera()->GetAspectRatio();
 
-
-		GenerateLevel();
-
-
-		//Setting up raycaster display 
-		for (int i = 0; i < RESOLUTION; ++i)
-		{
-			Chaos::Entity* ent = new Chaos::Entity("RayCastDisplay");
-			ent->AddComponent<Chaos::UIImage>();
-			ent->GetTransform()->Position() = Chaos::Vec3(i * (1.0f / RESOLUTION), 0.5f, 1000);
-			ent->GetTransform()->Scale() = Chaos::Vec2((1.0f / RESOLUTION) * Chaos::Application::Get().GetMainCamera()->GetAspectRatio(), 1.0f);
-			ent->GetComponent<Chaos::UIImage>()->Colour() = Chaos::Vec4(0.1f, 0.1f, 0.1f, 1.0f);
-			raycastDisplay.push_back(ent);
-		}
-		//m_scene.AddEntity(&uiImage);
-
+		player.GetTransform()->Position() = Chaos::Vec3(0, 0, 1);
+		player.GetTransform()->Scale() = Chaos::Vec2(10, 10);
 	}
 
 	void OnDetach() override
@@ -145,7 +99,7 @@ public:
 		{
 			for (int ypos = 0; ypos < MAP_SIZE_Y; ++ypos)
 			{
-				if (xpos == 0 || xpos == MAP_SIZE_X - 1 || ypos == 0 || ypos == MAP_SIZE_Y - 1)
+				if ((xpos == 0 || xpos == MAP_SIZE_X - 1 || ypos == 0 || ypos == MAP_SIZE_Y - 1) || ((xpos < 8 && ypos < 4) || (xpos > 22 && ypos > 22)))
 				{
 					m_map[xpos][ypos] = 'w';
 				}
