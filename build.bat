@@ -16,7 +16,7 @@ popd
 mkdir "build/cmd/bin"
 pushd "build/cmd/bin"
 
-link ..\int\game.obj Chaos.lib ..\..\..\ChaosEngine\vendor\GLFW\bin\Release-windows-x86_64\GLFW\glfw.lib ..\..\..\ChaosEngine\vendor\Vulkan\Lib\vulkan-1.lib ..\..\..\ChaosEngine\vendor\ImGUI\bin\Release-windows-x86_64\imgui\imgui.lib gdi32.lib shell32.lib msvcrtd.lib /NODEFAULTLIB:LIBCMTD /NODEFAULTLIB:LIBCMT
+link ..\int\game.obj Chaos.lib ..\..\..\ChaosEngine\vendor\GLFW\glfw.lib ..\..\..\ChaosEngine\vendor\Vulkan\Lib\vulkan-1.lib ..\..\..\ChaosEngine\vendor\ImGUI\imgui.lib gdi32.lib shell32.lib msvcrtd.lib /NODEFAULTLIB:LIBCMTD /NODEFAULTLIB:LIBCMT
 
 popd
 
