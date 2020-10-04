@@ -2,7 +2,6 @@
 #define _GAME_APP_DEFINED
 #include <Chaos.h>
 #include <Chaos/Core/EntryPoint.h>
-#include <FileSystem>
 //Template for a fresh project
 
 
