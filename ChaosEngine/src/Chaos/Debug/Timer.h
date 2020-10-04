@@ -1,6 +1,11 @@
 #pragma once
 #include <chrono>
 
+#ifndef CHAOS_PROFILE
+#define PROFILED_FUNC() Timer t(__FUNCTION__)
+#else
+#define PROFILED_FUNC()
+#endif
 namespace Chaos
 {
 	class Timer
@@ -21,13 +26,32 @@ namespace Chaos
 
 			float duration = (end - start) * 0.001f;
 
-			LOGCORE_TRACE("{0}: {1}ms", mName, duration);	//TO BE CHANGED TO CALLBACK FUNC TO BE TAKEN IN BY CONSTRUCTOR
+			//LOGCORE_TRACE("{0}: {1}ms", mName, duration);	//TO BE CHANGED TO CALLBACK FUNC TO BE TAKEN IN BY CONSTRUCTOR
+
+			std::unordered_map<const char*, float>::iterator it = s_times.find(mName);
+
+			if (it == s_times.end())
+			{
+				s_times.insert({mName, duration});
+			}
+			else
+			{
+				it->second = duration;
+			}
 
 			mStopped = true;
 		}
+
+		static std::unordered_map<const char*, float>& GetTimers()
+		{
+			return s_times;
+		}
+
 	private:
 		const char* mName;
 		bool mStopped = false;
 		std::chrono::time_point<std::chrono::steady_clock> mStartPoint;
+
+		static std::unordered_map<const char*, float> s_times;
 	};
 }

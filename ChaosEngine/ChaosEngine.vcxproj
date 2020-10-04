@@ -54,20 +54,20 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>..\bin\Debug-windows-x86_64\ChaosEngine\</OutDir>
-    <IntDir>..\int\Debug-windows-x86_64\ChaosEngine\</IntDir>
+    <OutDir>..\build\bin\Debug-windows-x86_64\ChaosEngine\</OutDir>
+    <IntDir>..\build\int\Debug-windows-x86_64\ChaosEngine\</IntDir>
     <TargetName>ChaosEngine</TargetName>
     <TargetExt>.lib</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>..\bin\Release-windows-x86_64\ChaosEngine\</OutDir>
-    <IntDir>..\int\Release-windows-x86_64\ChaosEngine\</IntDir>
+    <OutDir>..\build\bin\Release-windows-x86_64\ChaosEngine\</OutDir>
+    <IntDir>..\build\int\Release-windows-x86_64\ChaosEngine\</IntDir>
     <TargetName>ChaosEngine</TargetName>
     <TargetExt>.lib</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'">
-    <OutDir>..\bin\Distribution-windows-x86_64\ChaosEngine\</OutDir>
-    <IntDir>..\int\Distribution-windows-x86_64\ChaosEngine\</IntDir>
+    <OutDir>..\build\bin\Distribution-windows-x86_64\ChaosEngine\</OutDir>
+    <IntDir>..\build\int\Distribution-windows-x86_64\ChaosEngine\</IntDir>
     <TargetName>ChaosEngine</TargetName>
     <TargetExt>.lib</TargetExt>
   </PropertyGroup>
@@ -151,19 +151,31 @@
     <ClInclude Include="src\Chaos\Core\Layer.h" />
     <ClInclude Include="src\Chaos\Core\LayerStack.h" />
     <ClInclude Include="src\Chaos\Core\Log.h" />
+    <ClInclude Include="src\Chaos\Core\Math.h" />
     <ClInclude Include="src\Chaos\Core\Scene.h" />
+    <ClInclude Include="src\Chaos\Core\SceneManager.h" />
     <ClInclude Include="src\Chaos\Core\Time.h" />
     <ClInclude Include="src\Chaos\Core\Window.h" />
+    <ClInclude Include="src\Chaos\DataTypes\Ray2D.h" />
     <ClInclude Include="src\Chaos\DataTypes\Vec2.h" />
     <ClInclude Include="src\Chaos\DataTypes\Vec3.h" />
     <ClInclude Include="src\Chaos\DataTypes\Vec4.h" />
     <ClInclude Include="src\Chaos\Debug\ImGuiLayer.h" />
     <ClInclude Include="src\Chaos\Debug\Timer.h" />
     <ClInclude Include="src\Chaos\Entity\Component.h" />
+    <ClInclude Include="src\Chaos\Entity\Components\Animator.h" />
+    <ClInclude Include="src\Chaos\Entity\Components\BoxCollider2D.h" />
     <ClInclude Include="src\Chaos\Entity\Components\Camera.h" />
+    <ClInclude Include="src\Chaos\Entity\Components\CellularAutomata.h" />
+    <ClInclude Include="src\Chaos\Entity\Components\Collider.h" />
+    <ClInclude Include="src\Chaos\Entity\Components\LineCollider2D.h" />
     <ClInclude Include="src\Chaos\Entity\Components\Render.h" />
     <ClInclude Include="src\Chaos\Entity\Components\Transform.h" />
+    <ClInclude Include="src\Chaos\Entity\Components\UIImage.h" />
+    <ClInclude Include="src\Chaos\Entity\ECSManager.h" />
     <ClInclude Include="src\Chaos\Entity\Entity.h" />
+    <ClInclude Include="src\Chaos\Entity\System.h" />
+    <ClInclude Include="src\Chaos\Entity\Systems\RenderSystem.h" />
     <ClInclude Include="src\Chaos\Events\ApplicationEvent.h" />
     <ClInclude Include="src\Chaos\Events\Event.h" />
     <ClInclude Include="src\Chaos\Events\KeyEvent.h" />
@@ -566,11 +578,22 @@
     <ClCompile Include="src\Chaos\Core\LayerStack.cpp" />
     <ClCompile Include="src\Chaos\Core\Log.cpp" />
     <ClCompile Include="src\Chaos\Core\Scene.cpp" />
+    <ClCompile Include="src\Chaos\Core\SceneManager.cpp" />
+    <ClCompile Include="src\Chaos\Core\Time.cpp" />
+    <ClCompile Include="src\Chaos\DataTypes\Ray2D.cpp" />
     <ClCompile Include="src\Chaos\Debug\ImGuiBuild.cpp" />
     <ClCompile Include="src\Chaos\Debug\ImGuiLayer.cpp" />
+    <ClCompile Include="src\Chaos\Debug\Timer.cpp" />
+    <ClCompile Include="src\Chaos\Entity\Components\Animator.cpp" />
+    <ClCompile Include="src\Chaos\Entity\Components\BoxCollider2D.cpp" />
     <ClCompile Include="src\Chaos\Entity\Components\Camera.cpp" />
+    <ClCompile Include="src\Chaos\Entity\Components\CellularAutomata.cpp" />
+    <ClCompile Include="src\Chaos\Entity\Components\LineCollider2D.cpp" />
     <ClCompile Include="src\Chaos\Entity\Components\Render.cpp" />
     <ClCompile Include="src\Chaos\Entity\Components\Transform.cpp" />
+    <ClCompile Include="src\Chaos\Entity\Components\UIImage.cpp" />
+    <ClCompile Include="src\Chaos\Entity\ECSManager.cpp" />
+    <ClCompile Include="src\Chaos\Entity\Systems\RenderSystem.cpp" />
     <ClCompile Include="src\Chaos\Renderer\Renderer.cpp" />
     <ClCompile Include="src\Chaos\Renderer\RendererAPI.cpp" />
     <ClCompile Include="src\Chaos\Renderer\SubTexture.cpp" />
@@ -595,4 +618,4 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
-</Project>
+</Project> 

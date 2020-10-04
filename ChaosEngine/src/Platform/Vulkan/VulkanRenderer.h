@@ -7,15 +7,33 @@
 #include <GLM/glm/glm.hpp>
 #include <array>
 
+#include "Chaos/DataTypes/Vec3.h"
+
 namespace Chaos
 {
 	class VulkanTexture;
 	class Vec2;
-	class Vec3;
 	class Vec4;
 
+	struct Quad
+	{
+		Vec3 Position = {0,0,0};
+		Vec2 Scale = {1,1};
+		Vec2 Rotation = {0, 0};
+		Vec4 Colour = {1,1,1,1};
+		Ref<Texture> tex;
+		Ref<SubTexture> subTex;
+		float tilingFactor = 1;
+
+		//we sort quads based on their z position. This z position works as a render queue position
+		bool operator < (const Quad& other) const
+		{
+			return Position.Z < other.Position.Z;
+		}
+	};
+
 	struct VulkanVertex {
-		Vec2 pos;
+		Vec3 pos;
 		Vec4 color;
 		Vec2 texCoord;
 		float texIndex;
@@ -34,7 +52,7 @@ namespace Chaos
 
 			attributeDescriptions[0].binding = 0;
 			attributeDescriptions[0].location = 0;
-			attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+			attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
 			attributeDescriptions[0].offset = offsetof(VulkanVertex, pos);
 
 			attributeDescriptions[1].binding = 0;
@@ -51,6 +69,8 @@ namespace Chaos
 			attributeDescriptions[3].location = 3;
 			attributeDescriptions[3].format = VK_FORMAT_R32_SFLOAT;
 			attributeDescriptions[3].offset = offsetof(VulkanVertex, texIndex);
+
+
 
 			return attributeDescriptions;
 		}
@@ -106,15 +126,28 @@ namespace Chaos
 		VulkanRenderer();
 		~VulkanRenderer();
 
-		virtual void DrawQuad(Vec2& position, Vec2& scale, Ref<Texture> texture) override;
-		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec4& colour, Ref<Texture> texture) override;
-		virtual void DrawQuad(Vec2& position, Vec2& scale, Vec4& colour, Ref<Texture> texture, float tilingFactor) override;
-		virtual void DrawQuad(Vec2& position, Vec2& scale, Ref<Texture> texture, float tilingFactor) override;
-		virtual void DrawQuad(Vec2& position, Vec2& scale, Ref<SubTexture> subTexture) override;
+		virtual void DrawQuad(Vec3& position, Vec2& scale, Ref<Texture> texture) override;
+		virtual void DrawQuad(Vec3& position, Vec2& scale, Vec4& colour, Ref<Texture> texture) override;
+		virtual void DrawQuad(Vec3& position, Vec2& scale, Vec4& colour, Ref<Texture> texture, float tilingFactor) override;
+		virtual void DrawQuad(Vec3& position, Vec2& scale, Ref<Texture> texture, float tilingFactor) override;
+		virtual void DrawQuad(Vec3& position, Vec2& scale, Ref<SubTexture> subTexture) override;
+		//with rotation
+		virtual void DrawQuad(Vec3& position, Vec2& scale, Vec2& rotation, Ref<Texture> texture) override;
+		virtual void DrawQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<Texture> texture) override;
+		virtual void DrawQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<Texture> texture, float tilingFactor) override;
+		virtual void DrawQuad(Vec3& position, Vec2& scale, Vec2& rotation, Ref<SubTexture> subTexture) override;
+		virtual void DrawQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<SubTexture> subTtexture) override;
+
+		virtual void DrawLine(Vec2& startPoint, Vec2& endPoint, Vec4& colour, float weight, float renderOrder) override;
+
+		//ui
+		virtual void DrawScreenSpaceQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<Texture> texture, float tilingFactor) override;
+		virtual void DrawScreenSpaceQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<SubTexture> subTexture) override; 
+
 		virtual void DrawFrame() override;
 		virtual void WindowResized() override { m_framebufferResized = true; }
-		virtual bool HasTexture(const char* filePath, Ref<Texture> outTexture) override; //Takes in a file path and a texture, returns true and sets the ref of inputted texture if one exists
-		virtual DebugInfo& GetDebugInfo() override { return m_debugInfo; }
+		virtual bool HasTexture(char* filePath, Ref<Texture> outTexture) override; //Takes in a file path and a texture, returns true and sets the ref of inputted texture if one exists
+		virtual RenderData& GetDebugInfo() override { return m_debugInfo; }
 
 		VkSampler& GetTexSampler() { return m_textureSampler; }
 		std::vector<VkImageView>& GetRenderedFrames() { return m_renderedFrameViews; }
@@ -131,6 +164,8 @@ namespace Chaos
 		//Funcs
 		VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
 		void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT mDebugMessenger, const VkAllocationCallbacks* pAllocator);
+
+		void AddQuadToRenderQueue(Quad quad);
 
 		void InitVulkan();
 		void CreateInstance();
@@ -169,6 +204,7 @@ namespace Chaos
 		bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
 		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags props);
 		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
+		void SortQuads();
 
 		//VALIDATION
 		std::vector<const char*> GetRequiredExtensions();
@@ -199,6 +235,7 @@ namespace Chaos
 		void SetImGuiFramebuffer(std::vector<VkFramebuffer>* buffer) { m_imGuiFrameBuffer = buffer; }
 
 		//Variables
+		std::vector<Quad> m_quads;
 		std::vector<VulkanVertex> m_vertices;
 		std::vector<uint16_t> m_indices;
 
@@ -268,7 +305,14 @@ namespace Chaos
 		const std::vector<const char*> m_validationLayers = { "VK_LAYER_KHRONOS_validation" };
 		const std::vector<const char*> m_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
+		const glm::vec4 QUAD_VERTEX_POSITIONS[4] = { glm::vec4(-0.5f, -0.5f, 0.0f, 1.0f) ,
+													glm::vec4(0.5f, -0.5f, 0.0f, 1.0f),
+													glm::vec4(0.5f, 0.5f, 0.0f, 1.0f),
+													glm::vec4(-0.5f, 0.5f, 0.0f, 1.0f) };
+
+		const uint16_t QUAD_INDICES[6] = { 0,1,2,2,3,0 };
+
 		//DEBUG VARS
-		DebugInfo m_debugInfo;
+		RenderData m_debugInfo;
 	};
 }

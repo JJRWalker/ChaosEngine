@@ -55,22 +55,22 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>..\bin\Debug-windows-x86_64\ControlEditor\</OutDir>
-    <IntDir>..\int\Debug-windows-x86_64\ControlEditor\</IntDir>
+    <OutDir>..\build\bin\Debug-windows-x86_64\ControlEditor\</OutDir>
+    <IntDir>..\build\int\Debug-windows-x86_64\ControlEditor\</IntDir>
     <TargetName>ControlEditor</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\bin\Release-windows-x86_64\ControlEditor\</OutDir>
-    <IntDir>..\int\Release-windows-x86_64\ControlEditor\</IntDir>
+    <OutDir>..\build\bin\Release-windows-x86_64\ControlEditor\</OutDir>
+    <IntDir>..\build\int\Release-windows-x86_64\ControlEditor\</IntDir>
     <TargetName>ControlEditor</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\bin\Distribution-windows-x86_64\ControlEditor\</OutDir>
-    <IntDir>..\int\Distribution-windows-x86_64\ControlEditor\</IntDir>
+    <OutDir>..\build\bin\Distribution-windows-x86_64\ControlEditor\</OutDir>
+    <IntDir>..\build\int\Distribution-windows-x86_64\ControlEditor\</IntDir>
     <TargetName>ControlEditor</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
@@ -79,7 +79,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>CHAOS_PLATFORM_WINDOWS;CHAOS_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\ChaosEngine\src;..\ChaosEngine\vendor;..\ChaosEngine\vendor\spdlog\include;vendor\Vulkan\include;vendor\ImGUI;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;vendor;..\ChaosEngine\vendor\spdlog\include;..\ChaosEngine\src;..\ChaosEngine\vendor;vendor\Vulkan\include;vendor\ImGUI;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
@@ -97,7 +97,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>CHAOS_PLATFORM_WINDOWS;CHAOS_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\ChaosEngine\src;..\ChaosEngine\vendor;..\ChaosEngine\vendor\spdlog\include;vendor\Vulkan\include;vendor\ImGUI;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;vendor;..\ChaosEngine\vendor\spdlog\include;..\ChaosEngine\src;..\ChaosEngine\vendor;vendor\Vulkan\include;vendor\ImGUI;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -118,7 +118,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>CHAOS_PLATFORM_WINDOWS;CHAOS_DISTRIBUTION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\ChaosEngine\src;..\ChaosEngine\vendor;..\ChaosEngine\vendor\spdlog\include;vendor\Vulkan\include;vendor\ImGUI;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;vendor;..\ChaosEngine\vendor\spdlog\include;..\ChaosEngine\src;..\ChaosEngine\vendor;vendor\Vulkan\include;vendor\ImGUI;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -135,13 +135,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\Camera\CameraController.h" />
-    <ClInclude Include="src\EditorLayer.h" />
+    <ClInclude Include="src\Control\Camera\CameraController.h" />
+    <ClInclude Include="src\Control\Editor\EditorLayer.h" />
+    <ClInclude Include="src\Control\Editor\EditorScene.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Camera\CameraController.cpp" />
-    <ClCompile Include="src\ControlApp.cpp" />
-    <ClCompile Include="src\EditorLayer.cpp" />
+    <ClCompile Include="src\Control\Camera\CameraController.cpp" />
+    <ClCompile Include="src\Control\ControlApp.cpp" />
+    <ClCompile Include="src\Control\Editor\EditorLayer.cpp" />
+    <ClCompile Include="src\Control\Editor\EditorScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ChaosEngine\ChaosEngine.vcxproj">

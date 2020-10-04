@@ -30,6 +30,7 @@ namespace Chaos
 		virtual unsigned int GetWidth() const = 0;
 		virtual unsigned int GetHeight() const = 0;
 		virtual float GetAspectRatio() const = 0;
+		virtual float GetWindowTime() const = 0;
 
 		//Attributes
 		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;

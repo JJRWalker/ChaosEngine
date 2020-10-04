@@ -1,6 +1,6 @@
 #include <Chaos.h>
 #include <Chaos/Core/EntryPoint.h>
-#include "EditorLayer.h"
+#include <Control/Editor/EditorLayer.h>
 
 namespace Chaos
 {
@@ -21,6 +21,7 @@ namespace Chaos
 	Application* CreateApplication()
 	{
 		return new Control();
+		#define CHAOS_PROFILE
 	}
 }
 

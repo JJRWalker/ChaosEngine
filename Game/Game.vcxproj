@@ -55,22 +55,22 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>..\bin\Debug-windows-x86_64\Game\</OutDir>
-    <IntDir>..\int\Debug-windows-x86_64\Game\</IntDir>
+    <OutDir>..\build\bin\Debug-windows-x86_64\Game\</OutDir>
+    <IntDir>..\build\int\Debug-windows-x86_64\Game\</IntDir>
     <TargetName>Game</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\bin\Release-windows-x86_64\Game\</OutDir>
-    <IntDir>..\int\Release-windows-x86_64\Game\</IntDir>
+    <OutDir>..\build\bin\Release-windows-x86_64\Game\</OutDir>
+    <IntDir>..\build\int\Release-windows-x86_64\Game\</IntDir>
     <TargetName>Game</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\bin\Distribution-windows-x86_64\Game\</OutDir>
-    <IntDir>..\int\Distribution-windows-x86_64\Game\</IntDir>
+    <OutDir>..\build\bin\Distribution-windows-x86_64\Game\</OutDir>
+    <IntDir>..\build\int\Distribution-windows-x86_64\Game\</IntDir>
     <TargetName>Game</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
@@ -79,7 +79,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>CHAOS_PLATFORM_WINDOWS;CHAOS_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\ChaosEngine\src;..\ChaosEngine\vendor;..\ChaosEngine\vendor\spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;..\ChaosEngine\src;..\ChaosEngine\vendor;..\ChaosEngine\vendor\spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
@@ -97,7 +97,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>CHAOS_PLATFORM_WINDOWS;CHAOS_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\ChaosEngine\src;..\ChaosEngine\vendor;..\ChaosEngine\vendor\spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;..\ChaosEngine\src;..\ChaosEngine\vendor;..\ChaosEngine\vendor\spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -118,7 +118,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>CHAOS_PLATFORM_WINDOWS;CHAOS_DISTRIBUTION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\ChaosEngine\src;..\ChaosEngine\vendor;..\ChaosEngine\vendor\spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;..\ChaosEngine\src;..\ChaosEngine\vendor;..\ChaosEngine\vendor\spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -135,6 +135,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\AnimationStates\PlayerAnimation_IdleState.h" />
+    <ClInclude Include="src\AnimationStates\PlayerAnimation_RunningState.h" />
+    <ClInclude Include="src\Components\PlayerAnimatorController.h" />
+    <ClInclude Include="src\Components\PlayerController.h" />
+    <ClInclude Include="src\Entities\Player.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\AnimationStates\PlayerAnimation_IdleState.cpp" />
+    <ClCompile Include="src\AnimationStates\PlayerAnimation_RunningState.cpp" />
+    <ClCompile Include="src\Components\PlayerAnimatorController.cpp" />
+    <ClCompile Include="src\Components\PlayerController.cpp" />
+    <ClCompile Include="src\Entities\Player.cpp" />
     <ClCompile Include="src\GameApp.cpp" />
   </ItemGroup>
   <ItemGroup>
