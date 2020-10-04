@@ -5,3 +5,5 @@ build/**
 **.vcxproj.filters
 ChaosEngine/vendor/*/int
 ChaosEngine/vendor/*/bin
+.vscode
+*.4coder

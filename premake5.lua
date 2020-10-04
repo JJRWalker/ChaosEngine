@@ -171,6 +171,7 @@ project "Game"
 
     includedirs
     {
+		"Game/src",
         "ChaosEngine/src",
         "ChaosEngine/vendor",
         "ChaosEngine/vendor/spdlog/include"

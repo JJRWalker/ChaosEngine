@@ -1,35 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="ChaosEngine">
-      <UniqueIdentifier>{095A0848-750F-813D-FE03-7B146AB87741}</UniqueIdentifier>
+    <Filter Include="Components">
+      <UniqueIdentifier>{6B7DD516-5735-1764-C03C-F0BFAC13B254}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ChaosEngine\vendor">
-      <UniqueIdentifier>{462CC39E-3210-84F4-9B70-7E4787736E76}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ChaosEngine\vendor\Vulkan">
-      <UniqueIdentifier>{06EF08E3-72B1-3C6D-BB61-CBF92763154B}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ChaosEngine\vendor\Vulkan\include">
-      <UniqueIdentifier>{79BCFF4D-E52A-55CD-2E14-10CD9AC14A69}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ChaosEngine\vendor\Vulkan\include\shaderc">
-      <UniqueIdentifier>{62E2F83C-CEFC-5BDE-171F-6C72837883E5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ChaosEngine\vendor\Vulkan\include\vulkan">
-      <UniqueIdentifier>{F9FB45FA-E578-393D-0EF6-3951FAD1D5D0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src">
-      <UniqueIdentifier>{2DAB880B-99B4-887C-2230-9F7C8E38947C}</UniqueIdentifier>
+    <Filter Include="Entities">
+      <UniqueIdentifier>{8AA33B53-7670-965E-9F89-84068BB5CBEC}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\GameApp.cpp">
-      <Filter>src</Filter>
+    <ClInclude Include="src\Components\PlayerController.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Entities\Player.h">
+      <Filter>Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Components\PlayerAnimatorController.h" />
+    <ClInclude Include="src\AnimationStates\PlayerAnimation_IdleState.h" />
+    <ClInclude Include="src\AnimationStates\PlayerAnimation_RunningState.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Components\PlayerController.cpp">
+      <Filter>Components</Filter>
     </ClCompile>
-    <ClCompile Include="src\Components\PlayerController.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="src\Components\PlayerController.h" />
+    <ClCompile Include="src\Entities\Player.cpp">
+      <Filter>Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GameApp.cpp" />
+    <ClCompile Include="src\Components\PlayerAnimatorController.cpp" />
+    <ClCompile Include="src\AnimationStates\PlayerAnimation_IdleState.cpp" />
+    <ClCompile Include="src\AnimationStates\PlayerAnimation_RunningState.cpp" />
   </ItemGroup>
 </Project>

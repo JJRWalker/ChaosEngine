@@ -1,5 +1,8 @@
 @echo off
 
+call shell.bat
+call build-engine.bat
+
 mkdir "build/cmd/int"
 pushd "build/cmd/int"
 
