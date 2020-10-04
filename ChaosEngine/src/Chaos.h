@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _CHAOS_H
+#define _CHOAS_H
 
 //FOR USE BY CHAOS APPS
 
@@ -28,28 +29,9 @@
 
 //===ENTITY=============================================
 #include "Chaos/Entity/Entity.h"
-#include "Chaos/Entity/ECSManager.h"
-
-//===COMPONENTS========================================
-#include "Chaos/Entity/Components/Camera.h"
-#include "Chaos/Entity/Components/Transform.h"
-#include "Chaos/Entity/Components/Render.h"
-#include "Chaos/Entity/Components/UIImage.h"
-#include "Chaos/Entity/Components/BoxCollider2D.h"
-
-//===RENDERING==========================================
-#include "Chaos/Renderer/Renderer.h"
-#include "Chaos/Renderer/Texture.h"
-#include "Chaos/Renderer/SubTexture.h"
 
 //===EVENTS=============================================
 #include "Chaos/Events/ApplicationEvent.h"
 #include "Chaos/Events/KeyEvent.h"
 #include "Chaos/Events/MouseEvent.h"
-
-//===PLATFORM===========================================
-#include "Platform/Vulkan/VulkanRenderer.h"
-#include "Platform/Vulkan/VulkanTexture.h"
-#include "Platform/Vulkan/VulkanSubTexture.h"
-
-#include "Platform/Windows/WindowsWindow.h"
+#endif

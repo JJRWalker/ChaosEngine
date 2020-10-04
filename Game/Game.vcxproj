@@ -135,18 +135,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\AnimationStates\PlayerAnimation_IdleState.h" />
-    <ClInclude Include="src\AnimationStates\PlayerAnimation_RunningState.h" />
-    <ClInclude Include="src\Components\PlayerAnimatorController.h" />
-    <ClInclude Include="src\Components\PlayerController.h" />
-    <ClInclude Include="src\Entities\Player.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="src\AnimationStates\PlayerAnimation_IdleState.cpp" />
-    <ClCompile Include="src\AnimationStates\PlayerAnimation_RunningState.cpp" />
-    <ClCompile Include="src\Components\PlayerAnimatorController.cpp" />
-    <ClCompile Include="src\Components\PlayerController.cpp" />
-    <ClCompile Include="src\Entities\Player.cpp" />
     <ClCompile Include="src\GameApp.cpp" />
   </ItemGroup>
   <ItemGroup>
