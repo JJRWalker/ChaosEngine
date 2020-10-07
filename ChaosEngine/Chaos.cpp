@@ -33,13 +33,11 @@
 #include <Chaos/Entity/Components/Camera.cpp>
 #include <Chaos/Entity/Components/Transform.cpp>
 #include <Chaos/Entity/Components/Render.cpp>
+#include <Chaos/Entity/Components/SubRender.cpp>
 #include <Chaos/Entity/Components/CellularAutomata.cpp>
 #include <Chaos/Entity/Components/BoxCollider2D.cpp>
 #include <Chaos/Entity/Components/UIImage.cpp>
 #include <Chaos/Entity/Components/Animator.cpp>
-
-//===SYSTEMS====================================
-#include <Chaos/Entity/Systems/RenderSystem.cpp>
 
 //===RENDERER===================================
 #include <Chaos/Renderer/RendererAPI.cpp>
