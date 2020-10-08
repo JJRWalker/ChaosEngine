@@ -37,7 +37,7 @@ namespace Chaos
 		bool OnWindowClose(WindowCloseEvent& e);
 		
 		bool m_running = true;
-		bool m_renderingImGui = false;
+		bool m_renderingImGui = true;
 		std::unique_ptr<Window> m_window;
 		std::unique_ptr<Renderer> m_renderer;
 		Camera* m_mainCamera;

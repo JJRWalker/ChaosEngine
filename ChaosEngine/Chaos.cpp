@@ -15,8 +15,10 @@
 #include <Chaos/DataTypes/Ray2D.cpp>
 
 //===DEBUG======================================
+#include <Chaos/Debug/Console.cpp>
 #include <Chaos/Debug/ImGuiBuild.cpp>
 #include <Chaos/Debug/ImGuiLayer.cpp>
+#include <Chaos/Debug/ImGuiConsole.cpp>
 #include <Chaos/Debug/Timer.cpp>
 
 //===ENTITY=====================================

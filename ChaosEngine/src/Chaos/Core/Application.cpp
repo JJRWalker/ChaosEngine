@@ -11,6 +11,7 @@
 #include "Chaos/Debug/ImGuiLayer.h"
 #include "Chaos/Core/Time.h"
 #include "Chaos/Core/SceneManager.h"
+#include "Chaos/Debug/ImGuiConsole.h"
 
 //inspired by The Cherno's Game engine series, however has and will continue to diverge
 namespace Chaos
@@ -36,7 +37,7 @@ namespace Chaos
 		m_renderer = std::unique_ptr<Renderer>(Renderer::Create());
 		
 		//Creating test overlay layer
-		m_guiLayer = new ImGuiLayer();
+		m_guiLayer = new ImGuiConsole();
 		//Push test overlay layer
 		PushOverlay(m_guiLayer);
 		
