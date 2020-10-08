@@ -76,10 +76,11 @@ namespace Chaos
 		
 	}
 	
+	//Currently just returns 0, text input reuqired a callback function but we don't really need that complex a system
 	int ImGuiConsole::ConsoleEditTextCallbackStub(ImGuiInputTextCallbackData* data)
 	{
-		ImGuiConsole* console = (ImGuiConsole*)data->UserData;
-		return console->ConsoleTextEditCallback(data);
+		//ImGuiConsole* console = (ImGuiConsole*)data->UserData;
+		return 0;
 	}
 	
 	int ImGuiConsole::ConsoleTextEditCallback(ImGuiInputTextCallbackData* data)
