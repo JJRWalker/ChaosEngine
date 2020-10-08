@@ -18,6 +18,7 @@ namespace Chaos
 		Entity(char* name) { strcpy_s(m_name, name); ECSManager::AddEntity(this); ECSManager::AddComponent(m_entityID, m_transform); }
 		~Entity()
 		{
+			//TODO: Should also remove itself from the ECM here...
 			Destroy();
 		}
 		

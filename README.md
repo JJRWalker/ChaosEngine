@@ -20,16 +20,20 @@ As previously stated it is currently vulkan based using GLFW windows, this howev
 Features currently implemented:
 * Logging
 * Input Polling
-* Basic Rendering
+* Batch Rendering
 * Textures and texture mapping
+* Sub Textures (allows for the use of sprite sheets)
+* Debug GUI (using ImGui, currently causes some issues on certain hardware, see note below)
+* Basic Entity Component framework (users can write their own components and add them to entities)  
+* Editor UI (Has some basic functionality such as changing transform and sprite rendered however cannot save / load yet)
 
 ## Next steps
 * Scene system (will also help optimise renderer)
 * Cameras
-* Entity Component System
+* Expand number of base components (e.g. renderer component, camera component, collider)
 * Basic collision system (quads on quads)
 * Sprite Animation
 * Maths functions (Vector maths / randomisation helpers)
 
 ## Known Issues
-* Rendering ImGui causes a blank screen to be rendered over the top of game primatives being rendered to screen, UI is still displayed. Only appears to affect some systems after a recent graphics driver update
+* Rendering ImGui causes a blank screen to be rendered over the top of game primatives being rendered to screen, UI is still displayed. Only appears to affect some systems after a recent graphics driver update. Unfortunately I lack the variety of hardware to test this.
