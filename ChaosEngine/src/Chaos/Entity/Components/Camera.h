@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Chaos/DataTypes/Vec2.h"
 #include "Chaos/DataTypes/Vec4.h"
 #include "Chaos/DataTypes/Vec3.h"
 #include "Chaos/Entity/Component.h"
@@ -14,34 +15,36 @@ namespace Chaos
 	//Eventually this class will inherit from a Component interface so it can be attached to a game object a la unity
 	class Camera : public Component
 	{
-	public:
+		public:
 		Camera() { };
 		
 		// Inherited via IComponent
 		virtual void Start() override;
 		virtual void Update() override;
 		virtual void Destroy()  override;
-
+		
 		void SetBounds(Vec4 bounds) { m_bounds = bounds; Recalculate(); }
 		Vec4 GetBounds() { return m_bounds; }
-
+		
 		float GetAspectRatio() { return m_aspectRatio; }
 		void SetAspectRatio(float value) { m_aspectRatio = value; }
-
+		
+		Vec2 ScreenToWorld(Vec2 screenPoint);
+		
 		glm::mat4 GetProjection() { return m_projection; }
 		glm::mat4 GetView() { return m_view; }
 		glm::mat4 GetModel() { return m_model; }
-
-	private:
+		
+		private:
 		void Recalculate();
-
-	private:
+		
+		private:
 		Vec4 m_bounds = Vec4(-5.0f, 5.0f, -5.0f, 5.0f);
 		float m_aspectRatio = 1.77f;
-
+		
 		glm::mat4 m_projection = glm::mat4();
 		glm::mat4 m_view = glm::mat4(1.0f);
 		glm::mat4 m_model = glm::mat4();
-
+		
 	};
 }

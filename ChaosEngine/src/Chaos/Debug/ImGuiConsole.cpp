@@ -33,7 +33,7 @@ namespace Chaos
 			
 			ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus;
 			
-			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.1f, 0.1f, 0.1f, 0.1f));
+			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.01f, 0.01f, 0.01f, 0.5f));
 			ImGui::SetNextWindowPos(ImVec2(0,0));
 			ImGui::SetNextWindowSize(ImVec2(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight() / 3));
 			ImGui::Begin("Console", NULL, window_flags);
@@ -70,6 +70,10 @@ namespace Chaos
 			{ 
 				Console::ClearHistory();
 			}
+			
+			bool show = true;
+			
+			//ImGui::ShowDemoWindow(&show);
 			
 			ImGui::End();
 		}

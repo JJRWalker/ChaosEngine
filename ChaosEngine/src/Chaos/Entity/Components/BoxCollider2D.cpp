@@ -9,28 +9,34 @@ namespace Chaos
 	{
 		switch (other.GetType())
 		{
-		case ColliderType::BOX2D:
-		{
-			BoxCollider2D collider = (BoxCollider2D&)other;
-			if (GetEntity()->GetTransform()->Position().X + m_offset.X < collider.GetEntity()->GetTransform()->Position().X + collider.Offset().X + collider.GetBounds().Width &&
-				GetEntity()->GetTransform()->Position().X + m_offset.X + m_bounds.Width > collider.GetEntity()->GetTransform()->Position().X + collider.Offset().X &&
-				GetEntity()->GetTransform()->Position().Y + m_offset.Y < collider.GetEntity()->GetTransform()->Position().Y + collider.Offset().Y + collider.GetBounds().Height &&
-				GetEntity()->GetTransform()->Position().Y + m_offset.Y + m_bounds.Height > collider.GetEntity()->GetTransform()->Position().Y + collider.Offset().Y)
+			case ColliderType::BOX2D:
 			{
-				//LOGCORE_INFO("Collision detected {0} -> {1}", GetEntity()->GetName(), other.GetEntity()->GetName());
-				if (m_hitCallback)
+				BoxCollider2D collider = (BoxCollider2D&)other;
+				if (GetEntity()->GetTransform()->Position().X + m_offset.X < collider.GetEntity()->GetTransform()->Position().X + collider.Offset().X + collider.GetBounds().Width &&
+					GetEntity()->GetTransform()->Position().X + m_offset.X + m_bounds.Width > collider.GetEntity()->GetTransform()->Position().X + collider.Offset().X &&
+					GetEntity()->GetTransform()->Position().Y + m_offset.Y < collider.GetEntity()->GetTransform()->Position().Y + collider.Offset().Y + collider.GetBounds().Height &&
+					GetEntity()->GetTransform()->Position().Y + m_offset.Y + m_bounds.Height > collider.GetEntity()->GetTransform()->Position().Y + collider.Offset().Y)
 				{
-					m_hitCallback();	//if hit, do the specified callback
+					//LOGCORE_INFO("Collision detected {0} -> {1}", GetEntity()->GetName(), other.GetEntity()->GetName());
+					if (m_hitCallback)
+					{
+						m_hitCallback();	//if hit, do the specified callback
+					}
+					return true;
 				}
-				return true;
-			}
-		}break;
-		case ColliderType::LINE:
-		{
-
-		}break;
-
+			}break;
+			case ColliderType::LINE:
+			{
+				
+			}break;
+			
 		}
 		return false;
 	}
+	
+	bool BoxCollider2D::PointCollision(Vec2& point)
+	{
+		return (point.X > (GetEntity()->GetPosition().X - (m_bounds.Width / 2)) && point.X <(GetEntity()->GetPosition().X + (m_bounds.Width / 2)) && point.Y > (GetEntity()->GetPosition().Y - (m_bounds.Height / 2)) && point.Y <(GetEntity()->GetPosition().Y + (m_bounds.Height / 2)));
+	}
+	
 }

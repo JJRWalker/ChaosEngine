@@ -12,6 +12,7 @@
 #include "Chaos/Core/Time.h"
 #include "Chaos/Core/SceneManager.h"
 #include "Chaos/Debug/ImGuiConsole.h"
+#include "Chaos/Debug/ImGuiEditor.h"
 
 //inspired by The Cherno's Game engine series, however has and will continue to diverge
 namespace Chaos
@@ -38,8 +39,10 @@ namespace Chaos
 		
 		//Creating test overlay layer
 		m_guiLayer = new ImGuiConsole();
+		
 		//Push test overlay layer
 		PushOverlay(m_guiLayer);
+		PushOverlay(new ImGuiEditor());
 		
 		//init time
 		Time::Init();

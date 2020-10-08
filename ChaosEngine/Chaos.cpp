@@ -19,6 +19,7 @@
 #include <Chaos/Debug/ImGuiBuild.cpp>
 #include <Chaos/Debug/ImGuiLayer.cpp>
 #include <Chaos/Debug/ImGuiConsole.cpp>
+#include <Chaos/Debug/ImGuiEditor.cpp>
 #include <Chaos/Debug/Timer.cpp>
 
 //===ENTITY=====================================
@@ -40,6 +41,7 @@
 #include <Chaos/Entity/Components/BoxCollider2D.cpp>
 #include <Chaos/Entity/Components/UIImage.cpp>
 #include <Chaos/Entity/Components/Animator.cpp>
+#include <Chaos/Entity/Components/EditorCameraController.cpp>
 
 //===RENDERER===================================
 #include <Chaos/Renderer/RendererAPI.cpp>

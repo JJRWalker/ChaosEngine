@@ -33,7 +33,8 @@ namespace Chaos
 		{
 			for (auto* c : GetAllComponents())
 			{
-				c->Update();
+				if (c->GetActive())
+					c->Update();
 			}
 		}
 		virtual void Destroy()
