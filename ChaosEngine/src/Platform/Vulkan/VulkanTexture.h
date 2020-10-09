@@ -10,16 +10,17 @@ namespace Chaos
 		
 		public:
 		VulkanTexture();
-		VulkanTexture(char* filePath);
+		VulkanTexture(std::string filePath);
 		
 		virtual ~VulkanTexture() {};
 		
 		//Must explicitly unload textures, note if renderer doesn't exist on load or unload, it will fail to be dealocated or alocated
 		virtual void Load (char* filePath) override;
+		virtual void Load (std::string filePath) override;
 		virtual void Unload() override;
 		void LoadBlank();
 		
-		virtual char* GetFilePath() const override { return m_filePath; }
+		virtual std::string GetFilePath() const override {return m_filePath;}
 		
 		virtual uint32_t GetWidth() const override { return m_width; }
 		virtual uint32_t GetHeight() const override { return m_height; }
@@ -30,7 +31,7 @@ namespace Chaos
 		VkImageView& GetImageView() { return m_imageView; }
 		
 		private: 
-		char* m_filePath;
+		std::string m_filePath;
 		uint32_t m_width = 0;
 		uint32_t m_height = 0;
 		uint32_t m_size;

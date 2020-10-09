@@ -326,6 +326,19 @@ namespace Chaos
 		return false;
 	}
 	
+	bool VulkanRenderer::HasTexture(std::string filePath, Ref<Texture> outTexture)
+	{
+		for (auto& t : m_texturesToBind)
+		{
+			if (t->GetFilePath() == filePath)
+			{
+				outTexture = t;
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	VkResult VulkanRenderer::CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
 		auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
 		if (func != nullptr) {

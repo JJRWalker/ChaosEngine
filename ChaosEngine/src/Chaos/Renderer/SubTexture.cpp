@@ -6,12 +6,12 @@
 
 namespace Chaos
 {
-	Ref<SubTexture> SubTexture::Create(char* path, Vec2 coordinates, Vec2 size)
+	Ref<SubTexture> SubTexture::Create(std::string path, Vec2 coordinates, Vec2 size)
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None: LOGCORE_ERROR("Render API not supported!"); return nullptr;
-		case RendererAPI::API::Vulkan: return CreateRef<VulkanSubTexture>(path, coordinates, size);
+			case RendererAPI::API::None: LOGCORE_ERROR("Render API not supported!"); return nullptr;
+			case RendererAPI::API::Vulkan: return CreateRef<VulkanSubTexture>(path, coordinates, size);
 		}
 		LOGCORE_ERROR("Render API not found");
 		return nullptr;
@@ -20,8 +20,8 @@ namespace Chaos
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None: LOGCORE_ERROR("Render API not supported!"); return nullptr;
-		case RendererAPI::API::Vulkan: return CreateRef<VulkanSubTexture>(mainTexture, coordinates, size);
+			case RendererAPI::API::None: LOGCORE_ERROR("Render API not supported!"); return nullptr;
+			case RendererAPI::API::Vulkan: return CreateRef<VulkanSubTexture>(mainTexture, coordinates, size);
 		}
 		LOGCORE_ERROR("Render API not found");
 		return nullptr;

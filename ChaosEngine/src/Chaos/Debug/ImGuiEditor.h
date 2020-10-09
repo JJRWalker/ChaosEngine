@@ -5,7 +5,6 @@
 #include <Chaos/Debug/ImGuiLayer.h>
 #include <Chaos/Entity/Components/EditorCameraController.h>
 #include <Chaos/DataTypes/Vec2.h>
-
 namespace Chaos
 {
 	class ImGuiEditor : public ImGuiLayer
@@ -25,6 +24,7 @@ namespace Chaos
 		bool m_clicked = false;
 		
 		char* m_filePathInput = "";
+		std::string m_filePath = "";
 		
 		Vec2 m_draggingEntPositionOffset = Vec2::Zero();
 		std::vector<Entity*> m_selectedEntities;

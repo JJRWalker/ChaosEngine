@@ -163,7 +163,7 @@ namespace Chaos
 					
 					ImGui::DragFloat2("Scale", *scale, 0.01f);
 					
-					ImGui::DragFloat("Rotation", &entity->GetScale().X, 1.0f, -180, 180);
+					ImGui::DragFloat("Rotation", &entity->GetRotation().X, 1.0f, -180, 180);
 					
 					ImGui::Separator();
 					
@@ -175,17 +175,38 @@ namespace Chaos
 						
 						if (ImGui::Button("Change texture"))
 						{
-							Application::Get().PushOverlay(new ImGuiFileExplorer( &m_filePathInput));
+							std::string path = entity->GetComponent<Render>()->GetTexture()->GetFilePath();
+							if(path != "")
+								m_filePath = path;
+							Application::Get().PushOverlay(new ImGuiFileExplorer(m_filePath, [&](){m_selectedEntities[m_selectedEntities.size() - 1]->GetComponent<Render>()->GetTexture()->Load(m_filePath);} ));
 						}
 						
-						ImGui::Text(m_filePathInput);
+						ImGui::Text(m_filePath.c_str());
 					}
 					if (entity->HasComponent<SubRender>())
 					{
+						SubRender* subrender = entity->GetComponent<SubRender>();
+						float* coord[2] = { &subrender->GetSubTexture()->GetCellCoords().X, &subrender->GetSubTexture()->GetCellCoords().Y };
+						
+						float* size[2] = { &subrender->GetSubTexture()->GetCellSize().X, &subrender->GetSubTexture()->GetCellSize().Y };
+						
+						ImGui::DragFloat2("Sprite Coordinate", *coord, 1);
+						
+						ImGui::DragFloat2("Cell Size", *size, 1);
+						
 						if (ImGui::Button("Change texture"))
 						{
-							std::string filePath;
+							std::string path = entity->GetComponent<SubRender>()->GetSubTexture()->GetFilePath();
+							if(path != "")
+								m_filePath = path;
+							Application::Get().PushOverlay(new ImGuiFileExplorer(m_filePath, [&](){m_selectedEntities[m_selectedEntities.size() - 1]->GetComponent<SubRender>()->SetSubTexture(SubTexture::Create(m_filePath, Vec2(0,0), Vec2(32,32)));} ));
 						}
+						ImGui::SameLine();
+						if (ImGui::Button("Set Coords"))
+						{
+							subrender->GetSubTexture()->SetTexCoords(subrender->GetSubTexture()->GetCellCoords(), subrender->GetSubTexture()->GetCellSize());
+						}
+						
 					}
 					ImGui::End();
 				}
