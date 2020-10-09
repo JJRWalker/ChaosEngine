@@ -1,6 +1,5 @@
 #include "chaospch.h"
 #include "EditorScene.h"
-#include "Chaos/Entity/Systems/RenderSystem.h"
 #include "Chaos/Entity/Components/CellularAutomata.h"
 
 namespace Chaos
@@ -27,20 +26,16 @@ namespace Chaos
 			m_entities.push_back(nodeEnt);
 			//LOGCORE_TRACE("{0}", node.Neighbours.size());
 		  }
-		m_systems.push_back(new RenderSystem());
 	}
 
 	void EditorScene::Update()
 	{
 		PROFILED_FUNC();
-		for (auto* sys : m_systems)
+
+		for (auto* entity : m_entities)
 		{
-		 	sys->Manage(m_entities);
+			entity->Update();
 		}
-		// for (auto* entity : m_entities)
-		//{
-		//	entity->Update();
-		//}
 	}
 	
 

@@ -7,6 +7,9 @@
 
 namespace Chaos
 {
+	Vec2 Input::m_mouseEndFramePosition = Vec2(0,0);
+	Vec2 Input::m_mouseDelta = Vec2(0,0);
+	
 	bool Input::IsKeyPressed(KeyCode key)
 	{
 		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
@@ -41,6 +44,12 @@ namespace Chaos
 		return Vec2((GetMouseX() / Application::Get().GetWindow().GetWidth()) * 2 - 1, (GetMouseY() / Application::Get().GetWindow().GetHeight()) * 2 - 1);
 	}
 	
+	//returns the difference between the mouse position at the end of the last frame and the current mouse position
+	Vec2 Input::GetMouseDelta()
+	{
+		return m_mouseDelta;
+	}
+	
 	std::pair<float, float> Input::GetMousePositionRaw()
 	{
 		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
@@ -59,5 +68,11 @@ namespace Chaos
 	{
 		auto [x, y] = GetMousePositionRaw();
 		return (float)y;
+	}
+	
+	void Input::UpdateMouseEndFramePosition()
+	{
+		m_mouseDelta = GetMousePosition() - m_mouseEndFramePosition;
+		m_mouseEndFramePosition = GetMousePosition();
 	}
 }

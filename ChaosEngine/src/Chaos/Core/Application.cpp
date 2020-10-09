@@ -78,6 +78,7 @@ namespace Chaos
 			m_mainCamera->Update();
 			m_window->OnUpdate();
 			m_renderer->DrawFrame();
+			Input::UpdateMouseEndFramePosition();
 			//LOGCORE_INFO("Time to renderframe: {0} FPS: {1}", mDeltaTime, 1 / mDeltaTime);
 		}
 	}
@@ -114,6 +115,14 @@ namespace Chaos
 		m_layerStack.PushOverlay(overlay);
 		overlay->OnAttach();
 	}
+	
+	void Application::PopOverlay(Layer* overlay)
+	{
+		m_layerStack.PopOverlay(overlay);
+		overlay->OnDetach();
+		delete overlay;
+	}
+	
 	bool Application::OnWindowClose(WindowCloseEvent& e)
 	{
 		m_running = false;

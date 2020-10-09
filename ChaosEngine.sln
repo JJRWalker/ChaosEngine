@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 16
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30320.27
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Game", "Game\Game.vcxproj", "{7FA9857C-6BE0-860D-14CD-6C1000E3020F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ChaosEngine", "ChaosEngine\ChaosEngine.vcxproj", "{095A0848-750F-813D-FE03-7B146AB87741}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ControlEditor", "ControlEditor\ControlEditor.vcxproj", "{0D4BC800-790B-4437-4246-8DB4AEC58813}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GLFW", "ChaosEngine\vendor\GLFW\GLFW.vcxproj", "{154B857C-0182-860D-AA6E-6C109684020F}"
 EndProject
@@ -30,12 +30,6 @@ Global
 		{095A0848-750F-813D-FE03-7B146AB87741}.Distribution|x64.Build.0 = Distribution|x64
 		{095A0848-750F-813D-FE03-7B146AB87741}.Release|x64.ActiveCfg = Release|x64
 		{095A0848-750F-813D-FE03-7B146AB87741}.Release|x64.Build.0 = Release|x64
-		{0D4BC800-790B-4437-4246-8DB4AEC58813}.Debug|x64.ActiveCfg = Debug|x64
-		{0D4BC800-790B-4437-4246-8DB4AEC58813}.Debug|x64.Build.0 = Debug|x64
-		{0D4BC800-790B-4437-4246-8DB4AEC58813}.Distribution|x64.ActiveCfg = Distribution|x64
-		{0D4BC800-790B-4437-4246-8DB4AEC58813}.Distribution|x64.Build.0 = Distribution|x64
-		{0D4BC800-790B-4437-4246-8DB4AEC58813}.Release|x64.ActiveCfg = Release|x64
-		{0D4BC800-790B-4437-4246-8DB4AEC58813}.Release|x64.Build.0 = Release|x64
 		{154B857C-0182-860D-AA6E-6C109684020F}.Debug|x64.ActiveCfg = Debug|x64
 		{154B857C-0182-860D-AA6E-6C109684020F}.Debug|x64.Build.0 = Debug|x64
 		{154B857C-0182-860D-AA6E-6C109684020F}.Distribution|x64.ActiveCfg = Distribution|x64
@@ -51,5 +45,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5B104845-3E5C-428D-9AE1-0FFC7A7F55D5}
 	EndGlobalSection
 EndGlobal

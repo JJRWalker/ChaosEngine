@@ -15,7 +15,7 @@ namespace Chaos
 		virtual bool CollideWith(Collider& other) = 0;
 		
 		bool IsTrigger() { return m_trigger; }
-		void SetTriggerActive(bool state) { m_trigger = state; }
+		void SetTrigger(bool state) { m_trigger = state; }
 		
 		Vec3& Offset() { return m_offset; }
 		std::function<void()>& HitCallback() { return m_hitCallback; }

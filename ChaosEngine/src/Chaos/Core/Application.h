@@ -24,6 +24,7 @@ namespace Chaos
 		
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* overlay);
+		void PopOverlay(Layer* overlay);
 		
 		
 		inline static Application& Get() { return *s_instance; }

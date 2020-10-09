@@ -1,6 +1,7 @@
 #include <chaospch.h>
 #include <Chaos/Debug/ImGuiConsole.h>
 #include <Chaos/Input/Input.h>
+#include <Chaos/Core/Application.h>
 
 namespace Chaos
 {

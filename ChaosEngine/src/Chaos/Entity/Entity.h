@@ -22,28 +22,10 @@ namespace Chaos
 			Destroy();
 		}
 		
-		virtual void Start() 
-		{
-			for (auto* c : GetAllComponents())
-			{
-				c->Start();
-			}
-		}
-		virtual void Update() 
-		{
-			for (auto* c : GetAllComponents())
-			{
-				if (c->GetActive())
-					c->Update();
-			}
-		}
-		virtual void Destroy()
-		{
-			for (auto* c : GetAllComponents())
-			{
-				c->Destroy();
-			}
-		}
+		virtual void Start() ;
+		virtual void Update() ;
+		virtual void Destroy();
+		virtual void Debug();
 		
 		//Checks if the given class is derived from component, if so then it initalises a new class of that type and adds it to the vector, else print a warning to console
 		template<typename T>

@@ -20,10 +20,12 @@
 #include <Chaos/Debug/ImGuiLayer.cpp>
 #include <Chaos/Debug/ImGuiConsole.cpp>
 #include <Chaos/Debug/ImGuiEditor.cpp>
+#include <Chaos/Debug/ImGuiFileExplorer.cpp>
 #include <Chaos/Debug/Timer.cpp>
 
 //===ENTITY=====================================
 #include <Chaos/Entity/ECSManager.cpp>
+#include <Chaos/Entity/Entity.cpp>
 
 //===PLATFORM==================================
 #include <Platform/Windows/WindowsWindow.cpp>

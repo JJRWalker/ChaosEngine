@@ -7,6 +7,7 @@
 #include "Platform/Vulkan/VulkanRenderer.h"
 #include "Platform/Vulkan/VulkanTexture.h"
 #include "Chaos/Core/Scene.h"
+#include "Chaos/Entity/Components/Camera.h"
 
 #ifndef GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_NONE
@@ -14,12 +15,11 @@
 #include <GLFW/include/GLFW/glfw3.h>
 #include <GLM/glm/glm.hpp>
 
-
 //temp
 #include <Chaos/Entity/Components/Render.h>
 namespace Chaos
 {
-	EditorLayer::EditorLayer() : m_cameraController(*Application::Get().GetMainCameraEntity()->GetTransform(), *Application::Get().GetMainCamera())
+	EditorLayer::EditorLayer() : m_cameraController(*Application::Get().GetMainCamera()->GetEntity()->GetTransform(), *Application::Get().GetMainCamera())
 	{
 		m_debugName = "ControlEditorLayer";
 	}

@@ -4,6 +4,7 @@
 #include <Chaos/Core/Time.h>
 #include <Chaos/DataTypes/Vec2.h>
 #include <Chaos/DataTypes/Vec3.h>
+#include <Chaos/Entity/Entity.h>
 
 namespace Chaos
 {

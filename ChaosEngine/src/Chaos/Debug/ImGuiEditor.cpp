@@ -1,17 +1,25 @@
 #include <chaospch.h>
 #include <Chaos/Debug/ImGuiEditor.h>
 #include <Chaos/Debug/Console.h>
+#include <Chaos/Entity/Components/Camera.h>
 #include <Chaos/Entity/Components/BoxCollider2D.h>
+#include <Chaos/Entity/Components/Render.h>
+#include <Chaos/Entity/Components/SubRender.h>
+#include <Chaos/Debug/ImGuiFileExplorer.h>
+#include <Chaos/Core/Application.h>
+#include <Chaos/Core/SceneManager.h>
+#include <Chaos/Input/Input.h>
 
 namespace Chaos
 {
 	bool ImGuiEditor::m_showEditor = false;
 	ImGuiEditor::ImGuiEditor()
 	{
-		Console::AddCommand("editor", &OpenEditor);
+		Console::AddCommand("ed", &OpenEditor);
 		Application::Get().GetMainCamera()->GetEntity()->AddComponent<EditorCameraController>();
 		m_cameraController = Application::Get().GetMainCamera()->GetEntity()->GetComponent<EditorCameraController>();
 		m_cameraController->SetActive(false);
+		
 	}
 	
 	void ImGuiEditor::OnImGuiUpdate() 
@@ -38,7 +46,10 @@ namespace Chaos
 				{
 					if(ImGui::MenuItem("ent"))
 					{
-						LOGINFO("ENT!");
+						Entity* entity = new Entity();
+						entity->AddComponent<Render>();
+						entity->AddComponent<BoxCollider2D>();
+						entity->GetComponent<BoxCollider2D>()->SetTrigger(true);
 					}
 					ImGui::EndMenu();
 				}
@@ -96,6 +107,9 @@ namespace Chaos
 					Vec2 mouseWorldPoint =  Application::Get().GetMainCamera()->ScreenToWorld(Input::GetMousePosition());
 					
 					
+					//Not sure about how nested this gets..
+					//when editor is open if we click find the box collider where the world mouse position that click intersects
+					
 					
 					for (Entity* ent : SceneManager::GetScene()->GetEntities())
 					{
@@ -103,19 +117,39 @@ namespace Chaos
 						{
 							if(ent->GetComponent<BoxCollider2D>()->PointCollision(mouseWorldPoint))
 							{
-								//only add if selected entities doesn't already contain it
-								if (std::find(m_selectedEntities.begin(), m_selectedEntities.end(), ent) == m_selectedEntities.end())
+								if(!m_clicked)
 								{
-									m_selectedEntities.push_back(ent);
+									m_draggingEntPositionOffset = Vec2(mouseWorldPoint.X - ent->GetPosition().X, mouseWorldPoint.Y - ent->GetPosition().Y);
+									m_clicked = true;
 								}
+								
+								if(std::find(m_selectedEntities.begin(), m_selectedEntities.end(), ent) == m_selectedEntities.end())
+								{
+									m_selectedEntities.clear();
+									m_selectedEntities.push_back(ent);
+									
+								}
+								
+								//clear entities and select just this one
+								//TODO: in future support group selecting entites
+								
+								ent->GetPosition() = Vec3 (mouseWorldPoint.X - m_draggingEntPositionOffset.X, mouseWorldPoint.Y - m_draggingEntPositionOffset.Y, ent->GetPosition().Z);
+								
 							}
 						}
 					}
+				}
+				else if (Input::IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
+				{
+					m_draggingEntPositionOffset = Vec2::Zero();
+					m_clicked = false;
 				}
 				
 				if (m_selectedEntities.size() > 0)
 				{
 					Entity* entity = m_selectedEntities[m_selectedEntities.size() - 1];
+					
+					entity->Debug();
 					
 					ImGui::SetNextWindowSize(ImVec2(300, 400));
 					ImGui::SetNextWindowPos(ImVec2(windowPos.x + (windowSize.x), windowPos.y));
@@ -133,6 +167,26 @@ namespace Chaos
 					
 					ImGui::Separator();
 					
+					//Render component..
+					//currently hard coded inputs in future should be automatic depending on the variable type
+					
+					if(entity->HasComponent<Render>())
+					{
+						
+						if (ImGui::Button("Change texture"))
+						{
+							Application::Get().PushOverlay(new ImGuiFileExplorer( &m_filePathInput));
+						}
+						
+						ImGui::Text(m_filePathInput);
+					}
+					if (entity->HasComponent<SubRender>())
+					{
+						if (ImGui::Button("Change texture"))
+						{
+							std::string filePath;
+						}
+					}
 					ImGui::End();
 				}
 				
