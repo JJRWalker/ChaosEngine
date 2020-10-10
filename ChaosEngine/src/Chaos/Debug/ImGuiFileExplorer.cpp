@@ -76,7 +76,11 @@ namespace Chaos
 		{
 			m_filePath = m_tempPath;
 			m_callback();
-			Application::Get().PopOverlay(this);
+			//need to pop this layer after the layers have finished updating as it is modifying the layer stack
+			Application::Get().AddPostUpdateCallback([&](){
+														 Application::Get().PopOverlay(this);
+													 });
+			
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("Cancel"))

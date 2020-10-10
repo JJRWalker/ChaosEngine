@@ -161,7 +161,12 @@ namespace Chaos
 				
 				if(path != "")
 					m_filePath = path;
-				Application::Get().PushOverlay(new ImGuiFileExplorer(m_filePath, [&](){m_selectedEntities[m_selectedEntities.size() - 1]->GetComponent<Render>()->GetTexture()->Load(m_filePath);} ));
+				
+				Application::Get().AddPostUpdateCallback([&]() { Application::Get().PushOverlay(new ImGuiFileExplorer(
+																													  m_filePath, [&](){
+																														  m_selectedEntities[m_selectedEntities.size() - 1]->GetComponent<Render>()->GetTexture()->Load(m_filePath);
+																													  } ));});
+				
 			}
 			
 			ImGui::Text(m_filePath.c_str());
@@ -204,8 +209,10 @@ namespace Chaos
 				std::string path = entity->GetComponent<SubRender>()->GetSubTexture()->GetFilePath();
 				if(path != "")
 					m_filePath = path;
-				Application::Get().PushOverlay(new ImGuiFileExplorer(m_filePath, [&](){m_selectedEntities
-																			 [m_selectedEntities.size() - 1]->GetComponent<SubRender>()->SetSubTexture(SubTexture::Create(m_filePath, Vec2(0,0), Vec2(32,32)));} ));
+				//kinda messy, but need to modify this layer stack after we finish itterating over them
+				Application::Get().AddPostUpdateCallback([&](){Application::Get().PushOverlay(new ImGuiFileExplorer(m_filePath, [&](){m_selectedEntities
+																															[m_selectedEntities.size() - 1]->GetComponent<SubRender>()->SetSubTexture(SubTexture::Create(m_filePath, Vec2(0,0), Vec2(32,32)));} ));});
+				
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("Set Coords"))

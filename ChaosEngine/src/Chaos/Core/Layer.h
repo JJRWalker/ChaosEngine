@@ -7,20 +7,21 @@ namespace Chaos
 {
 	class Layer
 	{
-	public:
+		public:
 		Layer(const std::string& name = "Layer") 
 			: m_debugName(name) {}
 		virtual ~Layer() {}
-
+		
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}
 		virtual void OnUpdate(float deltaTime) {}
+		virtual void OnLateUpdate(){};
 		virtual void OnEvent(Event& event) {}
 		virtual void OnImGuiUpdate() {}
-
+		
 		inline const std::string& GetName() const { return m_debugName; }
-
-	protected:
+		
+		protected:
 		std::string m_debugName;
 	};
 }

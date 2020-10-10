@@ -78,12 +78,22 @@ namespace Chaos
 					layer->OnImGuiUpdate();
 				m_guiLayer->End();
 			}
+			
+			//Do post update steps
+			//Needed to modify the layer stack without causing itteration issues
+			for (auto func : m_postUpdateSteps)
+			{
+				func();
+			}
+			//clear once finished
+			m_postUpdateSteps.clear();
+			
+			//update the current scene after all the layers have been processed
 			SceneManager::GetScene()->Update();
 			m_mainCamera->Update();
 			m_window->OnUpdate();
 			m_renderer->DrawFrame();
 			Input::UpdateMouseEndFramePosition();
-			//LOGCORE_INFO("Time to renderframe: {0} FPS: {1}", mDeltaTime, 1 / mDeltaTime);
 		}
 	}
 	

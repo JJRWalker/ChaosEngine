@@ -5,12 +5,14 @@
 #include "Chaos/Events/Event.h"
 #include "Chaos/Events/ApplicationEvent.h"
 #include "Chaos/Core/LayerStack.h"
+#include <functional>
 
 namespace Chaos
 {
 	class Renderer;
 	class Camera;
 	class Entity;
+	class ImGuiLayer;
 	class Application
 	{
 		public:
@@ -33,6 +35,7 @@ namespace Chaos
 		inline Camera* GetMainCamera() { return m_mainCamera; }
 		inline void SetMainCamera(Camera* cam) { m_mainCamera = cam; }
 		inline void SetRenderingImGui(bool state) { m_renderingImGui = state; }
+		inline void AddPostUpdateCallback(std::function<void()> function) {m_postUpdateSteps.push_back(function);}
 		
 		private:
 		bool OnWindowClose(WindowCloseEvent& e);
@@ -45,8 +48,9 @@ namespace Chaos
 		Entity* m_mainCameraEntity;
 		
 		LayerStack m_layerStack;
+		std::vector<std::function<void()>> m_postUpdateSteps;
 		
-		class ImGuiLayer* m_guiLayer;
+		ImGuiLayer* m_guiLayer;
 		
 		static Application* s_instance;
 	};
