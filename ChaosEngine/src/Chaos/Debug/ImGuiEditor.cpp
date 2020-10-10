@@ -247,7 +247,7 @@ namespace Chaos
 			//Overlaying buttons ontop of the image to select the cell we want
 			ImVec2 buttonSize = ImVec2 (DETAILS_WINDOW_SIZE.X / subrender->GetSubTexture()->GetTotalCells().X, (DETAILS_WINDOW_SIZE.X * aspectRatio) / subrender->GetSubTexture()->GetTotalCells().Y);
 			
-			
+			int buttonID = 0;
 			
 			for (int x = 0; x < subrender->GetSubTexture()->GetTotalCells().X; ++x)
 			{
@@ -255,13 +255,16 @@ namespace Chaos
 				{
 					ImGui::SetCursorPos(ImVec2(startCursorPos.x + (x * buttonSize.x), startCursorPos.y + (y * buttonSize.y)));
 					char buttonName[10];
-					//sprintf(buttonName, "X:%d Y:%d", x, y);
+					sprintf(buttonName, "%d Y:%d", x, y);
 					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.1f, 0.1f, 0.1f, 0.1f));
+					ImGui::PushID(buttonID);
 					if (ImGui::Button("", buttonSize))
 					{
 						subrender->GetSubTexture()->SetTexCoords(Vec2(x,y), subrender->GetSubTexture()->GetCellSize());
 					}
 					ImGui::PopStyleColor();
+					ImGui::PopID();
+					buttonID++;
 				}
 			}
 			
