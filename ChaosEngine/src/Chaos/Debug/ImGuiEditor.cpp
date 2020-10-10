@@ -102,11 +102,11 @@ namespace Chaos
 					}
 				}
 				
+				
+				Vec2 mouseWorldPoint =  Application::Get().GetMainCamera()->ScreenToWorld(Input::GetMousePosition());
+				
 				if(Input::IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
 				{
-					Vec2 mouseWorldPoint =  Application::Get().GetMainCamera()->ScreenToWorld(Input::GetMousePosition());
-					
-					
 					//Not sure about how nested this gets..
 					//when editor is open if we click find the box collider where the world mouse position that click intersects
 					
@@ -133,8 +133,6 @@ namespace Chaos
 								//clear entities and select just this one
 								//TODO: in future support group selecting entites
 								
-								ent->GetPosition() = Vec3 (mouseWorldPoint.X - m_draggingEntPositionOffset.X, mouseWorldPoint.Y - m_draggingEntPositionOffset.Y, ent->GetPosition().Z);
-								
 							}
 						}
 					}
@@ -143,6 +141,12 @@ namespace Chaos
 				{
 					m_draggingEntPositionOffset = Vec2::Zero();
 					m_clicked = false;
+				}
+				
+				if (m_clicked)
+				{
+					m_selectedEntities[m_selectedEntities.size() - 1]->GetPosition() = Vec3 (mouseWorldPoint.X - m_draggingEntPositionOffset.X, mouseWorldPoint.Y - m_draggingEntPositionOffset.Y, m_selectedEntities[m_selectedEntities.size() - 1]->GetPosition().Z);
+					
 				}
 				
 				if (m_selectedEntities.size() > 0)

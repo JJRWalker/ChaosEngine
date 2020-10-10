@@ -21,6 +21,7 @@
 #include <Chaos/Debug/ImGuiConsole.cpp>
 #include <Chaos/Debug/ImGuiEditor.cpp>
 #include <Chaos/Debug/ImGuiFileExplorer.cpp>
+#include <Chaos/Debug/ImGuiDebugInfo.cpp>
 #include <Chaos/Debug/Timer.cpp>
 
 //===ENTITY=====================================

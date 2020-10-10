@@ -13,6 +13,7 @@
 #include "Chaos/Core/SceneManager.h"
 #include "Chaos/Debug/ImGuiConsole.h"
 #include "Chaos/Debug/ImGuiEditor.h"
+#include "Chaos/Debug/ImGuiDebugInfo.h"
 
 //inspired by The Cherno's Game engine series, however has and will continue to diverge
 namespace Chaos
@@ -43,6 +44,7 @@ namespace Chaos
 		//Push test overlay layer
 		PushOverlay(m_guiLayer);
 		PushOverlay(new ImGuiEditor());
+		PushOverlay(new ImGuiDebugInfo());
 		
 		//init time
 		Time::Init();
@@ -57,12 +59,14 @@ namespace Chaos
 	{
 		while (m_running)
 		{
+			//Update time class
 			Time::m_time = m_window->GetWindowTime();
 			Time::m_deltaTime = Time::m_time - Time::m_timeLastFrame;
 			Time::m_timeLastFrame = Time::m_time;
 			
 			m_mainCamera->SetAspectRatio(m_window->GetAspectRatio());
 			
+			//itterate through layers
 			for (Layer* layer : m_layerStack)
 				layer->OnUpdate(Time::m_deltaTime);			
 			
