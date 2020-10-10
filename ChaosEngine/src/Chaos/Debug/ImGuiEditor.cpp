@@ -254,6 +254,7 @@ namespace Chaos
 					{
 						subrender->GetSubTexture()->SetTexCoords(Vec2(x,y), subrender->GetSubTexture()->GetCellSize());
 					}
+					ImGui::PopStyleColor();
 				}
 			}
 			
