@@ -21,6 +21,7 @@ namespace Chaos
 		virtual const Vec2* GetTexCoords() const override { return m_texCoords; }
 		virtual Vec2& GetCellSize() override {return m_cellSize;}
 		virtual Vec2& GetCellCoords() override {return m_coordinates;}
+		virtual Vec2& GetTotalCells() override { m_totalCells = Vec2(m_mainTexture->GetWidth() / m_cellSize.X, m_mainTexture->GetHeight() / m_cellSize.Y); return m_totalCells;}
 		virtual const Ref<Texture> GetMainTexture() const override { return m_mainTexture; }
 		
 		private:
@@ -28,6 +29,7 @@ namespace Chaos
 		Vec2 m_cellSize;
 		Vec2 m_coordinates;
 		Vec2 m_texCoords[4];
+		Vec2 m_totalCells;
 		Ref<VulkanTexture> m_mainTexture;
 	};
 }
