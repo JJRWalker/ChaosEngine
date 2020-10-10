@@ -255,9 +255,9 @@ namespace Chaos
 				{
 					ImGui::SetCursorPos(ImVec2(startCursorPos.x + (x * buttonSize.x), startCursorPos.y + (y * buttonSize.y)));
 					char buttonName[10];
-					sprintf(buttonName, "X:%d Y:%d", x, y);
+					//sprintf(buttonName, "X:%d Y:%d", x, y);
 					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.1f, 0.1f, 0.1f, 0.1f));
-					if (ImGui::Button(buttonName, buttonSize))
+					if (ImGui::Button("", buttonSize))
 					{
 						subrender->GetSubTexture()->SetTexCoords(Vec2(x,y), subrender->GetSubTexture()->GetCellSize());
 					}
