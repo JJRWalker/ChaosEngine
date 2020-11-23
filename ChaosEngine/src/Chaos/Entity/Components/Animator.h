@@ -6,6 +6,7 @@
 
 namespace Chaos
 {
+	//NOTE: Frames start counting from zero as if they were in an array, however total frames should be the total whole number of frames (does not start at zero) as you may want to perform operations based on the number of frames, and multiplying by zero (if there's one frame) won't get you very far 
     struct Animation
     {
         Ref<Texture> SpriteSheet;
@@ -14,7 +15,7 @@ namespace Chaos
 		float SeccondsPerFrame = 0;
         uint32_t FrameRate = 30;
         uint32_t PlaybackSpeed = 1;
-        uint32_t StartFrame = 1;
+        uint32_t StartFrame = 0;
         bool Loop = true;
     };
     class Animator : public Component

@@ -16,16 +16,18 @@ namespace Chaos
             m_time += Time::GetDeltaTime();
             m_currentFrame = (uint32_t)floorf((m_time / m_length) * m_animation.TotalFrames) + m_frameOffset;
 			
-            //Getting that frame in terms of x and y using remainder and how many times the current frame goes into the x bounds cleanly
-            m_spriteSheet->SetTexCoords(Vec2(m_currentFrame % (int)m_spriteSheetBounds.X, floorf(m_currentFrame / m_spriteSheetBounds.X)), m_animation.FrameSize);
-			
-            //when finished, reset and if we aren't looping,  stop
+			//when finished, reset and if we aren't looping, stop
             if (m_time > m_length)
             {
                 m_time = 0;
                 if (!m_animation.Loop)
                     Stop();
             }
+            
+			
+            //Getting that frame in terms of x and y using remainder and how many times the current frame goes into the x bounds cleanly
+            m_spriteSheet->SetTexCoords(Vec2(m_currentFrame % (int)m_spriteSheetBounds.X, floorf(m_currentFrame / m_spriteSheetBounds.X)), m_animation.FrameSize);
+			
             
             Application::Get().GetRenderer().DrawQuad(GetEntity()->GetTransform()->Position(), GetEntity()->GetTransform()->Scale(), GetEntity()->GetTransform()->Rotation(), m_spriteSheet);
         }
@@ -64,7 +66,7 @@ namespace Chaos
     {
 		m_length = animation.SeccondsPerFrame * animation.TotalFrames;   //calculating length in seconds
         animation.TotalFrames--; //subtracting 1 as frames internally start from 0, not 1;
-        m_frameOffset = animation.StartFrame - 1;
+        m_frameOffset = animation.StartFrame;
         m_animation = animation; //storing the animation data
         m_spriteSheet = SubTexture::Create(animation.SpriteSheet, Vec2(0, 0), animation.FrameSize); //creating a subtexture from the spritesheet given, starting at the first index
         m_spriteSheetBounds = Vec2(ceilf((float)animation.SpriteSheet->GetWidth() / animation.FrameSize.X),
