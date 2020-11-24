@@ -51,3 +51,6 @@
 #include <Chaos/Renderer/Renderer.cpp>
 #include <Chaos/Renderer/Texture.cpp>
 #include <Chaos/Renderer/SubTexture.cpp>
+
+//===SERIALISATION=============================
+#include <Chaos/Serialisation/TextFileReader.cpp>
