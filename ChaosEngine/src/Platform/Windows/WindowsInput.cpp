@@ -1,9 +1,10 @@
 //This file should only be included on windows builds, if it is a window build, generic definitions in Input will look up / be defined here
 #include "chaospch.h"
 #include "Chaos/Input/Input.h"
-
+#include "Chaos/Input/InputManager.h"
 #include "Chaos/Core/Application.h"
 #include <GLFW/glfw3.h>
+
 
 namespace Chaos
 {
@@ -74,5 +75,46 @@ namespace Chaos
 	{
 		m_mouseDelta = GetMousePosition() - m_mouseEndFramePosition;
 		m_mouseEndFramePosition = GetMousePosition();
+	}
+	
+	float Input::GetButton(const char* buttonName)
+	{
+		std::map<std::string, Button>::iterator it = InputManager::Get()->GetButtonMap().find(buttonName);
+		
+		bool positive = false;
+		bool negative = false;
+		
+		if (it != InputManager::Get()->GetButtonMap().end())
+		{
+			for(int i = 0; i <= it->second.PositiveInsertIndex; ++i)
+			{
+				auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
+				auto state = glfwGetKey(window, static_cast<int32_t>(it->second.PositiveInput[i]));
+				if (state == GLFW_PRESS || state == GLFW_REPEAT)
+				{
+					positive = true;
+				}
+			}
+			
+			for(int i = 0; i <= it->second.PositiveInsertIndex; ++i)
+			{
+				auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
+				auto state = glfwGetKey(window, static_cast<int32_t>(it->second.NegativeInput[i]));
+				if (state == GLFW_PRESS || state == GLFW_REPEAT)
+				{
+					negative = true;
+				}
+			}
+		}
+		
+		if (negative == positive)
+			return 0;
+		
+		if (positive)
+			return 1;
+		if (negative)
+			return -1;
+		else
+			return 0;
 	}
 }

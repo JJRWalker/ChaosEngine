@@ -12,7 +12,7 @@ namespace Chaos
 		Minus = 45, /* - */
 		Period = 46, /* . */
 		Slash = 47, /* / */
-
+		
 		D0 = 48, /* 0 */
 		D1 = 49, /* 1 */
 		D2 = 50, /* 2 */
@@ -23,10 +23,10 @@ namespace Chaos
 		D7 = 55, /* 7 */
 		D8 = 56, /* 8 */
 		D9 = 57, /* 9 */
-
+		
 		Semicolon = 59, /* ; */
 		Equal = 61, /* = */
-
+		
 		A = 65,
 		B = 66,
 		C = 67,
@@ -53,15 +53,15 @@ namespace Chaos
 		X = 88,
 		Y = 89,
 		Z = 90,
-
+		
 		LeftBracket = 91,  /* [ */
 		Backslash = 92,  /* \ */
 		RightBracket = 93,  /* ] */
 		GraveAccent = 96,  /* ` */
-
+		
 		World1 = 161, /* non-US #1 */
 		World2 = 162, /* non-US #2 */
-
+		
 		/* Function keys */
 		Escape = 256,
 		Enter = 257,
@@ -107,7 +107,7 @@ namespace Chaos
 		F23 = 312,
 		F24 = 313,
 		F25 = 314,
-
+		
 		/* Keypad */
 		KP0 = 320,
 		KP1 = 321,
@@ -126,7 +126,7 @@ namespace Chaos
 		KPAdd = 334,
 		KPEnter = 335,
 		KPEqual = 336,
-
+		
 		LeftShift = 340,
 		LeftControl = 341,
 		LeftAlt = 342,
@@ -137,7 +137,7 @@ namespace Chaos
 		RightSuper = 347,
 		Menu = 348
 	} Key;
-
+	
 	inline std::ostream& operator<<(std::ostream& os, KeyCode keyCode)
 	{
 		os << static_cast<int32_t>(keyCode);
@@ -176,7 +176,7 @@ namespace Chaos
 #define KEY_J               ::Chaos::Key::J
 #define KEY_K               ::Chaos::Key::K
 #define KEY_L               ::Chaos::Key::L
-#define KEY_M               ::Chaos::Key::M
+//#define KEY_M              ::Chaos::Key::M
 #define KEY_N               ::Chaos::Key::N
 #define KEY_O               ::Chaos::Key::O
 #define KEY_P               ::Chaos::Key::P

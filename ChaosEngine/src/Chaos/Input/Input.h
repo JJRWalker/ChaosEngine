@@ -27,6 +27,9 @@ namespace Chaos
 		
 		static void UpdateMouseEndFramePosition();
 		
+		//BUTTONS
+		static float GetButton(const char* buttonName);
+		
 		private:
 		static Vec2 m_mouseEndFramePosition;
 		static Vec2 m_mouseDelta;
