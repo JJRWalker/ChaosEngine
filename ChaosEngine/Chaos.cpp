@@ -35,6 +35,9 @@
 #include <Platform/Vulkan/VulkanSubTexture.cpp>
 #include <Platform/Vulkan/VulkanRenderer.cpp>
 
+//===INPUT=====================================
+#include <Chaos/Input/InputManager.cpp>
+
 //===COMPONENTS=================================
 #include <Chaos/Entity/Components/Camera.cpp>
 #include <Chaos/Entity/Components/Transform.cpp>

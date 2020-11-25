@@ -13,7 +13,15 @@ namespace Chaos
 		
 		//Functions, nonstatic
 		float Magnitude() { return sqrtf((X * X) + (Y * Y));}
-		void Normalise() { X = X / Magnitude(); Y = Y / Magnitude(); }
+		Vec2 Normalised() { 
+			float x = 0;
+			float y = 0;
+			if (X != 0)
+				x = X / sqrtf((X * X) + (Y * Y));
+			if (Y != 0)
+				y = Y / sqrtf((X * X) + (Y * Y));
+			return Vec2(x,y);
+		}
 		void Rotate(float degrees)
 		{
 			Vec2 result = Vec2::Zero();
