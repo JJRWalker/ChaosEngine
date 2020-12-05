@@ -113,6 +113,21 @@ namespace Chaos
 			Y = other.Y;
 			return *this;
 		}
+		
+		inline Vec2 operator += (const Vec2& other) {
+			X = X + other.X;
+			Y = Y + other.Y;
+			return *this;
+		}
+		
+		inline bool operator == (const Vec2& other){
+			return X == other.X && Y == other.Y;
+		}
+		
+		inline bool operator != (const Vec2& other){
+			return X != other.X || Y != other.Y;
+		}
+		
 #pragma endregion
 		
 		public:

@@ -9,7 +9,7 @@ namespace Chaos
 			: X(x), Y(y), Z(z) {};
 		static Vec3 Zero() { return Vec3(0.0f, 0.0f, 0.0f); }
 		
-		Vec3 operator - (const Vec3 other) const
+		inline Vec3 operator - (const Vec3 other) const
 		{
 			float x = X - other.X;
 			float y = Y - other.Y;
@@ -18,7 +18,7 @@ namespace Chaos
 			return Vec3(x, y, z);
 		}
 		
-		Vec3 operator + (const Vec3 other) const
+		inline Vec3 operator + (const Vec3 other) const
 		{
 			float x = X + other.X;
 			float y = Y + other.Y;
@@ -27,9 +27,17 @@ namespace Chaos
 			return Vec3(x, y, z);
 		}
 		
-		Vec3 operator += (const Vec3& other){
-			X += other.X;
-			Y += other.Y;
+		inline Vec3 operator = (const Vec3& other){
+			X = other.X;
+			Y = other.Y;
+			Z = other.Z;
+			return *this;
+		}
+		
+		inline Vec3 operator += (const Vec3& other){
+			X = X + other.X;
+			Y = Y + other.Y;
+			Z = Z + other.Z;
 			return *this;
 		}
 		
