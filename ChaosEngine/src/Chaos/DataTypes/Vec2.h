@@ -22,6 +22,12 @@ namespace Chaos
 				y = Y / sqrtf((X * X) + (Y * Y));
 			return Vec2(x,y);
 		}
+		
+		Vec2 ClampMagnitude(float max)
+		{
+			return this->Normalised() * std::min(this->Magnitude(), max);
+		}
+		
 		void Rotate(float degrees)
 		{
 			Vec2 result = Vec2::Zero();
@@ -31,6 +37,8 @@ namespace Chaos
 			
 			*this = result;
 		}
+		
+		
 		
 #pragma region STATIC CLASS FUNCTIONS
 		//static class functions
@@ -92,6 +100,13 @@ namespace Chaos
 			float y = Y / divisor;
 			
 			return Vec2(x, y);
+		}
+		
+		inline Vec2 operator /= (const float& divisor) {
+			X = X / divisor;
+			Y = Y / divisor;
+			
+			return *this;
 		}
 		
 		inline Vec2 operator * (const float& multiplier) const {
