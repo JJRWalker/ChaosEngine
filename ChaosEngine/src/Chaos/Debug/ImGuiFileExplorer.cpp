@@ -22,6 +22,10 @@ namespace Chaos
 		if (ImGui::Button("^"))
 		{
 			strcpy(m_tempPath, std::filesystem::proximate(m_tempPath, m_rootPath).parent_path().string().c_str());
+			if (std::strcmp(m_tempPath, "") == 0)
+			{
+				strcpy(m_tempPath, "./");
+			}
 			LOGCORE_TRACE("{0}",std::filesystem::proximate(m_tempPath, m_rootPath).parent_path().string().c_str());
 		}
 		ImGui::BeginChild("ScrollingRegion", ImVec2(0, -30), false, ImGuiWindowFlags_HorizontalScrollbar);
