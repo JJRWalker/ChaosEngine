@@ -1,8 +1,14 @@
 /* date = November 24th 2020 8:55 am */
+//SINGLETON CLASS, SHOULD ALREADY EXIST IN APPLICATION ON APPLICATION START
+//This class is a layer updated on the layer stack in the main loop inside Application.cpp
+//it specifically handles the mapping of "buttons" to keycodes / mousecodes / gamepad codes
+//Loads in inputs from a text file, and updates the relevant input on the relevant event
+//NOTE: currently does not support gamepad buttons
 
 #ifndef _INPUT_MANAGER_H
 #define _INPUT_MANAGER_H
 
+#include <Chaos/Core/Layer.h>
 #include <Chaos/Input/KeyCodes.h>
 #include <string> 
 #include <map>
@@ -27,13 +33,23 @@ namespace Chaos
 		KeyCode NegativeInput[MAX_KEYCODES_PER_BUTTON];
 		int PositiveInsertIndex = 0;
 		int NegativeInsertIndex = 0;
+		
+		bool Pressed = false;
+		bool Released = false;
+		float Value = 0.0f;
+		float ValueLastFrame = 0.0f;
 	};
 	
-	class InputManager
+	class InputManager : public Layer
 	{
 		public:
 		InputManager() {}; //Default constructor for singleton pattern
 		InputManager(const char* configFile);
+		
+		//from layer
+		void OnAttach() override;
+		void OnEvent(Event& event) override;
+		void OnUpdate(float deltaTime) override; //NOTE: resets the up and down values for buttons and sets the ValueLastFrame variable in each of the buttons 
 		
 		void LoadInputs(const char* filePath);
 		
@@ -45,6 +61,7 @@ namespace Chaos
 		std::map<std::string, Button> m_buttonMap;
 		static InputManager* s_instance;
 		
+		//TODO: switch all of these over to the macro inside keycodes.h that way if we want to change them, we don't have to come here and switch all of these over every time
 		const std::map<std::string, KeyCode> STRING_TO_KEYCODE = {
 			{"MOUSE_BUTTON_0",      MOUSE_BUTTON_0},
 			{"MOUSE_BUTTON_1",      MOUSE_BUTTON_1},

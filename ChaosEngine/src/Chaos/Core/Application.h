@@ -13,6 +13,7 @@ namespace Chaos
 	class Camera;
 	class Entity;
 	class ImGuiLayer;
+	class InputManager;
 	class Application
 	{
 		public:
@@ -51,6 +52,7 @@ namespace Chaos
 		std::vector<std::function<void()>> m_postUpdateSteps;
 		
 		ImGuiLayer* m_guiLayer;
+		InputManager* m_inputManager;
 		
 		static Application* s_instance;
 	};

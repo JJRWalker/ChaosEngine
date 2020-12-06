@@ -11,6 +11,7 @@
 #include "Chaos/Debug/ImGuiLayer.h"
 #include "Chaos/Core/Time.h"
 #include "Chaos/Core/SceneManager.h"
+#include "Chaos/Input/InputManager.h"
 #include "Chaos/Debug/ImGuiConsole.h"
 #include "Chaos/Debug/ImGuiEditor.h"
 #include "Chaos/Debug/ImGuiDebugInfo.h"
@@ -38,6 +39,10 @@ namespace Chaos
 		//Creating renderer
 		m_renderer = std::unique_ptr<Renderer>(Renderer::Create());
 		
+		//creating input manager layer
+		m_inputManager = new InputManager("./Assets/Config/Inputs.ini");
+		PushLayer(m_inputManager);
+		
 		//Creating test overlay layer
 		m_guiLayer = new ImGuiConsole();
 		
@@ -64,7 +69,8 @@ namespace Chaos
 			Time::m_deltaTime = Time::m_time - Time::m_timeLastFrame;
 			Time::m_timeLastFrame = Time::m_time;
 			
-			m_mainCamera->SetAspectRatio(m_window->GetAspectRatio());
+			//NOTE: not sure why this was here
+			//m_mainCamera->SetAspectRatio(m_window->GetAspectRatio());
 			
 			//itterate through layers
 			for (Layer* layer : m_layerStack)
