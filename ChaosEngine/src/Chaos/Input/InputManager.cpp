@@ -1,3 +1,4 @@
+#include "chaospch.h"
 #include <Chaos/Input/InputManager.h>
 #include <Chaos/Serialisation/TextFileReader.h>
 
@@ -55,6 +56,7 @@ namespace Chaos
 					std::map<const std::string, KeyCode>::const_iterator codeIt = STRING_TO_KEYCODE.find(it->second);
 					if (codeIt != STRING_TO_KEYCODE.end())
 					{
+						newButton.PositiveInsertIndex = 1;
 						newButton.PositiveInput[0] = STRING_TO_KEYCODE.find(it->second)->second;
 						m_buttonMap.insert(std::make_pair(key, newButton));
 					}
@@ -100,6 +102,7 @@ namespace Chaos
 					std::map<const std::string, KeyCode>::const_iterator codeIt = STRING_TO_KEYCODE.find(it->second);
 					if (codeIt != STRING_TO_KEYCODE.end())
 					{
+						newButton.NegativeInsertIndex = 1;
 						newButton.NegativeInput[0] = STRING_TO_KEYCODE.find(it->second)->second;
 						m_buttonMap.insert(std::make_pair(key, newButton));
 					}

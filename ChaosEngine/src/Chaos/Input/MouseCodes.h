@@ -13,13 +13,13 @@ namespace Chaos
 		Button5 = 5,
 		Button6 = 6,
 		Button7 = 7,
-
+		
 		ButtonLast = Button7,
 		ButtonLeft = Button0,
 		ButtonRight = Button1,
 		ButtonMiddle = Button2
 	} Mouse;
-
+	
 	inline std::ostream& operator<<(std::ostream& os, MouseCode mouseCode)
 	{
 		os << static_cast<int32_t>(mouseCode);
@@ -27,15 +27,15 @@ namespace Chaos
 	}
 }
 
-#define MOUSE_BUTTON_0      ::Chaos::Mouse::Button0
-#define MOUSE_BUTTON_1      ::Chaos::Mouse::Button1
-#define MOUSE_BUTTON_2      ::Chaos::Mouse::Button2
-#define MOUSE_BUTTON_3      ::Chaos::Mouse::Button3
-#define MOUSE_BUTTON_4      ::Chaos::Mouse::Button4
-#define MOUSE_BUTTON_5      ::Chaos::Mouse::Button5
-#define MOUSE_BUTTON_6      ::Chaos::Mouse::Button6
-#define MOUSE_BUTTON_7      ::Chaos::Mouse::Button7
-#define MOUSE_BUTTON_LAST   ::Chaos::Mouse::ButtonLast
-#define MOUSE_BUTTON_LEFT   ::Chaos::Mouse::ButtonLeft
-#define MOUSE_BUTTON_RIGHT  ::Chaos::Mouse::ButtonRight
-#define MOUSE_BUTTON_MIDDLE ::Chaos::Mouse::ButtonMiddle
+//#define MOUSE_BUTTON_0      ::Chaos::Mouse::Button0
+//#define MOUSE_BUTTON_1      ::Chaos::Mouse::Button1
+//#define MOUSE_BUTTON_2      ::Chaos::Mouse::Button2
+//#define MOUSE_BUTTON_3      ::Chaos::Mouse::Button3
+//#define MOUSE_BUTTON_4      ::Chaos::Mouse::Button4
+//#define MOUSE_BUTTON_5      ::Chaos::Mouse::Button5
+//#define MOUSE_BUTTON_6      ::Chaos::Mouse::Button6
+//#define MOUSE_BUTTON_7      ::Chaos::Mouse::Button7
+//#define MOUSE_BUTTON_LAST   ::Chaos::Mouse::ButtonLast
+//#define MOUSE_BUTTON_LEFT   ::Chaos::Mouse::ButtonLeft
+//#define MOUSE_BUTTON_RIGHT  ::Chaos::Mouse::ButtonRight
+//#define MOUSE_BUTTON_MIDDLE ::Chaos::Mouse::ButtonMiddle

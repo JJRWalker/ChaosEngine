@@ -25,14 +25,14 @@ namespace Chaos
 		return state == GLFW_RELEASE;
 	}
 	
-	bool Input::IsMouseButtonPressed(MouseCode button)
+	bool Input::IsMouseButtonPressed(KeyCode button)
 	{
 		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
 		auto state = glfwGetMouseButton(window, static_cast<int32_t>(button));
 		return state == GLFW_PRESS;
 	}
 	
-	bool Input::IsMouseButtonReleased(MouseCode button)
+	bool Input::IsMouseButtonReleased(KeyCode button)
 	{
 		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
 		auto state = glfwGetMouseButton(window, static_cast<int32_t>(button));
@@ -86,23 +86,53 @@ namespace Chaos
 		
 		if (it != InputManager::Get()->GetButtonMap().end())
 		{
-			for(int i = 0; i <= it->second.PositiveInsertIndex; ++i)
+			for(int i = 0; i < it->second.PositiveInsertIndex; ++i)
 			{
-				auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
-				auto state = glfwGetKey(window, static_cast<int32_t>(it->second.PositiveInput[i]));
-				if (state == GLFW_PRESS || state == GLFW_REPEAT)
+				if((uint16_t)it->second.PositiveInput[i] < Button::MAX_KEYCODE_VALUE)
 				{
-					positive = true;
+					auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
+					//if it's a mouse code
+					if ((uint16_t)it->second.PositiveInput[i] < 8)
+					{
+						auto state = glfwGetMouseButton(window, static_cast<int32_t>(it->second.PositiveInput[i]));
+						if (state == GLFW_PRESS || state == GLFW_REPEAT)
+						{
+							positive = true;
+						}
+					}
+					else
+					{
+						auto state = glfwGetKey(window, static_cast<int32_t>(it->second.PositiveInput[i]));
+						if (state == GLFW_PRESS || state == GLFW_REPEAT)
+						{
+							positive = true;
+						}
+					}
 				}
 			}
 			
-			for(int i = 0; i <= it->second.PositiveInsertIndex; ++i)
+			for(int i = 0; i < it->second.NegativeInsertIndex; ++i)
 			{
-				auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
-				auto state = glfwGetKey(window, static_cast<int32_t>(it->second.NegativeInput[i]));
-				if (state == GLFW_PRESS || state == GLFW_REPEAT)
+				if((uint16_t)it->second.NegativeInput[i] < Button::MAX_KEYCODE_VALUE)
 				{
-					negative = true;
+					auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
+					//if it's a mouse code
+					if ((uint16_t)it->second.NegativeInput[i] < 8)
+					{
+						auto state = glfwGetMouseButton(window, static_cast<int32_t>(it->second.NegativeInput[i]));
+						if (state == GLFW_PRESS || state == GLFW_REPEAT)
+						{
+							negative = true;
+						}
+					}
+					else
+					{
+						auto state = glfwGetKey(window, static_cast<int32_t>(it->second.NegativeInput[i]));
+						if (state == GLFW_PRESS || state == GLFW_REPEAT)
+						{
+							negative = true;
+						}
+					}
 				}
 			}
 		}

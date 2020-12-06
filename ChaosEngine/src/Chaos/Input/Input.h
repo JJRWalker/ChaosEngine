@@ -17,8 +17,8 @@ namespace Chaos
 		static bool IsKeyReleased(KeyCode key);
 		
 		//MOUSE
-		static bool IsMouseButtonPressed(MouseCode button);
-		static bool IsMouseButtonReleased(MouseCode button);
+		static bool IsMouseButtonPressed(KeyCode button);
+		static bool IsMouseButtonReleased(KeyCode button);
 		static Vec2 GetMousePosition(); //returns the viewport position as a value between -1 and 1 in x and y
 		static Vec2 GetMouseDelta();
 		static std::pair<float, float> GetMousePositionRaw();

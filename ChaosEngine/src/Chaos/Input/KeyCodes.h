@@ -5,6 +5,23 @@ namespace Chaos
 {
 	typedef enum class KeyCode : uint16_t
 	{
+		//mouse codes
+		//NOTE: potentially shouldn't be in here with keycodes but it makes things easier with button abstraction and there's no overlap with codes yet
+		// From glfw3.h
+		Button0 = 0,
+		Button1 = 1,
+		Button2 = 2,
+		Button3 = 3,
+		Button4 = 4,
+		Button5 = 5,
+		Button6 = 6,
+		Button7 = 7,
+		
+		ButtonLast = Button7,
+		ButtonLeft = Button0,
+		ButtonRight = Button1,
+		ButtonMiddle = Button2,
+		
 		// From glfw3.h
 		Space = 32,
 		Apostrophe = 39, /* ' */
@@ -145,6 +162,22 @@ namespace Chaos
 	}
 }
 
+//MouseCode defines
+//from glfw.h
+#define MOUSE_BUTTON_0      ::Chaos::Key::Button0
+#define MOUSE_BUTTON_1      ::Chaos::Key::Button1
+#define MOUSE_BUTTON_2      ::Chaos::Key::Button2
+#define MOUSE_BUTTON_3      ::Chaos::Key::Button3
+#define MOUSE_BUTTON_4      ::Chaos::Key::Button4
+#define MOUSE_BUTTON_5      ::Chaos::Key::Button5
+#define MOUSE_BUTTON_6      ::Chaos::Key::Button6
+#define MOUSE_BUTTON_7      ::Chaos::Key::Button7
+#define MOUSE_BUTTON_LAST   ::Chaos::Key::ButtonLast
+#define MOUSE_BUTTON_LEFT   ::Chaos::Key::ButtonLeft
+#define MOUSE_BUTTON_RIGHT  ::Chaos::Key::ButtonRight
+#define MOUSE_BUTTON_MIDDLE ::Chaos::Key::ButtonMiddle
+
+//Keycode defines
 // From glfw3.h
 #define KEY_SPACE           ::Chaos::Key::Space
 #define KEY_APOSTROPHE      ::Chaos::Key::Apostrophe    /* ' */

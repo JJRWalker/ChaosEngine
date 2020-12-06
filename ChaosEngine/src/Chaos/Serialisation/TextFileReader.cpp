@@ -1,3 +1,4 @@
+#include "chaospch.h"
 #include <Chaos/Serialisation/TextFileReader.h>
 #include <fstream>
 #include <sstream>

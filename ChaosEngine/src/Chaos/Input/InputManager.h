@@ -5,13 +5,24 @@
 
 #include <Chaos/Input/KeyCodes.h>
 #include <string> 
+#include <map>
 
 namespace Chaos
 {
 	
 	struct Button
 	{
+		static const uint16_t MAX_KEYCODE_VALUE = std::numeric_limits<uint16_t>::max();
 		static const int MAX_KEYCODES_PER_BUTTON = 4;
+		
+		Button() {
+			for (size_t i = 0; i < MAX_KEYCODES_PER_BUTTON; ++i)
+			{
+				PositiveInput[i] = (KeyCode)MAX_KEYCODE_VALUE;
+				NegativeInput[i] = (KeyCode)MAX_KEYCODE_VALUE;
+			}
+		}
+		
 		KeyCode PositiveInput[MAX_KEYCODES_PER_BUTTON];
 		KeyCode NegativeInput[MAX_KEYCODES_PER_BUTTON];
 		int PositiveInsertIndex = 0;
@@ -35,6 +46,18 @@ namespace Chaos
 		static InputManager* s_instance;
 		
 		const std::map<std::string, KeyCode> STRING_TO_KEYCODE = {
+			{"MOUSE_BUTTON_0",      MOUSE_BUTTON_0},
+			{"MOUSE_BUTTON_1",      MOUSE_BUTTON_1},
+			{"MOUSE_BUTTON_2",      MOUSE_BUTTON_2},
+			{"MOUSE_BUTTON_3",      MOUSE_BUTTON_3},
+			{"MOUSE_BUTTON_4",      MOUSE_BUTTON_4},
+			{"MOUSE_BUTTON_5",      MOUSE_BUTTON_5},
+			{"MOUSE_BUTTON_6",      MOUSE_BUTTON_6},
+			{"MOUSE_BUTTON_7",      MOUSE_BUTTON_7},
+			{"MOUSE_BUTTON_LAST",   MOUSE_BUTTON_LAST},
+			{"MOUSE_BUTTON_LEFT",   MOUSE_BUTTON_LEFT},
+			{"MOUSE_BUTTON_RIGHT",  MOUSE_BUTTON_RIGHT},
+			{"MOUSE_BUTTON_MIDDLE", MOUSE_BUTTON_MIDDLE},
 			{"KEY_SPACE",           ::Chaos::Key::Space},
 			{"KEY_APOSTROPHE",      ::Chaos::Key::Apostrophe},    /* ' */
 			{"KEY_COMMA",           ::Chaos::Key::Comma},         /* , */
