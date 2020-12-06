@@ -1,6 +1,8 @@
 #pragma once
 #include "Chaos/Core/Math.h"
 
+#define MIN_FLOAT_COMPONENT_VALUE 0.000000001f
+
 namespace Chaos
 {
 	class Vec2
@@ -26,6 +28,11 @@ namespace Chaos
 		Vec2 ClampMagnitude(float max)
 		{
 			return this->Normalised() * std::min(this->Magnitude(), max);
+		}
+		
+		Vec2 Abs()
+		{
+			return Vec2(abs(X), abs(Y));
 		}
 		
 		void Rotate(float degrees)
@@ -94,26 +101,55 @@ namespace Chaos
 			return Vec2(x, y);			
 		};
 		
+		inline Vec2 operator -= (const Vec2& other){
+			X -= other.X;
+			Y -= other.Y;
+			return *this;
+		}
+		
 		//division operator with float
 		inline Vec2 operator / (const float& divisor) {
-			float x = X / divisor;
-			float y = Y / divisor;
+			float x = 0;
+			float y = 0;
+			if (abs(X) > MIN_FLOAT_COMPONENT_VALUE)
+				x = X / divisor;
+			if (abs(Y) > MIN_FLOAT_COMPONENT_VALUE)
+				y = Y / divisor;
 			
 			return Vec2(x, y);
 		}
 		
 		inline Vec2 operator /= (const float& divisor) {
-			X = X / divisor;
-			Y = Y / divisor;
+			float x = 0;
+			float y = 0;
 			
+			if (abs(X) > MIN_FLOAT_COMPONENT_VALUE)
+				x= X / divisor;
+			if (abs(Y) > MIN_FLOAT_COMPONENT_VALUE)
+				y = Y / divisor;
+			X = x;
+			Y = y;
 			return *this;
 		}
 		
-		inline Vec2 operator * (const float& multiplier) const {
+		inline Vec2 operator * (const float& multiplier) {
 			float x = X * multiplier;
 			float y = Y * multiplier;
 			
 			return Vec2(x, y);
+		}
+		
+		inline Vec2 operator *= (const float& multiplier) {
+			if (abs(X) > MIN_FLOAT_COMPONENT_VALUE)
+				X = X * multiplier;
+			else
+				X = 0;
+			if (abs(Y) > MIN_FLOAT_COMPONENT_VALUE)
+				Y = Y * multiplier;
+			else
+				Y = 0;
+			
+			return *this;
 		}
 		
 		inline Vec2 operator * (const Vec2& other) const {
