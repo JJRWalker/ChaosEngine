@@ -81,7 +81,71 @@ namespace Chaos
 	{
 		std::map<std::string, Button>::iterator it = InputManager::Get()->GetButtonMap().find(buttonName);
 		
-		return it->second.Value;
+		bool positive = false;
+		bool negative = false;
+		
+		if (it != InputManager::Get()->GetButtonMap().end())
+		{
+			for(int i = 0; i < it->second.PositiveInsertIndex; ++i)
+			{
+				if((uint16_t)it->second.PositiveInput[i] < Button::MAX_KEYCODE_VALUE)
+				{
+					auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
+					//if it's a mouse code
+					if ((uint16_t)it->second.PositiveInput[i] < 8)
+					{
+						auto state = glfwGetMouseButton(window, static_cast<int32_t>(it->second.PositiveInput[i]));
+						if (state == GLFW_PRESS || state == GLFW_REPEAT)
+						{
+							positive = true;
+						}
+					}
+					else
+					{
+						auto state = glfwGetKey(window, static_cast<int32_t>(it->second.PositiveInput[i]));
+						if (state == GLFW_PRESS || state == GLFW_REPEAT)
+						{
+							positive = true;
+						}
+					}
+				}
+			}
+			
+			for(int i = 0; i < it->second.NegativeInsertIndex; ++i)
+			{
+				if((uint16_t)it->second.NegativeInput[i] < Button::MAX_KEYCODE_VALUE)
+				{
+					auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
+					//if it's a mouse code
+					if ((uint16_t)it->second.NegativeInput[i] < 8)
+					{
+						auto state = glfwGetMouseButton(window, static_cast<int32_t>(it->second.NegativeInput[i]));
+						if (state == GLFW_PRESS || state == GLFW_REPEAT)
+						{
+							negative = true;
+						}
+					}
+					else
+					{
+						auto state = glfwGetKey(window, static_cast<int32_t>(it->second.NegativeInput[i]));
+						if (state == GLFW_PRESS || state == GLFW_REPEAT)
+						{
+							negative = true;
+						}
+					}
+				}
+			}
+		}
+		
+		if (negative == positive)
+			return 0;
+		
+		if (positive)
+			return 1;
+		if (negative)
+			return -1;
+		else
+			return 0;
 	}
 	
 	bool Input::GetButtonDown(const char* buttonName)
