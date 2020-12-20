@@ -22,8 +22,9 @@ namespace Chaos
 			Destroy();
 		}
 		
-		virtual void Start() ;
-		virtual void Update() ;
+		virtual void Start();
+		virtual void Update();
+		virtual void FixedUpdate();
 		virtual void Destroy();
 		virtual void Debug();
 		

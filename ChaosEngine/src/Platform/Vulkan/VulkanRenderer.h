@@ -145,7 +145,7 @@ namespace Chaos
 		virtual void DrawScreenSpaceQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<SubTexture> subTexture) override; 
 		
 		virtual void DrawFrame() override;
-		virtual void WindowResized() override { m_framebufferResized = true; }
+		virtual bool OnWindowResized(WindowResizeEvent& e) override { m_framebufferResized = true; return true; }//currently just flags the buffer as dirty
 		virtual bool HasTexture(char* filePath, Ref<Texture> outTexture) override;
 		virtual bool HasTexture(std::string filePath, Ref<Texture> outTexture) override;//Takes in a file path and a texture, returns true and sets the ref of inputted texture if one exists
 		virtual RenderData& GetDebugInfo() override { return m_debugInfo; }

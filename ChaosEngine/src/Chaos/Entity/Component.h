@@ -13,6 +13,7 @@ namespace Chaos
 		public:
 		virtual void Start() {};
 		virtual void Update() {};
+		virtual void FixedUpdate() {};
 		virtual void Destroy() {};
 		virtual void Debug() {};
 		

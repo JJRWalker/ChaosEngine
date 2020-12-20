@@ -1,5 +1,7 @@
 #include "chaospch.h"
 #include <Chaos/Input/InputManager.h>
+#include <Chaos/Events/KeyEvent.h>
+#include <Chaos/Events/MouseEvent.h>
 #include <Chaos/Serialisation/TextFileReader.h>
 
 namespace Chaos

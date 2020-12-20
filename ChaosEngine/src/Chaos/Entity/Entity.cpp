@@ -18,6 +18,15 @@ namespace Chaos
 				c->Update();
 		}
 	}
+	void Entity::FixedUpdate()
+	{
+		for (auto* c : GetAllComponents())
+		{
+			if(c->GetActive())
+				c->FixedUpdate();
+		}
+	}
+	
 	void Entity::Destroy()
 	{
 		for (auto* c : GetAllComponents())

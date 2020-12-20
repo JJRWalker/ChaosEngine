@@ -1,7 +1,5 @@
 #include "chaospch.h"
 #include "Application.h"
-#include <ctime>
-#include <chrono>
 #include "Chaos/DataTypes/Vec2.h"
 #include "Chaos/Input/Input.h"
 #include "Chaos/Renderer/Texture.h"
@@ -15,6 +13,9 @@
 #include "Chaos/Debug/ImGuiConsole.h"
 #include "Chaos/Debug/ImGuiEditor.h"
 #include "Chaos/Debug/ImGuiDebugInfo.h"
+
+#include <ctime>
+#include <chrono>
 
 //inspired by The Cherno's Game engine series, however has and will continue to diverge
 namespace Chaos
@@ -53,6 +54,10 @@ namespace Chaos
 		
 		//init time
 		Time::Init();
+		
+		//starting the fixed update thread
+		m_fixedUpdateThread = std::thread(&Application::FixedRun, this);
+		m_fixedUpdateThread.detach();
 	}
 	
 	Application::~Application()
@@ -78,7 +83,7 @@ namespace Chaos
 			
 			if (m_renderingImGui)
 			{
-				//Currently causes black screen to be rendered over the top of the main render, need to change how the pipeline and descriptor sets are handled by Vulkan/ImGui
+				//Currently causes black screen to be rendered over the top of the main render if not in release mode
 				m_guiLayer->Begin();
 				for (Layer* layer : m_layerStack)
 					layer->OnImGuiUpdate();
@@ -103,6 +108,21 @@ namespace Chaos
 		}
 	}
 	
+	//gets whatever scene is active and calls the fixed update function on that scene at the fixed update delta time interval
+	//NOTE: should only ever be used with a seperate thread, causes the current thread to sleep
+	void Application::FixedRun()
+	{
+		while (m_running)
+		{
+			std::chrono::milliseconds sleepTime(static_cast<int>(Time::GetFixedDeltaTime() * 100));
+			if (SceneManager::GetScene())
+			{
+				SceneManager::GetScene()->FixedUpdate();
+			}
+			std::this_thread::sleep_for(sleepTime);
+		}
+	}
+	
 	void Application::OnEvent(Event& e)
 	{
 		//LOGCORE_TRACE(e.ToString());
@@ -112,7 +132,7 @@ namespace Chaos
 		
 		if (e.GetEventType() == EventType::WindowResize)
 		{
-			m_renderer->WindowResized();
+			m_renderer->OnWindowResized((WindowResizeEvent&)e);
 		}
 		
 		for (auto it = m_layerStack.end(); it != m_layerStack.begin();)

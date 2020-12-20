@@ -14,17 +14,17 @@ namespace Chaos
 	void Scene::Update()
 	{
 		PROFILED_FUNC();
-
+		
 		for (auto* entity : m_entities)
 		{
 			entity->Update();
-
+			
 			if (entity->HasComponent<Collider>())
 			{
 				m_collidableEntities.push_back(entity);
 			}
 		}
-
+		
 		//update colisions
 		for (int i = 0; i < m_collidableEntities.size(); ++i)
 		{
@@ -38,6 +38,13 @@ namespace Chaos
 		//not really efficent, but if we add colliders during runtime they won't be added to the list yet...
 		//TODO: improve efficentcy by adding to this vector only when a new collider component is added
 		m_collidableEntities.clear();
+	}
+	void Scene::FixedUpdate()
+	{
+		for (auto* entity : m_entities)
+		{
+			entity->FixedUpdate();
+		}
 	}
 	void Scene::EndScene()
 	{

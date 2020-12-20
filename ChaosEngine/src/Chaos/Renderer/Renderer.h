@@ -4,6 +4,7 @@
 #include "Chaos/DataTypes/Vec2.h"
 #include "Chaos/DataTypes/Vec3.h"
 #include "Chaos/DataTypes/Vec4.h"
+#include "Chaos/Events/ApplicationEvent.h"
 #include "Texture.h"
 #include "SubTexture.h"
 
@@ -44,7 +45,7 @@ namespace Chaos
 		virtual void DrawScreenSpaceQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<SubTexture> subTexture) = 0;
 		
 		virtual void DrawFrame() = 0;
-		virtual void WindowResized() = 0;
+		virtual bool OnWindowResized(WindowResizeEvent& e) = 0;
 		virtual bool HasTexture(char* filePath, Ref<Texture> outTexture) = 0;
 		virtual bool HasTexture(std::string filePath, Ref<Texture> outTexture) = 0;
 		virtual RenderData& GetDebugInfo() = 0;
