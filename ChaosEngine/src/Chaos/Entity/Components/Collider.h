@@ -6,7 +6,8 @@ namespace Chaos
 	enum class ColliderType
 	{
 		BOX2D			= 0,
-		LINE
+		LINE,
+		CIRCLE
 	};
 	
 	class Collider : public Component
@@ -18,7 +19,7 @@ namespace Chaos
 		void SetTrigger(bool state) { m_trigger = state; }
 		
 		Vec3& Offset() { return m_offset; }
-		std::function<void()>& HitCallback() { return m_hitCallback; }
+		std::function<void(Collider& collider)>& HitCallback() { return m_hitCallback; }
 		
 		std::vector<Collider*>& GetOverlaps() { return m_overlappedColliders; }
 		ColliderType GetType() { return m_type; }
@@ -27,7 +28,7 @@ namespace Chaos
 		ColliderType m_type;
 		bool m_trigger = false;
 		Vec3 m_offset = Vec3::Zero();
-		std::function<void()> m_hitCallback;
+		std::function<void(Collider& collider)> m_hitCallback;
 		std::vector<Collider*> m_overlappedColliders;
 	};
 }

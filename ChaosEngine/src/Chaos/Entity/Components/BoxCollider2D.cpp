@@ -10,6 +10,7 @@ namespace Chaos
 	//Overridden from base Collider, handles all collision detection with [any collider type] -> box colliders
 	bool BoxCollider2D::CollideWith(Collider& other)
 	{
+		bool hit = false;
 		switch (other.GetType())
 		{
 			case ColliderType::BOX2D:
@@ -20,20 +21,68 @@ namespace Chaos
 					GetEntity()->GetTransform()->Position().Y + m_offset.Y < collider.GetEntity()->GetTransform()->Position().Y + collider.Offset().Y + collider.GetBounds().Height &&
 					GetEntity()->GetTransform()->Position().Y + m_offset.Y + m_bounds.Height > collider.GetEntity()->GetTransform()->Position().Y + collider.Offset().Y)
 				{
-					//LOGCORE_INFO("Collision detected {0} -> {1}", GetEntity()->GetName(), other.GetEntity()->GetName());
 					if (m_hitCallback)
 					{
-						m_hitCallback();	//if hit, do the specified callback
+						m_hitCallback(other);	//if hit, do the specified callback
 					}
-					return true;
+					hit = true;
 				}
 			}break;
 			case ColliderType::LINE:
 			{
 				
 			}break;
+			case ColliderType::CIRCLE:
+			{
+				CircleCollider2D collider = (CircleCollider2D&)other;
+				
+				Vec3 circleDistance = Vec3(0,0,0);
+				
+				circleDistance.X = abs((other.GetEntity()->GetPosition().X + other.Offset().X) - (GetEntity()->GetPosition().X + m_offset.X));
+				
+				circleDistance.Y = abs((other.GetEntity()->GetPosition().Y + other.Offset().Y) - (GetEntity()->GetPosition().Y + m_offset.Y));
+				
+				//LOGCORE_TRACE("{0} {1}", circleDistance.X, circleDistance.Y);
+				
+				if (circleDistance.X > (m_extents.Width + collider.GetRadius()))
+				{
+					hit = false;
+					break;
+				}
+				
+				if (circleDistance.Y > (m_extents.Height + collider.GetRadius()))
+				{
+					hit = false;
+					break;
+				}
+				
+				if (circleDistance.X <= (m_extents.Width))
+				{
+					hit = true;
+					break;
+				}
+				if (circleDistance.Y <= (m_extents.Height))
+				{
+					hit = true;
+					break;
+				}
+				
+				float cornerDistSq = pow((circleDistance.X - m_extents.Width), 2) + pow((circleDistance.Y - m_extents.Height), 2); 
+				
+				
+				hit = cornerDistSq <= pow(collider.GetRadius(), 2);
+			}break;
 			
 		}
+		if (hit)
+		{
+			if (m_hitCallback)
+			{
+				m_hitCallback(other);	//if hit, do the specified callback
+			}
+			return true;
+		}
+		
 		return false;
 	}
 	
