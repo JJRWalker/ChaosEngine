@@ -44,6 +44,7 @@
 #include <Chaos/Entity/Components/Render.cpp>
 #include <Chaos/Entity/Components/SubRender.cpp>
 #include <Chaos/Entity/Components/CellularAutomata.cpp>
+#include <Chaos/Entity/Components/CircleCollider2D.cpp>
 #include <Chaos/Entity/Components/BoxCollider2D.cpp>
 #include <Chaos/Entity/Components/UIImage.cpp>
 #include <Chaos/Entity/Components/Animator.cpp>
