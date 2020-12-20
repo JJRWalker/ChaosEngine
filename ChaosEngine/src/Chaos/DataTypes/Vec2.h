@@ -1,4 +1,5 @@
 #pragma once
+#include "chaospch.h"
 #include "Chaos/Core/Math.h"
 
 #define MIN_FLOAT_COMPONENT_VALUE 0.000000001f
@@ -80,6 +81,17 @@ namespace Chaos
 			}
 			return theta;
 		}		
+		
+		//lerps the vector between the start and end given a delta (value from 0 to 1)
+		static Vec2 Lerp (Vec2& start, Vec2& end, float delta)
+		{
+			if (delta >= 1)
+				return end;
+			Vec2 distanceVector = end - start;
+			distanceVector *= delta;
+			
+			return start + distanceVector;
+		}
 		
 		static Vec2 Zero() { return Vec2(0.0f, 0.0f); }
 #pragma endregion
@@ -177,6 +189,13 @@ namespace Chaos
 		
 		inline bool operator != (const Vec2& other){
 			return X != other.X || Y != other.Y;
+		}
+		
+		std::string ToString() const
+		{
+			std::stringstream ss;
+			ss << X << "," << Y;
+			return ss.str();
 		}
 		
 #pragma endregion

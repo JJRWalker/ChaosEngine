@@ -114,7 +114,7 @@ namespace Chaos
 	{
 		while (m_running)
 		{
-			std::chrono::milliseconds sleepTime(static_cast<int>(Time::GetFixedDeltaTime() * 100));
+			std::chrono::milliseconds sleepTime(static_cast<int>(Time::GetFixedDeltaTime() * 1000));
 			if (SceneManager::GetScene())
 			{
 				SceneManager::GetScene()->FixedUpdate();
