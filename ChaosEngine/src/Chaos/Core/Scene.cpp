@@ -31,7 +31,10 @@ namespace Chaos
 			//only need to update collisions with the items that come after in the list as we don't need to check the same two entities more than once
 			for (int j = i + 1; j < m_collidableEntities.size(); ++j)
 			{
-				m_collidableEntities[i]->GetComponent<Collider>()->CollideWith(*m_collidableEntities[j]->GetComponent<Collider>());
+				for (auto& collider : m_collidableEntities[i]->GetAllComponentsByType<Collider>())
+				{
+					collider->CollideWith(*m_collidableEntities[j]->GetComponent<Collider>());
+				}
 			}
 		}
 		//Clearing collidables to be readded next update

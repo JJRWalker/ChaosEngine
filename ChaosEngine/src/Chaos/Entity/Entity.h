@@ -62,6 +62,22 @@ namespace Chaos
 			return nullptr;
 		}
 		
+		template<typename T>
+			std::vector<T*> GetAllComponentsByType()
+		{
+			std::vector<Component*> components = ECSManager::GetComponentsFromIDs(ECSManager::GetComponentsOnEntity(m_entityID));
+			std::vector<T*> foundComponents;
+			for (Component* c : components)
+			{
+				T* component = dynamic_cast<T*>(c); //this will return a nullptr if the cast was not possible
+				if (component != nullptr)
+				{					 
+					foundComponents.push_back(component);
+				}
+			}
+			return foundComponents;
+		}
+		
 		///itterates through all components on the entity and trys to cast them to the component type provided as <T> returns true and modifies outComponent input if found, else returns false
 		template<typename T>
 			bool TryGetComponent(T* outComponent)
