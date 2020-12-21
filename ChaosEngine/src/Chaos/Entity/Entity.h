@@ -9,6 +9,7 @@ namespace Chaos
 	static size_t sEntityCount = 0;
 	static const size_t MAX_ENTITY_NAME_LENGTH = 128;
 	
+	class Collider;
 	class Entity
 	{
 		friend class ECSManager;
@@ -25,6 +26,8 @@ namespace Chaos
 		virtual void Start();
 		virtual void Update();
 		virtual void FixedUpdate();
+		virtual void ColliderHit(Collider* self, Collider* other);
+		virtual void TriggerHit(Collider* self, Collider* other);
 		virtual void Destroy();
 		virtual void Debug();
 		

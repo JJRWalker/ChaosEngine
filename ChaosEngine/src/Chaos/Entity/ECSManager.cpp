@@ -8,17 +8,18 @@ namespace Chaos
 {
 	uint32_t ECSManager::s_entityID = 0;
 	uint32_t ECSManager::s_componentID = 0;
+	std::vector<uint32_t> ECSManager::s_empty;
 	std::unordered_map<uint32_t, std::vector<uint32_t>> ECSManager::s_entityComponentMap;	//stores an entity instance ID and the Component ID 
 	std::unordered_map<uint32_t, uint32_t> ECSManager::s_componentEntityMap;			//stores the same data but the component ID is the key 
 	std::unordered_map<uint32_t, Entity*> ECSManager::s_idEntityMap;
 	std::unordered_map<uint32_t, Component*> ECSManager::s_idComponentMap;
-
+	
 	void ECSManager::AddComponent(uint32_t entityID, Component* component)
 	{
 		component->m_componentID = s_componentID;
 		++s_componentID;
 		std::unordered_map<uint32_t, std::vector<uint32_t>>::iterator it = s_entityComponentMap.find(entityID);
-
+		
 		//if the entity already exists in this map
 		if (it != s_entityComponentMap.end())
 		{
@@ -41,7 +42,7 @@ namespace Chaos
 		s_entityComponentMap.insert({ entity->m_entityID, std::vector<uint32_t>() });
 		SceneManager::GetScene()->AddEntity(entity);	//automatically add the entity being created to the current scene
 	}
-
+	
 	std::vector<uint32_t>& ECSManager::GetComponentsOnEntity(uint32_t entityID)
 	{
 		std::unordered_map<uint32_t, std::vector<uint32_t>>::iterator it = s_entityComponentMap.find(entityID);
@@ -50,8 +51,7 @@ namespace Chaos
 			return it->second;
 		}
 		LOGCORE_WARN("ECS: entity has no components associated with it, returning empty container");
-		std::vector<uint32_t> empty;
-		return empty;
+		return s_empty;
 	}
 	
 	
@@ -69,11 +69,11 @@ namespace Chaos
 		}
 		return toReturn;
 	}
-
+	
 	Entity* ECSManager::GetEntityFromComponent(uint32_t componentID)
 	{
 		std::unordered_map<uint32_t, uint32_t>::iterator it = s_componentEntityMap.find(componentID);
-
+		
 		if (it != s_componentEntityMap.end())
 		{
 			//if the component has an entity attached (it should always have one)

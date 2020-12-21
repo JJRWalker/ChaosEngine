@@ -19,16 +19,23 @@ namespace Chaos
 		void SetTrigger(bool state) { m_trigger = state; }
 		
 		Vec3& Offset() { return m_offset; }
-		std::function<void(Collider& collider)>& HitCallback() { return m_hitCallback; }
+		Vec3& GetPosition() override {
+			m_position = GetEntity()->GetPosition() + m_offset;
+			return m_position;
+		}
 		
 		std::vector<Collider*>& GetOverlaps() { return m_overlappedColliders; }
 		ColliderType GetType() { return m_type; }
+		
+		public:
+		//collision bit mask, values for which will be defined externally per project
+		uint32_t CollisionMask = 0;
 		
 		protected:
 		ColliderType m_type;
 		bool m_trigger = false;
 		Vec3 m_offset = Vec3::Zero();
-		std::function<void(Collider& collider)> m_hitCallback;
+		Vec3 m_position;
 		std::vector<Collider*> m_overlappedColliders;
 	};
 }

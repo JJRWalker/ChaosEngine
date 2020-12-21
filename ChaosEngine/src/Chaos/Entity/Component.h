@@ -1,12 +1,12 @@
 #pragma once
 #include "chaospch.h"
 #include "ECSManager.h"
+#include <Chaos/DataTypes/Vec3.h>
 
 namespace Chaos
 {
-#define COMPONENT() virtual const char* ToString() override { return typeid(*this).name();}
-	
 	class Entity;
+	class Collider;
 	class Component
 	{
 		friend class ECSManager;
@@ -14,10 +14,13 @@ namespace Chaos
 		virtual void Start() {};
 		virtual void Update() {};
 		virtual void FixedUpdate() {};
+		virtual void ColliderHit(Collider* self, Collider* other) {};
+		virtual void TriggerHit(Collider* self, Collider* other) {};
 		virtual void Destroy() {};
 		virtual void Debug() {};
 		
-		Entity* GetEntity() { return ECSManager::GetEntityFromComponent(m_componentID); }
+		Entity* GetEntity();
+		virtual Vec3& GetPosition();
 		uint32_t GetComponentID() { return m_componentID; }
 		bool GetActive() {return m_active;}
 		void SetActive(bool value){m_active = value;}

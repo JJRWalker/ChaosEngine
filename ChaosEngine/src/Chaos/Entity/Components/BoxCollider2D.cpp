@@ -21,10 +21,6 @@ namespace Chaos
 					GetEntity()->GetTransform()->Position().Y + m_offset.Y < collider.GetEntity()->GetTransform()->Position().Y + collider.Offset().Y + collider.GetBounds().Height &&
 					GetEntity()->GetTransform()->Position().Y + m_offset.Y + m_bounds.Height > collider.GetEntity()->GetTransform()->Position().Y + collider.Offset().Y)
 				{
-					if (m_hitCallback)
-					{
-						m_hitCallback(other);	//if hit, do the specified callback
-					}
 					hit = true;
 				}
 			}break;
@@ -76,10 +72,17 @@ namespace Chaos
 		}
 		if (hit)
 		{
-			if (m_hitCallback)
+			if (!m_trigger && !other.IsTrigger())
 			{
-				m_hitCallback(other);	//if hit, do the specified callback
+				GetEntity()->ColliderHit(this, &other);
+				other.GetEntity()->ColliderHit(&other, this);
 			}
+			else
+			{
+				GetEntity()->TriggerHit(this, &other);
+				other.GetEntity()->TriggerHit(&other, this);
+			}
+			
 			return true;
 		}
 		

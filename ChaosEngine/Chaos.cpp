@@ -39,6 +39,7 @@
 #include <Chaos/Input/InputManager.cpp>
 
 //===COMPONENTS=================================
+#include <Chaos/Entity/Component.cpp>
 #include <Chaos/Entity/Components/Camera.cpp>
 #include <Chaos/Entity/Components/Transform.cpp>
 #include <Chaos/Entity/Components/Render.cpp>

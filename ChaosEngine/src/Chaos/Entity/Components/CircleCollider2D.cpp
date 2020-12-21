@@ -74,9 +74,15 @@ namespace Chaos
 		}
 		if (hit)
 		{
-			if (m_hitCallback)
+			if (!m_trigger && !other.IsTrigger())
 			{
-				m_hitCallback(other);	//if hit, do the specified callback
+				GetEntity()->ColliderHit(this, &other);
+				other.GetEntity()->ColliderHit(&other, this);
+			}
+			else
+			{
+				GetEntity()->TriggerHit(this, &other);
+				other.GetEntity()->TriggerHit(&other, this);
 			}
 		}
 		return hit;
