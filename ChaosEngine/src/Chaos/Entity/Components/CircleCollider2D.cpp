@@ -9,6 +9,10 @@ namespace Chaos
 	
 	bool CircleCollider2D::CollideWith(Collider& other)
 	{
+		//if they do not share masks, don't bother colliding
+		if (!HasCollisionMask(other.CollisionMask))
+			return false;
+		
 		bool hit = false;
 		switch(other.GetType())
 		{

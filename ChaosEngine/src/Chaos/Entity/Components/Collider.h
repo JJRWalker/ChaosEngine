@@ -14,6 +14,8 @@ namespace Chaos
 	{
 		public:
 		virtual bool CollideWith(Collider& other) = 0;
+		//bitwise checks the mask with the mask given, can be used for a form of layer system
+		bool HasCollisionMask(uint32_t mask) {return CollisionMask & mask != 0;}
 		
 		bool IsTrigger() { return m_trigger; }
 		void SetTrigger(bool state) { m_trigger = state; }
