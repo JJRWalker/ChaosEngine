@@ -33,16 +33,18 @@ namespace Chaos
 		
 		//Checks if the given class is derived from component, if so then it initalises a new class of that type and adds it to the vector, else print a warning to console
 		template<typename T>
-			void AddComponent()
+			T* AddComponent()
 		{
 			if (std::is_base_of<Component, T>::value)
 			{
 				T* component = new T();
 				ECSManager::AddComponent(m_entityID, component);
+				return component;
 			}
 			else
 			{
-				LOGCORE_WARN("Tried to add a component that was not derived from Component");
+				LOGCORE_WARN("Tried to add a component that was not derived from Component, returning nullptr!");
+				return nullptr;
 			}
 		}
 		
