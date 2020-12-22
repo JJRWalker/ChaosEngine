@@ -10,7 +10,7 @@ namespace Chaos
 	//Overridden from base Collider, handles all collision detection with [any collider type] -> box colliders
 	bool BoxCollider2D::CollideWith(Collider& other)
 	{
-		if (!HasCollisionMask(other.CollisionMask))
+		if (!HasCollisionMask(other.ObjectMask) && !HasObjectMask(other.CollisionMask))
 			return false;
 		bool hit = false;
 		switch (other.GetType())
