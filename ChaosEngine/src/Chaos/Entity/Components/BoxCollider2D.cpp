@@ -40,8 +40,6 @@ namespace Chaos
 				
 				circleDistance.Y = abs((other.GetEntity()->GetPosition().Y + other.Offset().Y) - (GetEntity()->GetPosition().Y + m_offset.Y));
 				
-				//LOGCORE_TRACE("{0} {1}", circleDistance.X, circleDistance.Y);
-				
 				if (circleDistance.X > (m_extents.Width + collider.GetRadius()))
 				{
 					hit = false;
