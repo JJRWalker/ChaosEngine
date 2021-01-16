@@ -22,12 +22,14 @@ namespace Chaos
 		// update colisions
 		for (int i = 0; i < m_entities.size(); ++i)
 		{
-			std::vector<Collider*> uncollided;
+			m_entities[i]->Update();
+			
 			// only need to update collisions with the items that come after in the list as we don't need to check the same two entities more than once
 			for (int j = i + 1; j < m_entities.size(); ++j)
 			{
 				for (auto& collider : m_entities[i]->GetAllComponentsByType<Collider>())
 				{
+					std::vector<Collider*> uncollided;
 					for (auto& other : m_entities[j]->GetAllComponentsByType<Collider>())
 					{
 						if(collider->CollideWith(*other))
@@ -54,40 +56,28 @@ namespace Chaos
 						}
 						else
 						{
-							uncollided.push_back(other);
+							std::vector<Collider*>::iterator found = std::find(collider->GetOverlaps().begin(), collider->GetOverlaps().end(), other);
+							if (found != collider->GetOverlaps().end())
+							{
+								if (collider->IsTrigger())
+								{
+									m_entities[i]->TriggerExit(collider, other);
+									other->GetEntity()->TriggerExit(other, collider);
+								}
+								else
+								{
+									m_entities[i]->ColliderExit(collider, other);
+									other->GetEntity()->ColliderExit(other, collider);
+								}
+								std::vector<Collider*>& foundOverlaps = other->GetOverlaps();
+								std::vector<Collider*>::iterator selfIt = std::find(foundOverlaps.begin(), foundOverlaps.end(), collider);
+								foundOverlaps.erase(selfIt);
+								collider->GetOverlaps().erase(found);
+							}
 						}
 					}
 				}
 			}
-			
-			// check if a collider has left another collider
-			
-			for (auto* notHit : uncollided)
-			{
-				for (auto* collider : m_entities[i]->GetAllComponentsByType<Collider>())
-				{
-					std::vector<Collider*>::iterator found = std::find(collider->GetOverlaps().begin(), collider->GetOverlaps().end(), notHit);
-					
-					if (found != collider->GetOverlaps().end())
-					{
-						if (collider->IsTrigger())
-						{
-							m_entities[i]->TriggerExit(collider, *found);
-							(*found)->GetEntity()->TriggerExit(*found, collider);
-						}
-						else
-						{
-							m_entities[i]->ColliderExit(collider, *found);
-							(*found)->GetEntity()->ColliderExit(*found, collider);
-						}
-						std::vector<Collider*>& foundOverlaps = (*found)->GetOverlaps();
-						std::vector<Collider*>::iterator selfIt = std::find(foundOverlaps.begin(), foundOverlaps.end(), collider);
-						foundOverlaps.erase(selfIt);
-						collider->GetOverlaps().erase(found);
-					}
-				}
-			}
-			
 		}
 	}
 	
