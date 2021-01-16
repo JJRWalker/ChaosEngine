@@ -12,6 +12,7 @@ namespace Chaos
 		}
 	}
 	
+	
 	//Updates every frame / application loop found in Application.h
 	void Entity::Update() 
 	{
@@ -21,6 +22,7 @@ namespace Chaos
 				c->Update();
 		}
 	}
+	
 	
 	//called every fixed timestep determined by the Time class in Time.h
 	void Entity::FixedUpdate()
@@ -32,6 +34,7 @@ namespace Chaos
 		}
 	}
 	
+	
 	//currently just propogates to all it's components, doesn't actually have a function to handle it itself, however this could be overriden and the base could be called, then some extra functionality could happen
 	void Entity::ColliderHit(Collider* self, Collider* other)
 	{
@@ -41,6 +44,25 @@ namespace Chaos
 		}
 	}
 	
+	
+	void Entity::ColliderEnter(Collider* self, Collider* other)
+	{
+		for (auto* c : GetAllComponents())
+		{
+			c->ColliderEnter(self, other);
+		}
+	}
+	
+	
+	void Entity::ColliderExit(Collider* self, Collider* other)
+	{
+		for (auto* c : GetAllComponents())
+		{
+			c->ColliderExit(self, other);
+		}
+	}
+	
+	
 	void Entity::TriggerHit(Collider* self, Collider* other)
 	{
 		for (auto* c : GetAllComponents())
@@ -49,6 +71,25 @@ namespace Chaos
 		}
 	}
 	
+	
+	void Entity::TriggerEnter(Collider* self, Collider* other)
+	{
+		for (auto* c : GetAllComponents())
+		{
+			c->TriggerEnter(self, other);
+		}
+	}
+	
+	
+	void Entity::TriggerExit(Collider* self, Collider* other)
+	{
+		for (auto* c : GetAllComponents())
+		{
+			c->TriggerExit(self, other);
+		}
+	}
+	
+	
 	void Entity::Destroy()
 	{
 		for (auto* c : GetAllComponents())
@@ -56,6 +97,7 @@ namespace Chaos
 			c->Destroy();
 		}
 	}
+	
 	
 	void Entity::Debug()
 	{

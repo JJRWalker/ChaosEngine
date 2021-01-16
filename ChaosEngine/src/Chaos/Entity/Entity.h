@@ -27,7 +27,11 @@ namespace Chaos
 		virtual void Update();
 		virtual void FixedUpdate();
 		virtual void ColliderHit(Collider* self, Collider* other);
+		virtual void ColliderEnter(Collider* self, Collider* other);
+		virtual void ColliderExit(Collider* self, Collider* other);
 		virtual void TriggerHit(Collider* self, Collider* other);
+		virtual void TriggerEnter(Collider* self, Collider* other);
+		virtual void TriggerExit(Collider* self, Collider* other);
 		virtual void Destroy();
 		virtual void Debug();
 		

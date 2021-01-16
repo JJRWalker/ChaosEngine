@@ -3,26 +3,26 @@
 call shell.bat
 call build-engine.bat
 
-mkdir "build/cmd/int"
-pushd "build/cmd/int"
+mkdir "build/int"
+pushd "build/int"
 
 ::TIMER TAKEN FROM  https://stackoverflow.com/questions/673523/how-do-i-measure-execution-time-of-a-command-on-the-windows-command-line
 set start=%time%
 
-cl -Zi -c ../../../Game/game.cpp /I ../../../Game/src  /I ../../../chaosengine/src /I ../../../chaosengine/vendor /I ../../../chaosengine/vendor/spdlog/include /I ../../../chaosengine/vendor/imgui /I ../../../chaosengine/vendor/glfw/include /D "CHAOS_PLATFORM_WINDOWS" /D "CHAOS_RELEASE" /EHsc  /MT /std:c++17
+cl -Zi -c ../../Game/game.cpp /I ../../Game/src  /I ../../chaosengine/src /I ../../chaosengine/vendor /I ../../chaosengine/vendor/spdlog/include /I ../../chaosengine/vendor/imgui /I ../../chaosengine/vendor/glfw/include /D "CHAOS_PLATFORM_WINDOWS" /D "CHAOS_RELEASE" /EHsc  /MT /std:c++17
 
 popd
 
-mkdir "build/cmd/bin"
-pushd "build/cmd/bin"
+mkdir "build/bin"
+pushd "build/bin"
 
-link ..\int\game.obj Chaos.lib ..\..\..\ChaosEngine\vendor\GLFW\glfw.lib ..\..\..\ChaosEngine\vendor\Vulkan\Lib\vulkan-1.lib ..\..\..\ChaosEngine\vendor\ImGUI\imgui.lib gdi32.lib shell32.lib msvcrtd.lib /NODEFAULTLIB:LIBCMTD /NODEFAULTLIB:LIBCMT
+link ..\int\game.obj Chaos.lib ..\..\ChaosEngine\vendor\GLFW\glfw.lib ..\..\ChaosEngine\vendor\Vulkan\Lib\vulkan-1.lib ..\..\ChaosEngine\vendor\ImGUI\imgui.lib gdi32.lib shell32.lib msvcrtd.lib /NODEFAULTLIB:LIBCMTD /NODEFAULTLIB:LIBCMT
 
 popd
 
-mkdir "build/cmd/bin/Assets"
+mkdir "build/bin/Assets"
 
-robocopy "Game/Assets" "build/cmd/bin/Assets" /E
+robocopy "Game/Assets" "build/bin/Assets" /E
 
 set end=%time%
 set options="tokens=1-4 delims=:.,"
@@ -43,7 +43,7 @@ if 1%ms% lss 100 set ms=0%ms%
 set /a totalsecs = %hours%*3600 + %mins%*60 + %secs%
 echo build took %hours%:%mins%:%secs%.%ms% (%totalsecs%.%ms%s total)
 
-pushd "build/cmd/bin"
+pushd "build/bin"
 
-start  game.exe
+:: start  game.exe
 popd
