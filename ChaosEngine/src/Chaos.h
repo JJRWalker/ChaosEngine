@@ -9,10 +9,9 @@
 #include "Chaos/Core/Layer.h"
 #include "Chaos/Core/LayerStack.h"
 #include "Chaos/Core/Log.h"
-#include "Chaos/Core/Scene.h"
+#include "Chaos/Core/Level.h"
 #include "Chaos/Core/Time.h"
 #include "Chaos/Core/Window.h"
-#include "Chaos/Core/SceneManager.h"
 
 //===INPUT==============================================
 #include "Chaos/Input/Input.h"
@@ -27,8 +26,8 @@
 #include "Chaos/Debug/ImGuiLayer.h"
 #include "Chaos/Debug/Timer.h"
 
-//===ENTITY=============================================
-#include "Chaos/Entity/Entity.h"
+//===NODE=============================================
+#include "Chaos/Nodes/Node.h"
 
 //===EVENTS=============================================
 #include "Chaos/Events/ApplicationEvent.h"

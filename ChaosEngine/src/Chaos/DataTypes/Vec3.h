@@ -10,6 +10,8 @@ namespace Chaos
 			: X(x), Y(y), Z(z) {};
 		static Vec3 Zero() { return Vec3(0.0f, 0.0f, 0.0f); }
 		
+		float Magnitude() {return sqrtf((X * X) + (Y * Y) + (Z * Z));}
+		
 		inline Vec3 operator - (const Vec3 other) const
 		{
 			float x = X - other.X;

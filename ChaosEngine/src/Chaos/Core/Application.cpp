@@ -1,17 +1,16 @@
 #include "chaospch.h"
+
 #include "Application.h"
 #include "Chaos/DataTypes/Vec2.h"
 #include "Chaos/Input/Input.h"
 #include "Chaos/Renderer/Texture.h"
 #include "Chaos/Renderer/Renderer.h"
-#include "Chaos/Entity/Entity.h"
-#include "Chaos/Entity/Components/Camera.h"
 #include "Chaos/Debug/ImGuiLayer.h"
 #include "Chaos/Core/Time.h"
-#include "Chaos/Core/SceneManager.h"
+#include "Chaos/Core/Level.h"
 #include "Chaos/Input/InputManager.h"
 #include "Chaos/Debug/ImGuiConsole.h"
-#include "Chaos/Debug/ImGuiEditor.h"
+//#include "Chaos/Debug/ImGuiEditor.h"
 #include "Chaos/Debug/ImGuiDebugInfo.h"
 
 #include <ctime>
@@ -32,11 +31,6 @@ namespace Chaos
 		m_window = std::unique_ptr<Window>(Window::Create());
 		m_window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 		
-		//Creating a default camera
-		m_mainCameraEntity = new Entity("Main Camera");
-		m_mainCameraEntity->AddComponent<Camera>();
-		m_mainCamera = m_mainCameraEntity->GetComponent<Camera>();
-		
 		//Creating renderer
 		m_renderer = std::unique_ptr<Renderer>(Renderer::Create());
 		
@@ -49,7 +43,7 @@ namespace Chaos
 		
 		//Push test overlay layer
 		PushOverlay(m_guiLayer);
-		PushOverlay(new ImGuiEditor());
+		//PushOverlay(new ImGuiEditor());
 		PushOverlay(new ImGuiDebugInfo());
 		
 		//init time
@@ -100,8 +94,7 @@ namespace Chaos
 			m_postUpdateSteps.clear();
 			
 			//update the current scene after all the layers have been processed
-			SceneManager::GetScene()->Update();
-			m_mainCamera->Update();
+			Level::Get()->Update(Time::m_deltaTime);
 			m_window->OnUpdate();
 			m_renderer->DrawFrame();
 			Input::UpdateMouseEndFramePosition();
@@ -115,9 +108,9 @@ namespace Chaos
 		while (m_running)
 		{
 			std::chrono::milliseconds sleepTime(static_cast<int>(Time::GetFixedDeltaTime() * 1000));
-			if (SceneManager::GetScene())
+			if (Level::Get())
 			{
-				SceneManager::GetScene()->FixedUpdate();
+				Level::Get()->FixedUpdate(Time::GetFixedDeltaTime());
 			}
 			std::this_thread::sleep_for(sleepTime);
 		}

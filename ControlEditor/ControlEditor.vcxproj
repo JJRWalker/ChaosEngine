@@ -135,17 +135,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\Control\Camera\CameraController.h" />
-    <ClInclude Include="src\Control\Editor\EditorLayer.h" />
-    <ClInclude Include="src\Control\Editor\EditorScene.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="src\Control\Camera\CameraController.cpp" />
-    <ClCompile Include="src\Control\ControlApp.cpp" />
-    <ClCompile Include="src\Control\Editor\EditorLayer.cpp" />
-    <ClCompile Include="src\Control\Editor\EditorScene.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\ChaosEngine\ChaosEngine.vcxproj">
       <Project>{095A0848-750F-813D-FE03-7B146AB87741}</Project>
     </ProjectReference>

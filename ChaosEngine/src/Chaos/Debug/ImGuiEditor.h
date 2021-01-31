@@ -3,7 +3,6 @@
 #ifndef _IM_GUI_EDITOR_H
 #define _IM_GUI_EDITOR_H
 #include <Chaos/Debug/ImGuiLayer.h>
-#include <Chaos/Entity/Components/EditorCameraController.h>
 #include <Chaos/DataTypes/Vec2.h>
 #include <Chaos/Renderer/Texture.h>
 
@@ -35,7 +34,7 @@ namespace Chaos
 		
 		Vec2 m_draggingEntPositionOffset = Vec2::Zero();
 		std::vector<Entity*> m_selectedEntities;
-		EditorCameraController* m_cameraController;
+		//EditorCameraController* m_cameraController;
 		ImVec2 m_editorWindowPos;
 		ImVec2 m_editorWindowSize;
 		

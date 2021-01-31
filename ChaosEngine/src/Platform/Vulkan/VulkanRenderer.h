@@ -24,6 +24,7 @@ namespace Chaos
 		Ref<Texture> tex;
 		Ref<SubTexture> subTex;
 		float tilingFactor = 1;
+		float Transform[4][4];
 		
 		//we sort quads based on their z position. This z position works as a render queue position
 		bool operator < (const Quad& other) const
@@ -134,6 +135,7 @@ namespace Chaos
 		//with rotation
 		virtual void DrawQuad(Vec3& position, Vec2& scale, Vec2& rotation, Ref<Texture> texture) override;
 		virtual void DrawQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<Texture> texture) override;
+		virtual void DrawQuad(float transform[4][4], Vec4& colour, Ref<Texture> texture);
 		virtual void DrawQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<Texture> texture, float tilingFactor) override;
 		virtual void DrawQuad(Vec3& position, Vec2& scale, Vec2& rotation, Ref<SubTexture> subTexture) override;
 		virtual void DrawQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<SubTexture> subTtexture) override;

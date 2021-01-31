@@ -1,7 +1,7 @@
 #include <chaospch.h>
 #include <Chaos/Debug/ImGuiEditor.h>
 #include <Chaos/Debug/Console.h>
-#include <Chaos/Entity/Components/Camera.h>
+//#include <Chaos/Entity/Components/Camera.h>
 #include <Chaos/Entity/Components/BoxCollider2D.h>
 #include <Chaos/Entity/Components/Render.h>
 #include <Chaos/Entity/Components/SubRender.h>

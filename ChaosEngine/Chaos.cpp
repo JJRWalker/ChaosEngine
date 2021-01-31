@@ -7,26 +7,26 @@
 #include <Chaos/Core/Application.cpp>
 #include <Chaos/Core/LayerStack.cpp>
 #include <Chaos/Core/Log.cpp>
-#include <Chaos/Core/Scene.cpp>
-#include <Chaos/Core/SceneManager.cpp>
+#include <Chaos/Core/Level.cpp>
 #include <Chaos/Core/Time.cpp>
 
 //===DATA TYPES================================
-#include <Chaos/DataTypes/Ray2D.cpp>
+//#include <Chaos/DataTypes/Ray2D.cpp>
 
 //===DEBUG======================================
 #include <Chaos/Debug/Console.cpp>
 #include <Chaos/Debug/ImGuiBuild.cpp>
 #include <Chaos/Debug/ImGuiLayer.cpp>
 #include <Chaos/Debug/ImGuiConsole.cpp>
-#include <Chaos/Debug/ImGuiEditor.cpp>
+//#include <Chaos/Debug/ImGuiEditor.cpp>
 #include <Chaos/Debug/ImGuiFileExplorer.cpp>
 #include <Chaos/Debug/ImGuiDebugInfo.cpp>
 #include <Chaos/Debug/Timer.cpp>
 
-//===ENTITY=====================================
-#include <Chaos/Entity/ECSManager.cpp>
-#include <Chaos/Entity/Entity.cpp>
+//===NODE=====================================
+#include <Chaos/Nodes/Node.cpp>
+#include <Chaos/Nodes/Camera.cpp>
+#include <Chaos/Nodes/Sprite.cpp>
 
 //===PLATFORM==================================
 #include <Platform/Windows/WindowsWindow.cpp>
@@ -37,19 +37,6 @@
 
 //===INPUT=====================================
 #include <Chaos/Input/InputManager.cpp>
-
-//===COMPONENTS=================================
-#include <Chaos/Entity/Component.cpp>
-#include <Chaos/Entity/Components/Camera.cpp>
-#include <Chaos/Entity/Components/Transform.cpp>
-#include <Chaos/Entity/Components/Render.cpp>
-#include <Chaos/Entity/Components/SubRender.cpp>
-#include <Chaos/Entity/Components/CellularAutomata.cpp>
-#include <Chaos/Entity/Components/CircleCollider2D.cpp>
-#include <Chaos/Entity/Components/BoxCollider2D.cpp>
-#include <Chaos/Entity/Components/UIImage.cpp>
-#include <Chaos/Entity/Components/Animator.cpp>
-#include <Chaos/Entity/Components/EditorCameraController.cpp>
 
 //===RENDERER===================================
 #include <Chaos/Renderer/RendererAPI.cpp>
