@@ -21,9 +21,7 @@ namespace Chaos
 	
 	bool BoxCollider2D::CollideWith(Collider* other)
 	{
-		if (!HASBIT(CollisionMask, other->ObjectMask))
-			return false;
-		
+		LOGCORE_WARN("BoxCollider::CollideWith not implemented!");
 		return false;
 	}
 	
@@ -83,16 +81,8 @@ namespace Chaos
 		for (size_t i = 0; i < OverlapsSize; ++i)
 		{
 			// iterate over overlaps and compare to see if something has left
-			bool leave = true;
-			for (size_t j = 0; j < insert; ++j)
-			{
-				if (Overlaps[i] == hitNodes[j])
-				{
-					leave = false;
-				}
-			}
 
-			if (leave)
+			if (!Overlaps[i]->Stay)
 			{
 				for (size_t j = 0; j < root->ChildCount; ++j)
 				{
@@ -102,6 +92,7 @@ namespace Chaos
 						level->Nodes[ID][j]->ColliderExit(this, Overlaps[i]);
 				}
 			}
+
 		}
 		
 		// set overlaps to the current hit nodes
@@ -130,13 +121,93 @@ namespace Chaos
 	
 	bool CircleCollider::CollideWith(Collider* other)
 	{
-		LOGCORE_WARN("Collider::CollideWith not implemented!");
+		LOGCORE_WARN("CircleCollider::CollideWith not implemented!");
 		return false;
 	}
 	
 	
 	void CircleCollider::CheckCollisions(QuadTree* tree)
 	{
-		
+		Collider** nodesInRange = (Collider**)malloc(MAX_COLLIDER_OVERLAPS * sizeof(Collider*));
+		size_t nodesInRangesize = 0;
+		tree->QueryRadius(GetPosition(), Radius, nodesInRange, nodesInRangesize);
+
+		// create array for stuff we actually hit after getting the nodes in range of our bounds
+		Collider** hitNodes = (Collider**)malloc(MAX_COLLIDER_OVERLAPS * sizeof(Collider*));
+		size_t insert = 0;
+		for (size_t i = 0; i < nodesInRangesize; ++i)
+		{
+			if (!HASBIT(CollisionMask, nodesInRange[i]->ObjectMask) || nodesInRange[i] == this)
+				continue;
+
+			hitNodes[insert] = nodesInRange[i];
+			++insert;
+		}
+
+		Level* level = Level::Get();
+		Node* root = level->Nodes[ID][0];
+
+		// determine which nodes were just hit, which have stayed, and which have left
+		// collider stay and enter
+		for (size_t i = 0; i < insert; ++i)
+		{
+			for (size_t j = 0; j < OverlapsSize; ++j)
+			{
+				if (hitNodes[i] == Overlaps[j])
+				{
+					hitNodes[i]->Stay = true;
+
+					for (size_t j = 0; j < root->ChildCount; ++j)
+					{
+						if (hitNodes[i]->Trigger)
+							level->Nodes[ID][j]->TriggerStay(this, hitNodes[i]);
+						else
+							level->Nodes[ID][j]->ColliderStay(this, hitNodes[i]);
+					}
+				}
+			}
+			if (!hitNodes[i]->Stay)
+			{
+				for (size_t j = 0; j < root->ChildCount; ++j)
+				{
+					if (hitNodes[i]->Trigger)
+						level->Nodes[ID][j]->TriggerEnter(this, hitNodes[i]);
+					else
+						level->Nodes[ID][j]->ColliderEnter(this, hitNodes[i]);
+				}
+			}
+		}
+		// colliders leaving
+		for (size_t i = 0; i < OverlapsSize; ++i)
+		{
+			// iterate over overlaps and compare to see if something has left
+
+			if (!Overlaps[i]->Stay)
+			{
+				for (size_t j = 0; j < root->ChildCount; ++j)
+				{
+					if (Overlaps[i]->Trigger)
+						level->Nodes[ID][j]->TriggerExit(this, Overlaps[i]);
+					else
+						level->Nodes[ID][j]->ColliderExit(this, Overlaps[i]);
+				}
+			}
+
+		}
+
+		// set overlaps to the current hit nodes
+		// may need to zero overlaps first here, but as we won't be accessing
+		// past the size index here there's no need
+		OverlapsSize = insert;
+		memcpy(Overlaps, hitNodes, insert * sizeof(Collider*));
+
+		// reset stay flags after we're done so the next check func can use them
+		for (size_t i = 0; i < OverlapsSize; ++i)
+		{
+			Overlaps[i]->Stay = false;
+		}
+
+		free(hitNodes);
+		free(nodesInRange);
 	}
 }

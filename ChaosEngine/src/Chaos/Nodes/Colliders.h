@@ -70,7 +70,7 @@ namespace Chaos
 		void CheckCollisions(QuadTree* tree) override;
 		
 		public:
-		float Radius = 1;
+		float Radius = 2.0f;
 	};
 }
 

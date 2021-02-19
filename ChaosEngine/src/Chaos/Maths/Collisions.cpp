@@ -42,16 +42,15 @@ namespace Chaos
 	
 	bool Collisions::CircleBoxIntersection(Vec2 circleOrigin, float radius, Vec2 boxOrigin, Vec2 boxBounds)
 	{
-		Vec2 circleDistance = boxOrigin - circleOrigin;
-		
-		if (circleDistance.Y > boxBounds.Height + radius)
-			return false;
-		
-		if (circleDistance.X <= boxBounds.Width || circleDistance.Y <= boxBounds.Height)
-			return true;
-		
-		float cornerDistSq = pow(circleDistance.X - boxBounds.Width, 2) + pow(circleDistance.Y - boxBounds.Height, 2);
-		return cornerDistSq <= pow(radius, 2);
+		// for reference, came from an answer to this question: https://stackoverflow.com/questions/401847/circle-rectangle-collision-detection-intersection
+		float closestX = std::clamp(circleOrigin.X, boxOrigin.X - boxBounds.X * 0.5f, boxOrigin.X + boxBounds.X * 0.5f);
+		float closestY = std::clamp(circleOrigin.Y, boxOrigin.Y - boxBounds.Y * 0.5f, boxOrigin.Y + boxBounds.Y * 0.5f);
+
+		Vec2 distance = boxOrigin - circleOrigin;
+
+		float distSq = (distance.X * distance.X) + (distance.Y * distance.Y);
+
+		return distSq < (radius* radius);
 	}
 	
 	
