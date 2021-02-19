@@ -26,15 +26,18 @@ namespace Chaos
 			return Vec2(x,y);
 		}
 		
+		
 		Vec2 ClampMagnitude(float max)
 		{
 			return this->Normalised() * std::min(this->Magnitude(), max);
 		}
 		
+		
 		Vec2 Abs()
 		{
 			return Vec2(abs(X), abs(Y));
 		}
+		
 		
 		void Rotate(float degrees)
 		{
@@ -46,6 +49,28 @@ namespace Chaos
 			*this = result;
 		}
 		
+		
+		// treats this vec2 as a point against another that it treats the other two as a point and dimensions
+		bool InsideBounds(Vec2 origin, Vec2 bounds)
+		{
+			float halfWidth = bounds.X * 0.5f;
+			float halfHeight = bounds.Y * 0.5f;
+			
+			return X >= origin.X - halfWidth &&
+				X<= origin.X + halfWidth &&
+				Y>= origin.Y - halfHeight &&
+				Y<= origin.Y + halfHeight;
+		}
+		
+		
+		bool IntersectsBounds(Vec2 bounds, Vec2 otherOrigin, Vec2 otherBounds)
+		{
+			bool left = otherOrigin.X - otherBounds.X * 0.5f > X + bounds.X * 0.5f;
+			bool right = otherOrigin.X + otherBounds.X * 0.5f < X - bounds.X * 0.5f;
+			bool bottom = otherOrigin.Y - otherBounds.Y * 0.5f > Y + bounds.Y * 0.5f;
+			bool top = otherOrigin.Y + otherBounds.Y * 0.5f < Y - bounds.Y * 0.5f;
+			return !(left || right || bottom || top); 
+		}
 		
 		
 #pragma region STATIC CLASS FUNCTIONS

@@ -10,8 +10,12 @@
 #include <Chaos/Core/Level.cpp>
 #include <Chaos/Core/Time.cpp>
 
+//===MATHS======================================
+#include <Chaos/Maths/Collisions.cpp>
+
 //===DATA TYPES================================
 //#include <Chaos/DataTypes/Ray2D.cpp>
+#include <Chaos/DataTypes/QuadTree.cpp>
 
 //===DEBUG======================================
 #include <Chaos/Debug/Console.cpp>
@@ -27,6 +31,7 @@
 #include <Chaos/Nodes/Node.cpp>
 #include <Chaos/Nodes/Camera.cpp>
 #include <Chaos/Nodes/Sprite.cpp>
+#include <Chaos/Nodes/Colliders.cpp>
 
 //===PLATFORM==================================
 #include <Platform/Windows/WindowsWindow.cpp>

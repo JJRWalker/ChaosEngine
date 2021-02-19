@@ -1332,6 +1332,9 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp">
       <Filter>vendor\glm\glm</Filter>
     </ClInclude>
+    <ClInclude Include="src\Chaos\DataTypes\QuadTree.h" />
+    <ClInclude Include="src\Chaos\Nodes\Colliders.h" />
+    <ClInclude Include="src\Chaos\Maths\Collisions.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chaos\Core\Application.cpp">
@@ -1415,5 +1418,8 @@
     <ClCompile Include="src\chaospch.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Chaos\DataTypes\QuadTree.cpp" />
+    <ClCompile Include="src\Chaos\Nodes\Colliders.cpp" />
+    <ClCompile Include="src\Chaos\Maths\Collisions.cpp" />
   </ItemGroup>
 </Project>

@@ -2,6 +2,7 @@
 
 #include "Node.h"
 #include "Math.h"
+#include "Colliders.h"
 
 namespace Chaos
 {
@@ -120,8 +121,6 @@ namespace Chaos
 		Transform[0][1] = -sinf(rotation) * scale.X;
 		Transform[1][0] = sin(rotation) * scale.Y;
 		Transform[1][1] = cosf(rotation) * scale.Y;
-		
-		LOGCORE_TRACE("{0}", GetRotation());
 	}
 	
 	

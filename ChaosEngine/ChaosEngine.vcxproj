@@ -156,6 +156,7 @@
     <ClInclude Include="src\Chaos\Core\Time.h" />
     <ClInclude Include="src\Chaos\Core\Window.h" />
     <ClInclude Include="src\Chaos\DataTypes\Mat4.h" />
+    <ClInclude Include="src\Chaos\DataTypes\QuadTree.h" />
     <ClInclude Include="src\Chaos\DataTypes\Vec2.h" />
     <ClInclude Include="src\Chaos\DataTypes\Vec3.h" />
     <ClInclude Include="src\Chaos\DataTypes\Vec4.h" />
@@ -174,7 +175,9 @@
     <ClInclude Include="src\Chaos\Input\InputManager.h" />
     <ClInclude Include="src\Chaos\Input\KeyCodes.h" />
     <ClInclude Include="src\Chaos\Input\MouseCodes.h" />
+    <ClInclude Include="src\Chaos\Maths\Collisions.h" />
     <ClInclude Include="src\Chaos\Nodes\Camera.h" />
+    <ClInclude Include="src\Chaos\Nodes\Colliders.h" />
     <ClInclude Include="src\Chaos\Nodes\Node.h" />
     <ClInclude Include="src\Chaos\Nodes\Sprite.h" />
     <ClInclude Include="src\Chaos\Renderer\Renderer.h" />
@@ -574,6 +577,7 @@
     <ClCompile Include="src\Chaos\Core\Level.cpp" />
     <ClCompile Include="src\Chaos\Core\Log.cpp" />
     <ClCompile Include="src\Chaos\Core\Time.cpp" />
+    <ClCompile Include="src\Chaos\DataTypes\QuadTree.cpp" />
     <ClCompile Include="src\Chaos\Debug\Console.cpp" />
     <ClCompile Include="src\Chaos\Debug\ImGuiBuild.cpp" />
     <ClCompile Include="src\Chaos\Debug\ImGuiConsole.cpp" />
@@ -582,7 +586,9 @@
     <ClCompile Include="src\Chaos\Debug\ImGuiLayer.cpp" />
     <ClCompile Include="src\Chaos\Debug\Timer.cpp" />
     <ClCompile Include="src\Chaos\Input\InputManager.cpp" />
+    <ClCompile Include="src\Chaos\Maths\Collisions.cpp" />
     <ClCompile Include="src\Chaos\Nodes\Camera.cpp" />
+    <ClCompile Include="src\Chaos\Nodes\Colliders.cpp" />
     <ClCompile Include="src\Chaos\Nodes\Node.cpp" />
     <ClCompile Include="src\Chaos\Nodes\Sprite.cpp" />
     <ClCompile Include="src\Chaos\Renderer\Renderer.cpp" />

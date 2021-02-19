@@ -49,10 +49,12 @@ namespace Chaos
 		{
 			if(std::is_base_of<Node, T>::value)
 			{
-				ChildCount++;
 				T* node = new T();
-				Level::Get()->Nodes[ID][ChildCount] = node;
+				node->ID = ID;
+				node->SubID = ChildCount + 1;
+				Level::Get()->Nodes[ID][ChildCount + 1] = node;
 				node->p_parent = this;
+				ChildCount++; // need to increment after else this causes issues trying to access a child that doesn't exist on fixed update
 				return node;
 			}
 			else

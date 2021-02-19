@@ -24,10 +24,13 @@
 
 #define  BIT(x) (1 << x)
 
+#define HASBIT(x, y) ((x & y) != 0)
+
 namespace Chaos
 {
 	const int MAX_NODES = 100000;
 	const int MAX_CHILD_NODES = 100;
+	const float WORLD_SIZE = 1000000000; // max x and y coords a node can have and be considered inside the world
 	
 	//Function that takes in any type and returns a shared pointer for that type.
 	template<typename T>
