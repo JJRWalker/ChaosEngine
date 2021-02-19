@@ -22,14 +22,35 @@ namespace Chaos
 	
 	void Level::Update(float delta)
 	{
+		QuadTree quadTree; // need to reconstruct each loop
+		Collider** colliders = (Collider**)malloc(MAX_NODES * sizeof(Collider*)); // need to allocate this on the heap, too much for stack
+		size_t collidableCount = 0;
 		for (int node = 0; node < NodeCount; ++node)
 		{
-			Nodes[node][0]->Update(delta);
-			for (int child = 1; child < Nodes[node][0]->ChildCount; ++child)
+			for (int child = 0; child <= Nodes[node][0]->ChildCount; ++child)
 			{
 				Nodes[node][child]->Update(delta);
+				Collider* collider = dynamic_cast<Collider*>(Nodes[node][child]);
+				if (collider)
+				{
+					if (collider->PhysicsUpdateType == PhysicsType::CONTINUOUS)
+					{
+						quadTree.Insert(collider);
+						colliders[collidableCount] = collider;
+						collidableCount++;
+					}
+				}
 			}
 		}
+
+		for (int node = 0; node < collidableCount; ++node)
+		{
+			// do all of this inside the collide function
+			colliders[node]->CheckCollisions(&quadTree);
+		}
+
+
+		free(colliders);
 	}
 	
 	
@@ -40,16 +61,18 @@ namespace Chaos
 		size_t collidableCount = 0;
 		for (int node = 0; node < NodeCount; ++node)
 		{
-			Nodes[node][0]->FixedUpdate(delta);
-			for (int child = 1; child <= Nodes[node][0]->ChildCount; ++child)
+			for (int child = 0; child <= Nodes[node][0]->ChildCount; ++child)
 			{
 				Nodes[node][child]->FixedUpdate(delta);
 				Collider* collider = dynamic_cast<Collider*>(Nodes[node][child]);
 				if (collider)
 				{
-					quadTree.Insert(collider);
-					colliders[collidableCount] = collider;
-					collidableCount++;
+					if (collider->PhysicsUpdateType == PhysicsType::DISCREET)
+					{
+						quadTree.Insert(collider);
+						colliders[collidableCount] = collider;
+						collidableCount++;
+					}
 				}
 			}
 		}
