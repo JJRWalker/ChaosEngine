@@ -16,7 +16,7 @@ namespace Chaos
 	class Node 
 	{
 		public:
-		Node();
+		Node(std::string name = "Node");
 		~Node();
 		virtual void Init();                   // called on start of level
 		virtual void Update(float delta);      // called every frame

@@ -6,7 +6,7 @@
 
 namespace Chaos
 {
-	Node::Node()
+	Node::Node(std::string name) : Name(name)
 	{
 		Level* level = Level::Get();
 		level->Nodes[level->NodeCount][0] = this;

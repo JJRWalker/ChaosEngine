@@ -266,7 +266,7 @@ namespace Chaos
 					ImGui::PushID(buttonID);
 					if (ImGui::Button("", buttonSize))
 					{
-						subSprite->GetSubTexture()->SetTexCoords(Vec2(x,y), subSprite->GetSubTexture()->GetCellSize());
+						subSprite->GetSubTexture()->SetTexCoords(Vec2((float)x,(float)y), subSprite->GetSubTexture()->GetCellSize());
 					}
 					ImGui::PopStyleColor();
 					ImGui::PopID();
