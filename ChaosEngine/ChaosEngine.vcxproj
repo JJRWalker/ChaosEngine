@@ -163,6 +163,7 @@
     <ClInclude Include="src\Chaos\Debug\Console.h" />
     <ClInclude Include="src\Chaos\Debug\ImGuiConsole.h" />
     <ClInclude Include="src\Chaos\Debug\ImGuiDebugInfo.h" />
+    <ClInclude Include="src\Chaos\Debug\ImGuiEditor.h" />
     <ClInclude Include="src\Chaos\Debug\ImGuiFileExplorer.h" />
     <ClInclude Include="src\Chaos\Debug\ImGuiLayer.h" />
     <ClInclude Include="src\Chaos\Debug\Timer.h" />
@@ -584,6 +585,7 @@
     <ClCompile Include="src\Chaos\Debug\ImGuiBuild.cpp" />
     <ClCompile Include="src\Chaos\Debug\ImGuiConsole.cpp" />
     <ClCompile Include="src\Chaos\Debug\ImGuiDebugInfo.cpp" />
+    <ClCompile Include="src\Chaos\Debug\ImGuiEditor.cpp" />
     <ClCompile Include="src\Chaos\Debug\ImGuiFileExplorer.cpp" />
     <ClCompile Include="src\Chaos\Debug\ImGuiLayer.cpp" />
     <ClCompile Include="src\Chaos\Debug\Timer.cpp" />

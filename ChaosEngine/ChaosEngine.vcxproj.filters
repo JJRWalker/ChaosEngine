@@ -1337,6 +1337,7 @@
     <ClInclude Include="src\Chaos\Maths\Collisions.h" />
     <ClInclude Include="src\Chaos\Nodes\Animator.h" />
     <ClInclude Include="src\Chaos\Nodes\EditorCameraController.h" />
+    <ClInclude Include="src\Chaos\Debug\ImGuiEditor.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chaos\Core\Application.cpp">
@@ -1425,5 +1426,6 @@
     <ClCompile Include="src\Chaos\Maths\Collisions.cpp" />
     <ClCompile Include="src\Chaos\Nodes\Animator.cpp" />
     <ClCompile Include="src\Chaos\Nodes\EditorCameraController.cpp" />
+    <ClCompile Include="src\Chaos\Debug\ImGuiEditor.cpp" />
   </ItemGroup>
 </Project>

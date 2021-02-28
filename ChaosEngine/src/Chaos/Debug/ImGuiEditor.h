@@ -8,6 +8,9 @@
 
 namespace Chaos
 {
+	class Node;
+	class EditorCameraController;
+
 	class ImGuiEditor : public ImGuiLayer
 	{
 		public:
@@ -20,7 +23,7 @@ namespace Chaos
 		void UpdateSelectedEntity();
 		
 		private:
-		bool IsSelected(Entity* entity);
+		bool IsSelected(Node* entity);
 		
 		private:
 		bool m_showEditor = false;
@@ -33,8 +36,8 @@ namespace Chaos
 		const Vec2 DETAILS_WINDOW_PADDING = Vec2(50,80);
 		
 		Vec2 m_draggingEntPositionOffset = Vec2::Zero();
-		std::vector<Entity*> m_selectedEntities;
-		//EditorCameraController* m_cameraController;
+		std::vector<Node*> m_selectedEntities;
+		EditorCameraController* m_cameraController;
 		ImVec2 m_editorWindowPos;
 		ImVec2 m_editorWindowSize;
 		

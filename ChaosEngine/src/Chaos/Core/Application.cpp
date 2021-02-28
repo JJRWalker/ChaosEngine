@@ -10,7 +10,7 @@
 #include "Chaos/Core/Level.h"
 #include "Chaos/Input/InputManager.h"
 #include "Chaos/Debug/ImGuiConsole.h"
-//#include "Chaos/Debug/ImGuiEditor.h"
+#include "Chaos/Debug/ImGuiEditor.h"
 #include "Chaos/Debug/ImGuiDebugInfo.h"
 
 #include <ctime>
@@ -43,7 +43,7 @@ namespace Chaos
 		
 		//Push test overlay layer
 		PushOverlay(m_guiLayer);
-		//PushOverlay(new ImGuiEditor());
+		PushOverlay(new ImGuiEditor());
 		PushOverlay(new ImGuiDebugInfo());
 		
 		//init time

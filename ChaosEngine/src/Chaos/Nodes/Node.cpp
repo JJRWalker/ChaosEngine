@@ -38,6 +38,10 @@ namespace Chaos
 	void Node::Kill()
 	{
 	}
+
+	void Node::Debug()
+	{
+	}
 	
 	
 	Vec2 Node::GetPosition()

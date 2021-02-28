@@ -29,15 +29,18 @@ namespace Chaos
 		{
 			for (int child = 0; child <= Nodes[node][0]->ChildCount; ++child)
 			{
-				Nodes[node][child]->Update(delta);
-				Collider* collider = dynamic_cast<Collider*>(Nodes[node][child]);
-				if (collider)
+				if (Nodes[node][child]->Enabled)
 				{
-					if (collider->PhysicsUpdateType == PhysicsType::CONTINUOUS)
+					Nodes[node][child]->Update(delta);
+					Collider* collider = dynamic_cast<Collider*>(Nodes[node][child]);
+					if (collider)
 					{
-						quadTree.Insert(collider);
-						colliders[collidableCount] = collider;
-						collidableCount++;
+						if (collider->PhysicsUpdateType == PhysicsType::CONTINUOUS)
+						{
+							quadTree.Insert(collider);
+							colliders[collidableCount] = collider;
+							collidableCount++;
+						}
 					}
 				}
 			}
@@ -63,15 +66,18 @@ namespace Chaos
 		{
 			for (int child = 0; child <= Nodes[node][0]->ChildCount; ++child)
 			{
-				Nodes[node][child]->FixedUpdate(delta);
-				Collider* collider = dynamic_cast<Collider*>(Nodes[node][child]);
-				if (collider)
+				if (Nodes[node][child]->Enabled)
 				{
-					if (collider->PhysicsUpdateType == PhysicsType::DISCREET)
+					Nodes[node][child]->FixedUpdate(delta);
+					Collider* collider = dynamic_cast<Collider*>(Nodes[node][child]);
+					if (collider)
 					{
-						quadTree.Insert(collider);
-						colliders[collidableCount] = collider;
-						collidableCount++;
+						if (collider->PhysicsUpdateType == PhysicsType::DISCREET)
+						{
+							quadTree.Insert(collider);
+							colliders[collidableCount] = collider;
+							collidableCount++;
+						}
 					}
 				}
 			}

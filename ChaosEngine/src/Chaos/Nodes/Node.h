@@ -22,6 +22,7 @@ namespace Chaos
 		virtual void Update(float delta);      // called every frame
 		virtual void FixedUpdate(float delta); // called on specified fixed step
 		virtual void Kill();                   // called when node is destroyed
+		virtual void Debug();                  
 		
 		Vec2 GetPosition();
 		void SetPosition(Vec2 position);
