@@ -10,7 +10,7 @@ namespace Chaos
 	{
 		Level* level = Level::Get();
 		level->Nodes[level->NodeCount][0] = this;
-		ID = level->NodeCount;
+		ID = (uint32_t)level->NodeCount;
 		level->NodeCount++;
 	}
 	

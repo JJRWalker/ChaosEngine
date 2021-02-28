@@ -1,0 +1,22 @@
+/* date = February 28th 2021 0:17 pm */
+
+#ifndef _EDITOR_CAMERA_CONTROLLER_H
+#define _EDITOR_CAMERA_CONTROLLER_H
+
+#include "Chaos/Nodes/Node.h"
+
+namespace Chaos
+{
+	class EditorCameraController : public Node
+	{
+		public:
+		EditorCameraController(){};
+		
+		virtual void Update(float delta) override;
+		private:
+		float m_cameraSpeed = 1.0f;
+		Vec2 m_dir;
+	};
+}
+
+#endif //_EDITOR_CAMERA_CONTROLLER_H

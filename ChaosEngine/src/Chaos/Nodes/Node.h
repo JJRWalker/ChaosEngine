@@ -51,7 +51,7 @@ namespace Chaos
 			{
 				T* node = new T();
 				node->ID = ID;
-				node->SubID = ChildCount + 1;
+				node->SubID = (uint32_t)ChildCount + 1;
 				Level::Get()->Nodes[ID][ChildCount + 1] = node;
 				node->p_parent = this;
 				ChildCount++; // need to increment after else this causes issues trying to access a child that doesn't exist on fixed update
