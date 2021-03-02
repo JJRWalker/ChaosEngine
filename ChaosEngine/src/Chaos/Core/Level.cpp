@@ -17,6 +17,13 @@ namespace Chaos
 	
 	void Level::Start()
 	{
+		for (int node = 0; node < NodeCount; ++node)
+		{
+			for (int child = 0; child <= Nodes[node][0]->ChildCount; ++child)
+			{
+				Nodes[node][child]->Init(); 
+			}
+		}
 	}
 	
 	
