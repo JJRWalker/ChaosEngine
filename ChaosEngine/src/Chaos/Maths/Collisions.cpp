@@ -6,10 +6,10 @@ namespace Chaos
 {
 	bool Collisions::BoxBoxIntersection(Vec2 aOrigin, Vec2 aBounds, Vec2 bOrigin, Vec2 bBounds)
 	{
-		return !(bOrigin.X - bBounds.X * 0.5f > aOrigin.X + aBounds.X * 0.5f || 
-			bOrigin.X + bBounds.X * 0.5f < aOrigin.X - aBounds.X * 0.5f || 
-			bOrigin.Y - bBounds.Y * 0.5f > aOrigin.Y + aBounds.Y * 0.5f || 
-			bOrigin.Y + bBounds.Y * 0.5f < aOrigin.Y - aBounds.Y * 0.5f); 
+		return !(bOrigin.X - bBounds.X > aOrigin.X + aBounds.X || 
+			bOrigin.X + bBounds.X < aOrigin.X - aBounds.X || 
+			bOrigin.Y - bBounds.Y > aOrigin.Y + aBounds.Y || 
+			bOrigin.Y + bBounds.Y < aOrigin.Y - aBounds.Y); 
 	}
 	
 	
@@ -43,10 +43,11 @@ namespace Chaos
 	bool Collisions::CircleBoxIntersection(Vec2 circleOrigin, float radius, Vec2 boxOrigin, Vec2 boxBounds)
 	{
 		// for reference, came from an answer to this question: https://stackoverflow.com/questions/401847/circle-rectangle-collision-detection-intersection
-		float closestX = std::clamp(circleOrigin.X, boxOrigin.X - boxBounds.X * 0.5f, boxOrigin.X + boxBounds.X * 0.5f);
-		float closestY = std::clamp(circleOrigin.Y, boxOrigin.Y - boxBounds.Y * 0.5f, boxOrigin.Y + boxBounds.Y * 0.5f);
+		// gets the closest point inside the box and then checks if it's further away than the radius
+		float closestX = std::clamp(circleOrigin.X, boxOrigin.X - boxBounds.X, boxOrigin.X + boxBounds.X);
+		float closestY = std::clamp(circleOrigin.Y, boxOrigin.Y - boxBounds.Y, boxOrigin.Y + boxBounds.Y);
 
-		Vec2 distance = boxOrigin - circleOrigin;
+		Vec2 distance = Vec2(circleOrigin.X - closestX, circleOrigin.Y - closestY);
 
 		float distSq = (distance.X * distance.X) + (distance.Y * distance.Y);
 
@@ -56,13 +57,11 @@ namespace Chaos
 	
 	bool Collisions::PointInRectangle(Vec2 point, Vec2 rectOrigin, Vec2 rectBounds)
 	{
-		float halfWidth = rectBounds.X * 0.5f;
-		float halfHeight = rectBounds.Y * 0.5f;
+		float halfWidth = abs(rectBounds.X);
+		float halfHeight = abs(rectBounds.Y);
 		
-		return point.X >= rectOrigin.X - halfWidth &&
-			point.X <= rectOrigin.X + halfWidth &&
-			point.Y >= rectOrigin.Y - halfHeight &&
-			point.Y <= rectOrigin.Y + halfHeight;
+		return (point.X >= rectOrigin.X - halfWidth && point.X <= rectOrigin.X + halfWidth) 
+			&& (point.Y >= rectOrigin.Y - halfHeight && point.Y <= rectOrigin.Y + halfHeight);
 	}
 	
 	

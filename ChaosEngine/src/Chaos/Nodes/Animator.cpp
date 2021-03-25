@@ -9,13 +9,21 @@
 
 namespace Chaos
 {
-    void Animator::Update(float delta)
+	void Animator::OnUpdate(float delta)
+	{
+		if (m_spriteSheet && m_play && m_animation.TotalFrames > 1)
+		{
+			Application::Get().GetRenderer().DrawQuad(GetPosition3D(), GetScale(), Vec2(GetRotation(), GetRotation()), m_spriteSheet);
+		}
+	}
+	
+    void Animator::OnFixedUpdate(float delta)
     {
-        if (m_play && m_animation.TotalFrames > 1)
+        if (m_spriteSheet && m_play && m_animation.TotalFrames > 1)
         {
             //Get which frame we should display
-            m_time += Time::GetDeltaTime();
-            m_currentFrame = (uint32_t)floorf((m_time / m_length) * m_animation.TotalFrames) + m_frameOffset;
+            m_time += delta;
+            m_currentFrame = (uint32_t)roundf((m_time / m_length) * (m_animation.TotalFrames - 1)) + m_frameOffset;
 			
 			//when finished, reset and if we aren't looping, stop
             if (m_time > m_length)
@@ -29,8 +37,6 @@ namespace Chaos
             //Getting that frame in terms of x and y using remainder and how many times the current frame goes into the x bounds cleanly
             m_spriteSheet->SetTexCoords(Vec2((float)(m_currentFrame % (int)m_spriteSheetBounds.X), floorf(m_currentFrame / m_spriteSheetBounds.X)), m_animation.FrameSize);
 			
-            
-            Application::Get().GetRenderer().DrawQuad(GetPosition3D(), GetScale(), Vec2(GetRotation(), GetRotation()), m_spriteSheet);
         }
 		else if (m_play)
 		{
@@ -65,17 +71,30 @@ namespace Chaos
     //change the animation properties, does not stop current animation 
     void Animator::SetAnimation(Animation animation)
     {
+		if(animation.SpriteSheet)
+		{
+			if (m_spriteSheet.get())
+				*m_spriteSheet->GetMainTexture() = *animation.SpriteSheet;
+			else
+				m_spriteSheet = SubTexture::Create(animation.SpriteSheet, Vec2(0, 0), animation.FrameSize);
+		}
+		
 		m_length = animation.SeccondsPerFrame * animation.TotalFrames;   //calculating length in seconds
-        animation.TotalFrames--; //subtracting 1 as frames internally start from 0, not 1;
+        //animation.TotalFrames--; //subtracting 1 as frames internally start from 0, not 1;
         m_frameOffset = animation.StartFrame;
         m_animation = animation; //storing the animation data
-        m_spriteSheet = SubTexture::Create(animation.SpriteSheet, Vec2(0, 0), animation.FrameSize); //creating a subtexture from the spritesheet given, starting at the first index
-        m_spriteSheetBounds = Vec2(ceilf((float)animation.SpriteSheet->GetWidth() / animation.FrameSize.X),
-								   ceilf((float)animation.SpriteSheet->GetHeight() / animation.FrameSize.Y)); // getting max coordinates for x and y given the frame size and the width
+		//creating a subtexture from the spritesheet given, starting at the first index
+        m_spriteSheetBounds = Vec2(ceilf((float)m_spriteSheet->GetMainTexture()->GetWidth() / animation.FrameSize.X),
+								   ceilf((float)m_spriteSheet->GetMainTexture()->GetHeight() / animation.FrameSize.Y)); // getting max coordinates for x and y given the frame size and the width
         //warning if there would be more frames than there is space for on this sprite sheet given the frame size given and the size of the sprite sheet 
         if (m_spriteSheetBounds.X * m_spriteSheetBounds.Y < animation.TotalFrames)
         {
             LOGCORE_WARN("WARNING: NUMBER OF FRAMES SPECIFIED IN ANIMATION EXCEEDS THE SPRITESHEETS AREA AT THE SIZE PER FRAME GIVEN");
         }
     }
+	
+	void Animator::SetSpriteSheet(Ref<SubTexture> spriteSheet)
+	{
+		m_spriteSheet = spriteSheet;
+	}
 }

@@ -5,6 +5,10 @@
 #include "Chaos/Nodes/Camera.h"
 #include "Chaos/Nodes/Colliders.h"
 #include "Chaos/DataTypes/QuadTree.h"
+#include "Application.h"
+
+#include <iostream>
+#include <fstream>
 
 namespace Chaos
 {
@@ -21,13 +25,13 @@ namespace Chaos
 		{
 			for (int child = 0; child <= Nodes[node][0]->ChildCount; ++child)
 			{
-				Nodes[node][child]->Init(); 
+				Nodes[node][child]->OnStart(); 
 			}
 		}
 	}
 	
 	
-	void Level::Update(float delta)
+	void Level::OnUpdate(float delta)
 	{
 		QuadTree quadTree; // need to reconstruct each loop
 		Collider** colliders = (Collider**)malloc(MAX_NODES * sizeof(Collider*)); // need to allocate this on the heap, too much for stack
@@ -38,7 +42,8 @@ namespace Chaos
 			{
 				if (Nodes[node][child]->Enabled)
 				{
-					Nodes[node][child]->Update(delta);
+					Nodes[node][child]->OnUpdate(delta);
+					Nodes[node][child]->Debug();
 					Collider* collider = dynamic_cast<Collider*>(Nodes[node][child]);
 					if (collider)
 					{
@@ -52,19 +57,19 @@ namespace Chaos
 				}
 			}
 		}
-
+		
 		for (int node = 0; node < collidableCount; ++node)
 		{
 			// do all of this inside the collide function
 			colliders[node]->CheckCollisions(&quadTree);
 		}
-
-
+		
+		
 		free(colliders);
 	}
 	
 	
-	void Level::FixedUpdate(float delta)
+	void Level::OnFixedUpdate(float delta)
 	{
 		QuadTree quadTree; // need to reconstruct each loop
 		Collider** colliders = (Collider**) malloc(MAX_NODES * sizeof(Collider*)); // need to allocate this on the heap, too much for stack
@@ -75,7 +80,7 @@ namespace Chaos
 			{
 				if (Nodes[node][child]->Enabled)
 				{
-					Nodes[node][child]->FixedUpdate(delta);
+					Nodes[node][child]->OnFixedUpdate(delta);
 					Collider* collider = dynamic_cast<Collider*>(Nodes[node][child]);
 					if (collider)
 					{
@@ -98,6 +103,72 @@ namespace Chaos
 		
 		
 		free(colliders);
+	}
+	
+	void Level::Save(const char* filePath)
+	{
+		std::fstream out(filePath, std::ios::out | std::ios::binary);
+
+		if (!out)
+			LOGCORE_ERROR("SAVE LEVEL: could not create output file!");
+		
+		out.write((char*)&NodeCount, sizeof(size_t));
+
+		for (int node = 0; node < NodeCount; ++node)
+		{
+			out.write((char*)&Nodes[node][0]->ChildCount, sizeof(size_t));
+			for (int child = 0; child <= Nodes[node][0]->ChildCount; ++child)
+			{
+				size_t nodeSize = Nodes[node][child]->GetSize();
+				out.write((char*)&nodeSize, sizeof(size_t));
+				out.write((char*)&(*Nodes[node][child]), Nodes[node][child]->GetSize());
+			}
+		}
+		
+		out.close();
+		//out.write((char*)this, sizeof(*this));
+	}
+	
+	void Level::Load(const char* filePath)
+	{
+		Application::Get().PauseFixedUpdateThread();
+		std::fstream in(filePath, std::ios::in | std::ios::binary);
+
+		
+		if (!in)
+		{
+			LOGCORE_WARN("LOAD LEVEL: file path not found ({0})", filePath);
+			return;
+		}
+
+		Level* buffer = (Level*)malloc(sizeof(Level));
+
+		in.read((char*)&buffer->NodeCount, sizeof(size_t));
+
+		for (int node = 0; node < buffer->NodeCount; ++node)
+		{
+			size_t childCount = 0;
+			in.read((char*)&childCount, sizeof(size_t));
+			for (int child = 0; child <= childCount; ++child)
+			{
+				size_t nodeSize = 0;
+				in.read((char*)&nodeSize, sizeof(size_t));
+				std::vector<char> data;
+				data.resize(nodeSize);
+				in.read(data.data(), nodeSize);
+				buffer->Nodes[node][child] = (Node*)malloc(nodeSize);
+				memcpy(buffer->Nodes[node][child], data.data(), nodeSize);
+			}
+		}
+
+		//in.read((char*)buffer, sizeof(Level));
+		in.close();
+		memcpy(this, buffer, sizeof(*buffer));
+		free(buffer);
+
+		Start();
+
+		Application::Get().ResumeFixedUpdateThread();
 	}
 	
 	

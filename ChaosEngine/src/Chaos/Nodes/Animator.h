@@ -14,7 +14,7 @@ namespace Chaos
     struct Animation
     {
         Ref<Texture> SpriteSheet;
-        uint32_t TotalFrames;
+        uint32_t TotalFrames = 0;
         Vec2 FrameSize;
 		float SeccondsPerFrame = 0;
         uint32_t FrameRate = 30;
@@ -25,14 +25,17 @@ namespace Chaos
     class Animator : public Node
     {
         public:
-        Animator() {};
-        Animator(Animation animation) { SetAnimation(animation); }
-        void Update(float delta) override;
+        Animator(bool child = false) : Node(child) { Name = "Animator"; }
+        Animator(Animation animation) { SetAnimation(animation); Name = "Animator"; }
+		void OnUpdate(float delta) override;
+        void OnFixedUpdate(float delta) override;
         void Play();
         void Stop();
         void SetAnimation(Animation animation);
         float GetLength() {return m_length; } //returns the length in seconds
         uint32_t GetCurrentFrame() {return m_currentFrame;}
+		
+		void SetSpriteSheet(Ref<SubTexture> spriteSheet);
 		
         private:
         Ref<SubTexture> m_spriteSheet;  //sheet to draw frames from

@@ -10,10 +10,22 @@ namespace Chaos
 	{
 		
 	}
+
+	QuadTree::~QuadTree()
+	{
+		// if one is valid, all are valid 
+		if (m_children.NorthEast)
+		{
+			delete m_children.NorthEast;
+			delete m_children.NorthWest;
+			delete m_children.SouthEast;
+			delete m_children.SouthWest;
+		}
+	}
 	
 	bool QuadTree::Insert(Collider* node)
 	{
-		if (!node->GetPosition().InsideBounds(m_origin, m_bounds))
+		if (!Collisions::PointInRectangle(node->GetPosition(),m_origin, m_bounds))
 			return false;
 		
 		if (m_size < QUAD_TREE_CAPACITY)
@@ -27,10 +39,10 @@ namespace Chaos
 			if (!m_divided)
 				Subdivide();
 			
-			return m_children.NorthWest->Insert(node) ||
-				m_children.NorthEast->Insert(node) ||
-				m_children.SouthWest->Insert(node) ||
-				m_children.SouthEast->Insert(node);
+			return m_children.NorthWest->Insert(node) 
+				|| m_children.NorthEast->Insert(node)
+				|| m_children.SouthWest->Insert(node)
+				|| m_children.SouthEast->Insert(node);
 		}
 	}
 	

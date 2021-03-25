@@ -18,16 +18,17 @@ namespace Chaos
 	
 	struct ChildTrees
 	{
-		QuadTree* NorthWest;
-		QuadTree* NorthEast;
-		QuadTree* SouthWest;
-		QuadTree* SouthEast;
+		QuadTree* NorthWest = nullptr;
+		QuadTree* NorthEast = nullptr;
+		QuadTree* SouthWest = nullptr;
+		QuadTree* SouthEast = nullptr;
 	};
 	
 	class QuadTree
 	{
 		public:
 		QuadTree(Vec2 origin = Vec2(0,0), Vec2 bounds = Vec2(WORLD_SIZE, WORLD_SIZE));
+		~QuadTree();
 		
 		bool Insert(Collider* node);
 		Collider* QueryRange(Vec2 centre, Vec2 bounds, Collider* foundNodes[MAX_NODES], size_t& insert);

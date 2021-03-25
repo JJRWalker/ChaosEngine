@@ -13,22 +13,22 @@ namespace Chaos
 	class Sprite : public Node
 	{
 		public:
-		Sprite();
+		Sprite(bool child = false);
 		
-		void Update(float delta) override;
+		void OnUpdate(float delta) override;
 		
 		public:
-		Ref<Texture> Texture = Texture::GetBlank();	//Setting default texture (loads blank)
+		Ref<Texture> Texture = Texture::Create();	//Setting default texture (loads blank)
 		Vec4 Colour = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	};
 	
 	class SubSprite : public Node
 	{
 		public:
-		SubSprite(){};
-		virtual void Init() override;
-		virtual void Update(float delta) override;
-		virtual void Kill() override;
+		SubSprite(bool child = false) : Node(child) {Name = "SubSprite";}
+		virtual void OnStart() override;
+		virtual void OnUpdate(float delta) override;
+		virtual void OnDestroy() override;
 		
 		void SetSubTexture(Ref<SubTexture> subTex) { m_subTex = subTex; }
 		Ref<SubTexture>GetSubTexture() { return m_subTex; }
@@ -36,17 +36,17 @@ namespace Chaos
 		Vec4& Colour() { return m_colour; }
 		
 		private:
-		Ref<SubTexture> m_subTex = SubTexture::Create(Texture::GetBlank(), Vec2(0,0), Vec2(1,1));
+		Ref<SubTexture> m_subTex = SubTexture::Create(Texture::Create(), Vec2(0,0), Vec2(1,1));
 		Vec4 m_colour = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	};
 	
 	class UISprite : public Node
 	{
 		public:
-		UISprite(){};
-		void Init() override;
-		void Update(float delta) override;
-		void Kill() override;
+		UISprite(bool child = false) : Node(child) { Name = "UISprite"; }
+		void OnStart() override;
+		void OnUpdate(float delta) override;
+		void OnDestroy() override;
 		
 		void SetTexture(Ref<Texture> tex) { m_texture = tex; }
 		Ref<Texture> GetTexture() { return m_texture; }
@@ -54,7 +54,7 @@ namespace Chaos
 		Vec4& Colour() { return m_colour; }
 		
 		private:
-		Ref<Texture> m_texture = Texture::GetBlank();	//init as a blank texture
+		Ref<Texture> m_texture = Texture::Create();	//init as a blank texture
 		Vec4 m_colour = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	};
 }

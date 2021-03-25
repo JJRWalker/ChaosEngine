@@ -30,7 +30,7 @@ namespace Chaos
 	class Collider : public Node
 	{
 		public:
-		Collider();
+		Collider(bool child = false);
 		
 		virtual bool CollideWith(Collider* other) = 0;
 		// checks all collisions with quad tree, searches based on the type of colliders involved
@@ -52,25 +52,29 @@ namespace Chaos
 	class BoxCollider2D : public Collider
 	{
 		public:
-		BoxCollider2D();
+		BoxCollider2D(bool child = false);
 		
+		void Debug() override;
+
 		bool CollideWith(Collider* other) override;
 		void CheckCollisions(QuadTree* tree) override;
 		
-		Vec2 Bounds = Vec2(2.0f, 2.0f);
+		Vec2 Bounds = Vec2(0.5f, 0.5f);
 	};
 	
 	
 	class CircleCollider : public Collider
 	{
 		public:
-		CircleCollider();
+		CircleCollider(bool child = false);
+
+		void Debug() override;
 		
 		bool CollideWith(Collider* other) override;
 		void CheckCollisions(QuadTree* tree) override;
 		
 		public:
-		float Radius = 2.0f;
+		float Radius = 1.0f;
 	};
 }
 

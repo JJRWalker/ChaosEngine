@@ -47,11 +47,7 @@ namespace Chaos
 		PushOverlay(new ImGuiDebugInfo());
 		
 		//init time
-		Time::Init();
-		
-		//starting the fixed update thread
-		m_fixedUpdateThread = std::thread(&Application::FixedRun, this);
-		m_fixedUpdateThread.detach();
+		Time::Init();		
 	}
 	
 	Application::~Application()
@@ -61,14 +57,15 @@ namespace Chaos
 	
 	void Application::Run()
 	{
+		StartFixedUpdateThread();
 		while (m_running)
 		{
 			//Update time class
 			Time::m_time = m_window->GetWindowTime();
-			Time::m_deltaTime = Time::m_time - Time::m_timeLastFrame;
+			Time::m_deltaTime = (Time::m_time - Time::m_timeLastFrame);
 			Time::m_timeLastFrame = Time::m_time;
 			
-			//NOTE: not sure why this was here
+			//NOTE: this should be done when changing the resolution
 			//m_mainCamera->SetAspectRatio(m_window->GetAspectRatio());
 			
 			//itterate through layers
@@ -94,47 +91,80 @@ namespace Chaos
 			m_postUpdateSteps.clear();
 			
 			//update the current scene after all the layers have been processed
-			Level::Get()->Update(Time::m_deltaTime);
+			Level::Get()->OnUpdate(Time::m_deltaTime);
 			m_window->OnUpdate();
 			m_renderer->DrawFrame();
 			Input::UpdateMouseEndFramePosition();
 		}
 	}
 	
-	//gets whatever scene is active and calls the fixed update function on that scene at the fixed update delta time interval
+	//gets whatever level is active and calls the fixed update function on that level at the fixed update delta time interval
 	//NOTE: should only ever be used with a seperate thread, causes the current thread to sleep
 	void Application::FixedRun()
 	{
 		while (m_running)
 		{
-			std::chrono::milliseconds sleepTime(static_cast<int>(Time::GetFixedDeltaTime() * 1000));
+			float fixedDelta = Time::GetFixedDeltaTime();
+
+			//NOTE: not sure why but this needs to be multiplied by 500 instead of 1000
+			std::chrono::milliseconds sleepTime(static_cast<int>(fixedDelta * 500));
+
+			if (m_pauseFixedUpdate)
+			{
+				std::this_thread::sleep_for(sleepTime);
+				continue;
+			}
+
+			for (Layer* layer : m_layerStack)
+			{
+				layer->OnFixedUpdate(fixedDelta);
+			}
+
+
 			if (Level::Get())
 			{
-				Level::Get()->FixedUpdate(Time::GetFixedDeltaTime());
+				Level::Get()->OnFixedUpdate(fixedDelta);
 			}
+
 			std::this_thread::sleep_for(sleepTime);
 		}
 	}
-	
+
 	void Application::OnEvent(Event& e)
 	{
 		//LOGCORE_TRACE(e.ToString());
-		
+
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
-		
+
 		if (e.GetEventType() == EventType::WindowResize)
 		{
 			m_renderer->OnWindowResized((WindowResizeEvent&)e);
 		}
-		
+
 		for (auto it = m_layerStack.end(); it != m_layerStack.begin();)
 		{
 			(*--it)->OnEvent(e);
 			if (e.Handled)
 				break;
 		}
-		
+
+	}
+
+	void Application::StartFixedUpdateThread()
+	{
+		m_fixedUpdateThread = std::thread(&Application::FixedRun, this);
+		m_fixedUpdateThread.detach();
+	}
+
+	void Application::PauseFixedUpdateThread()
+	{
+		m_pauseFixedUpdate = true;
+	}
+
+	void Application::ResumeFixedUpdateThread()
+	{
+		m_pauseFixedUpdate = false;
 	}
 	
 	void Application::PushLayer(Layer* layer)

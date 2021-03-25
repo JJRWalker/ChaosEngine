@@ -28,6 +28,9 @@ namespace Chaos
 		void OnEvent(Event& e);	
 		void Close() { m_running = false; }
 		
+		void StartFixedUpdateThread();
+		void PauseFixedUpdateThread();
+		void ResumeFixedUpdateThread();
 		
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* overlay);
@@ -50,6 +53,7 @@ namespace Chaos
 		
 		private:
 		bool m_running = true;
+		bool m_pauseFixedUpdate = false;
 		bool m_renderingImGui = true;
 		std::unique_ptr<Window> m_window;
 		std::unique_ptr<Renderer> m_renderer;

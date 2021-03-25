@@ -6,39 +6,42 @@
 
 namespace Chaos
 {
-	Node::Node(std::string name) : Name(name)
+	Node::Node(bool child)
 	{
-		Level* level = Level::Get();
-		level->Nodes[level->NodeCount][0] = this;
-		ID = (uint32_t)level->NodeCount;
-		level->NodeCount++;
+		if (!child)
+		{
+			Level* level = Level::Get();
+			ID = (uint32_t)level->NodeCount;
+			level->Nodes[level->NodeCount][0] = this;
+			level->NodeCount++;
+		}
 	}
 	
 	
 	Node::~Node()
 	{
-		Kill();
+		OnDestroy();
 	}
 	
 	
-	void Node::Init()
+	void Node::OnStart()
 	{
 	}
 	
 	
-	void Node::Update(float delta)
+	void Node::OnUpdate(float delta)
 	{
 	}
 	
 	
-	void Node::FixedUpdate(float delta)
+	void Node::OnFixedUpdate(float delta)
 	{
 	}
 	
-	void Node::Kill()
+	void Node::OnDestroy()
 	{
 	}
-
+	
 	void Node::Debug()
 	{
 	}
@@ -141,10 +144,13 @@ namespace Chaos
 		Vec2 right = Vec2(Transform[0][0], Transform[0][1]);
 		Vec2 up = Vec2(Transform[1][0], Transform[1][1]);
 		
+		int rightMod = right.X + right.Y < 0 ? -1 : 1;
+		int upMod = up.X + up.Y < 0 ? -1 : 1;
+		
 		Vec2 scale = Vec2(right.Magnitude(), up.Magnitude());
 		
 		if (p_parent)
-			scale = scale + p_parent->GetScale();
+			scale = scale * p_parent->GetScale();
 		
 		return scale;
 	}
@@ -163,6 +169,11 @@ namespace Chaos
 		Transform[0][1] = -sinf(rotation) * scale.X;
 		Transform[1][0] = sin(rotation) * scale.Y;
 		Transform[1][1] = cosf(rotation) * scale.Y;
+	}
+
+	size_t Node::GetSize()
+	{
+		return sizeof(*this);
 	}
 	
 	

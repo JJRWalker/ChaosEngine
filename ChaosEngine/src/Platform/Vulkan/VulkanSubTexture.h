@@ -11,7 +11,11 @@ namespace Chaos
 		VulkanSubTexture(std::string filePath, Vec2 coordinates, Vec2 size);
 		VulkanSubTexture(Ref<Texture> mainTexture, Vec2 coordinates, Vec2 size);
 		
-		virtual ~VulkanSubTexture() {};
+		virtual ~VulkanSubTexture() { m_mainTexture->Unload(); };
+
+		virtual void Load(Ref<Texture> mainTex, Vec2 coordinates, Vec2 size) override {};
+		virtual void Unload() override {};
+
 		
 		virtual std::string GetFilePath() const override { return m_filePath; }
 		

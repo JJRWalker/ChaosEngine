@@ -10,7 +10,7 @@ namespace Chaos
 {
 	class Node;
 	class EditorCameraController;
-
+	
 	class ImGuiEditor : public ImGuiLayer
 	{
 		public:
@@ -28,6 +28,7 @@ namespace Chaos
 		private:
 		bool m_showEditor = false;
 		bool m_clicked = false;
+		bool m_dragging = false;
 		
 		char* m_filePathInput = "";
 		std::string m_filePath = "";

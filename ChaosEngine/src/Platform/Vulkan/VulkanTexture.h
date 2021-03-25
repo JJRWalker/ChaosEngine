@@ -12,7 +12,7 @@ namespace Chaos
 		VulkanTexture();
 		VulkanTexture(std::string filePath);
 		
-		virtual ~VulkanTexture() {};
+		virtual ~VulkanTexture() { Unload(); }
 		
 		//Must explicitly unload textures, note if renderer doesn't exist on load or unload, it will fail to be dealocated or alocated
 		virtual void Load (char* filePath) override;

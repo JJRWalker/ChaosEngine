@@ -90,8 +90,7 @@ namespace Chaos
 		{
 			float theta = Dot(from, to) / (from.Magnitude() * to.Magnitude());
 			
-			float r = acos(theta);
-			theta = r * Math::RAD_TO_DEGREES;	//convert to degrees
+			theta = acos(theta); // no need to convert to degrees, we take all angles in rads
 			
 			//sometimes the angle may be too small to be contained in a float, in this case, or any other invalid operation, return 0
 			if (isnan(theta))

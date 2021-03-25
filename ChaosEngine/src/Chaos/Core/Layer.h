@@ -15,6 +15,7 @@ namespace Chaos
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}
 		virtual void OnUpdate(float deltaTime) {}
+		virtual void OnFixedUpdate(float fixedDelta) {}
 		virtual void OnLateUpdate(){};
 		virtual void OnEvent(Event& event) {}
 		virtual void OnImGuiUpdate() {}

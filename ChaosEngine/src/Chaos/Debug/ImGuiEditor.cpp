@@ -47,10 +47,10 @@ namespace Chaos
 	
 	void ImGuiEditor::ShowEditor()
 	{
-		if (!m_cameraController->Enabled)
-		{
-			m_cameraController->Enabled = true;
-		}
+		//if (!m_cameraController->Enabled)
+		//{
+		//	m_cameraController->Enabled = true;
+		//}
 		ImGuiWindowFlags window_flags =  ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoBringToFrontOnFocus;
 		
 		//ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.1f, 0.1f, 0.1f, 0.1f));
@@ -65,22 +65,31 @@ namespace Chaos
 		{
 			if(ImGui::BeginMenu("add.."))
 			{
-				if(ImGui::MenuItem("ent"))
+				if(ImGui::MenuItem("Sprite"))
 				{
-					Node* entity = new Node();
-					entity->AddChild<Node>();
-					entity->AddChild<BoxCollider2D>();
-					entity->AddChild<BoxCollider2D>()->Trigger = true;
+					Node* node = new Sprite();
+					node->SetScale(Vec2(2.0f, 2.0f));
+					node->AddChild<BoxCollider2D>();
+					node->AddChild<BoxCollider2D>()->Trigger = true;
+				}
+				if(ImGui::MenuItem("Sub-Sprite"))
+				{
+					Node* node = new SubSprite();
+					node->SetScale(Vec2(2.0f, 2.0f));
+					node->AddChild<BoxCollider2D>();
+					node->AddChild<BoxCollider2D>()->Trigger = true;
 				}
 				ImGui::EndMenu();
 			}
 			if(ImGui::Button("save.."))
 			{
 				LOGINFO("Save...");
+				Level::Get()->Save("./test-level.lvl");  //TODO: Pass in path through file dialog
 			}
 			if(ImGui::Button("load..."))
 			{
 				LOGINFO("Load...");
+				Level::Get()->Load("./test-level.lvl");  //TODO: Pass in path through file dialog
 			}
 			if(ImGui::Button("close"))
 			{
@@ -96,29 +105,32 @@ namespace Chaos
 			
 			for(int i = 0; i < Level::Get()->NodeCount; ++i)
 			{
-				bool nodeClicked = false;
-				Node* entity = Level::Get()->Nodes[i][0];
-				ImGuiTreeNodeFlags nodeFlags = baseFlags;
-				if(IsSelected(entity))
+				for (int j = 0; j < Level::Get()->Nodes[i][0]->ChildCount; ++j)
 				{
-					nodeFlags |= ImGuiTreeNodeFlags_Selected;
-				}
-				
-				nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-				ImGui::TreeNodeEx((void*)(intptr_t)i, nodeFlags, "%s", entity->Name);
-				if (ImGui::IsItemClicked())
-					nodeClicked = true;
-				
-				if (nodeClicked)
-				{
-					if (ImGui::GetIO().KeyCtrl)
+					bool nodeClicked = false;
+					Node* entity = Level::Get()->Nodes[i][j];
+					ImGuiTreeNodeFlags nodeFlags = baseFlags;
+					if(IsSelected(entity))
 					{
-						m_selectedEntities.push_back(entity);         // CTRL+click to toggle
+						nodeFlags |= ImGuiTreeNodeFlags_Selected;
 					}
-					else //if (!(selection_mask & (1 << node_clicked))) // Depending on selection behavior you want, this commented bit preserve selection when clicking on item that is part of the selection
+					
+					nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+					ImGui::TreeNodeEx((void*)(intptr_t)i, nodeFlags, "%s", entity->Name);
+					if (ImGui::IsItemClicked())
+						nodeClicked = true;
+					
+					if (nodeClicked)
 					{
-						m_selectedEntities.clear();
-						m_selectedEntities.push_back(entity);	// Click to single-select
+						if (ImGui::GetIO().KeyCtrl)
+						{
+							m_selectedEntities.push_back(entity);         // CTRL+click to toggle
+						}
+						else //if (!(selection_mask & (1 << node_clicked))) // Depending on selection behavior you want, this commented bit preserve selection when clicking on item that is part of the selection
+						{
+							m_selectedEntities.clear();
+							m_selectedEntities.push_back(entity);	// Click to single-select
+						}
 					}
 				}
 			}
@@ -139,7 +151,7 @@ namespace Chaos
 		//put detail information here...
 		
 		float* pos[2] = { &node->Transform[0][3], &node->Transform[1][3] };
-
+		
 		// hack scale. will not modify scale when adjusted. TODO: change this to a different method that uses getters and setters rather than a pointer
 		Vec2 nodeScale = node->GetScale();
 		float* scale[2] = { &nodeScale.X, &nodeScale.Y };
@@ -149,9 +161,9 @@ namespace Chaos
 		ImGui::DragFloat2("Scale", *scale, 0.01f);
 		
 		// same hacky impl for rotation as we need to extract
-
+		
 		float rotation = node->GetRotation();
-
+		
 		ImGui::DragFloat("Rotation", &rotation, 1.0f, -180, 180);
 		
 		ImGui::Separator();
@@ -284,7 +296,7 @@ namespace Chaos
 	{
 		Vec2 mouseWorldPoint =  Level::Get()->MainCamera()->ScreenToWorld(Input::GetMousePosition());
 		
-		if(Input::IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+		if(Input::IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !m_clicked)
 		{
 			//Not sure about how nested this gets..
 			//when editor is open if we click find the box collider where the world mouse position that click intersects
@@ -292,9 +304,9 @@ namespace Chaos
 			for (int i = 0; i < Level::Get()->NodeCount; ++i)
 			{
 				Node* node = Level::Get()->Nodes[i][0];
-				BoxCollider2D* collider = node->GetChild<BoxCollider2D>();
 				if (node->GetChild<BoxCollider2D>())
 				{
+					BoxCollider2D* collider = node->GetChild<BoxCollider2D>();
 					if (Collisions::PointInRectangle(mouseWorldPoint, collider->GetPosition(), collider->Bounds))
 					{
 						if (!m_clicked)
@@ -302,17 +314,17 @@ namespace Chaos
 							m_draggingEntPositionOffset = Vec2(mouseWorldPoint.X - node->GetPosition().X, mouseWorldPoint.Y - node->GetPosition().Y);
 							m_clicked = true;
 						}
-
+						
 						if (std::find(m_selectedEntities.begin(), m_selectedEntities.end(), node) == m_selectedEntities.end())
 						{
 							m_selectedEntities.clear();
 							m_selectedEntities.push_back(node);
-
+							
 						}
-
+						
 						//clear entities and select just this one
 						//TODO: in future support group selecting entites
-
+						
 					}
 				}
 			}
@@ -322,6 +334,36 @@ namespace Chaos
 		{
 			m_draggingEntPositionOffset = Vec2::Zero();
 			m_clicked = false;
+		}
+		
+		if(Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+		{
+			//Not sure about how nested this gets..
+			//when editor is open if we click find the box collider where the world mouse position that click intersects
+			
+			for (int i = 0; i < Level::Get()->NodeCount; ++i)
+			{
+				Node* node = Level::Get()->Nodes[i][0];
+				if (node->GetChild<BoxCollider2D>())
+				{
+					BoxCollider2D* collider = node->GetChild<BoxCollider2D>();
+					if (Collisions::PointInRectangle(mouseWorldPoint, collider->GetPosition(), collider->Bounds))
+					{
+						
+						if (std::find(m_selectedEntities.begin(), m_selectedEntities.end(), node) == m_selectedEntities.end())
+						{
+							m_selectedEntities.clear();
+							m_selectedEntities.push_back(node);
+							
+						}
+						
+						//clear entities and select just this one
+						//TODO: in future support group selecting entites
+						
+					}
+				}
+			}
+			
 		}
 		
 		if (m_clicked)

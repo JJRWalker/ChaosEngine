@@ -9,7 +9,7 @@
 
 namespace Chaos
 {
-	void EditorCameraController::Update(float delta)
+	void EditorCameraController::OnUpdate(float delta)
 	{
 		if(Input::IsKeyPressed(KEY_W))
 		{

@@ -24,7 +24,7 @@
 
 #define  BIT(x) (1 << x)
 
-#define HASBIT(x, y) ((x & y) != 0)
+#define HASBIT(x, y) (x & y)
 
 namespace Chaos
 {

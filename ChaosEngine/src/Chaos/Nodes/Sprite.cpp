@@ -7,45 +7,46 @@
 namespace Chaos
 {
 	// SPRITE
-	Sprite::Sprite()
+	Sprite::Sprite(bool child) : Node(child)
 	{
+		Name = "Sprite";
 	}
 	
 	
-	void Sprite::Update(float delta)
+	void Sprite::OnUpdate(float delta)
 	{
 		Application::Get().GetRenderer().DrawQuad(GetPosition3D(), GetScale(), Vec2(GetRotation(), GetRotation()), Colour, Texture);
 	}
 	
 	// SUB SPRITE
-	void SubSprite::Init()
+	void SubSprite::OnStart()
 	{
 	}
 	
-	void SubSprite::Update(float delta)
+	void SubSprite::OnUpdate(float delta)
 	{
 		Application::Get().GetRenderer().DrawQuad(GetPosition3D(), GetScale(), Vec2(GetRotation(), GetRotation()),
 												  m_colour, m_subTex);
 	}
 	
-	void SubSprite::Kill()
+	void SubSprite::OnDestroy()
 	{
 		
 	}
 	
 	// UI SPRITE
-	void UISprite::Init()
+	void UISprite::OnStart()
 	{
 		
 	}
 	
-	void UISprite::Update(float delta)
+	void UISprite::OnUpdate(float delta)
 	{
 		Application::Get().GetRenderer().DrawScreenSpaceQuad(GetPosition3D(), GetScale(), 
 															 Vec2(GetRotation(), GetRotation()), m_colour, m_texture, 1);
 	}
 	
-	void UISprite::Kill()
+	void UISprite::OnDestroy()
 	{
 		
 	}

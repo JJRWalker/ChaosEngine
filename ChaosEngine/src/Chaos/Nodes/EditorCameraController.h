@@ -10,9 +10,9 @@ namespace Chaos
 	class EditorCameraController : public Node
 	{
 		public:
-		EditorCameraController(){};
+		EditorCameraController(bool child = false) : Node(child) { Name = "EditorCameraController"; }
 		
-		virtual void Update(float delta) override;
+		virtual void OnUpdate(float delta) override;
 		private:
 		float m_cameraSpeed = 1.0f;
 		Vec2 m_dir;

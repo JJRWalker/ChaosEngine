@@ -1,5 +1,5 @@
 #ifndef _CHAOS_H
-#define _CHOAS_H
+#define _CHAOS_H
 
 //FOR USE BY CHAOS APPS
 

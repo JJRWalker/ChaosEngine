@@ -19,19 +19,19 @@ namespace Chaos
 	}
 	
 	
-	void Camera::Init() 
+	void Camera::OnStart() 
 	{
 	}
 	
 	
-	void Camera::Update(float delta) 
+	void Camera::OnUpdate(float delta) 
 	{
 		
 		Recalculate();
 	}
 	
 	
-	void Camera::Kill() 
+	void Camera::OnDestroy() 
 	{
 	}
 	

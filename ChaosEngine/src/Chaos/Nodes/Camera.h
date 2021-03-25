@@ -18,12 +18,12 @@ namespace Chaos
 	class Camera : public Node
 	{
 		public:
-		Camera() { };
+		Camera(bool child = false) : Node(child) { Name = "Camera"; }
 		
 		// Inherited via Node
-		virtual void Init() override;
-		virtual void Update(float delta) override;
-		virtual void Kill()  override;
+		virtual void OnStart() override;
+		virtual void OnUpdate(float delta) override;
+		virtual void OnDestroy()  override;
 		
 		void SetBounds(Vec4 bounds) { m_bounds = bounds; Recalculate(); }
 		Vec4 GetBounds() { return m_bounds; }

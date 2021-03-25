@@ -12,6 +12,21 @@ namespace Chaos
 	void ImGuiDebugInfo::OnUpdate(float deltaTime)
 	{
 		m_fps = 1 / deltaTime;
+		++m_framesSinceAvgFrameCheck;
+		m_timeSinceAvgFrameCheck += deltaTime;
+		
+		if (m_timeSinceAvgFrameCheck >= m_AvgFrameCheckTime)
+		{
+			m_averageFPS = (m_framesSinceAvgFrameCheck / m_AvgFrameCheckTime);
+			
+			m_timeSinceAvgFrameCheck = 0;
+			m_framesSinceAvgFrameCheck = 0;
+		}
+	}
+	
+	void ImGuiDebugInfo::OnFixedUpdate(float fixedDelta)
+	{
+		m_fixedFPS = 1 / fixedDelta;
 	}
 	
 	void ImGuiDebugInfo::OnImGuiUpdate()
@@ -39,6 +54,8 @@ namespace Chaos
 				//Display info here..
 				
 				ImGui::Text("fps: %d", m_fps);
+				ImGui::Text("avg fps: %f", m_averageFPS);
+				ImGui::Text("fixed fps: %d", m_fixedFPS);
 				
 				if (ImGui::BeginPopupContextWindow())
 				{

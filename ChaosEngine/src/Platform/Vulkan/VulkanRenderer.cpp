@@ -157,12 +157,12 @@ namespace Chaos
 		//getting the vector representation of the line
 		Vec2 line = endPoint - startPoint;
 		//adding half of the line to the start point to get the center
-		Vec2 lineCenter = startPoint + (line / 2);
+		Vec2 lineCenter = startPoint + (line * 0.5f);
 		//using weight provided and start and end point to work out scale
 		Vec2 scale = Vec2(weight, line.Magnitude());
 		//working out rotation using up vector
 		float theta = Vec2::Angle(Vec2(0.0f, 1.0f), line);
-		Vec2 rotation = Vec2(theta, 0.0f);
+		Vec2 rotation = Vec2(theta, theta);
 		
 		DrawQuad(Vec3(lineCenter.X, lineCenter.Y, renderOrder), scale, rotation, colour, Texture::GetBlank());
 	}

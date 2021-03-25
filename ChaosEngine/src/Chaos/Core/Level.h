@@ -14,8 +14,12 @@ namespace Chaos
 		public:
 		Level();
 		void Start();
-		void Update(float delta);
-		void FixedUpdate(float delta);
+		void OnUpdate(float delta);
+		void OnFixedUpdate(float delta);
+		
+		void Save(const char* filepath);
+		void Load(const char* filepath);
+		
 		Camera* MainCamera();
 		
 		static Level* Get();

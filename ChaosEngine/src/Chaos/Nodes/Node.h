@@ -16,27 +16,31 @@ namespace Chaos
 	class Node 
 	{
 		public:
-		Node(std::string name = "Node");
+		Node(bool child = false);
 		~Node();
-		virtual void Init();                   // called on start of level
-		virtual void Update(float delta);      // called every frame
-		virtual void FixedUpdate(float delta); // called on specified fixed step
-		virtual void Kill();                   // called when node is destroyed
+
+		virtual void OnStart();                  // called on start of level
+		virtual void OnUpdate(float delta);      // called every frame
+		virtual void OnFixedUpdate(float delta); // called on specified fixed step
+		virtual void OnDestroy();                // called when node is destroyed
 		virtual void Debug();                  
 		
-		Vec2 GetPosition();
-		void SetPosition(Vec2 position);
-		Vec3 GetPosition3D();
-		void SetPosition(Vec3 position);
-		float GetDepth(); // refers to render depth / order, basically the z comp of pos
-		void SetDepth(float depth);
-		void Translate(Vec2 translation);
+		virtual Vec2 GetPosition();
+		virtual void SetPosition(Vec2 position);
+		virtual Vec3 GetPosition3D();
+		virtual void SetPosition(Vec3 position);
+		virtual float GetDepth(); // refers to render depth / order, basically the z comp of pos
+		virtual void SetDepth(float depth);
+		virtual void Translate(Vec2 translation);
 		// only one rotation value we're concerned about in 2D, z
-		float GetRotation();
-		void SetRotation(float rotation);
+		virtual float GetRotation();
+		virtual void SetRotation(float rotation);
 		void Rotate(float theta);
-		Vec2 GetScale();
-		void SetScale(Vec2 scale);
+		virtual Vec2 GetScale();
+		virtual void SetScale(Vec2 scale);
+
+		// for seralization
+		size_t GetSize();
 		
 		// collision funcs called when a child collider node triggers any conditions
 		virtual void ColliderStay(Collider* self, Collider* other);
@@ -50,7 +54,7 @@ namespace Chaos
 		{
 			if(std::is_base_of<Node, T>::value)
 			{
-				T* node = new T();
+				T* node = new T(true);
 				node->ID = ID;
 				node->SubID = (uint32_t)ChildCount + 1;
 				Level::Get()->Nodes[ID][ChildCount + 1] = node;
@@ -88,7 +92,7 @@ namespace Chaos
 					return node;
 				}
 			}
-			LOGCORE_ERROR("NODE: {0}: Failed to get component on node returning nullptr!", Name);
+			//LOGCORE_ERROR("NODE: {0}: Failed to get component on node returning nullptr!", Name);
 			return nullptr;
 		}
 		
@@ -127,8 +131,8 @@ namespace Chaos
 		
 		public:
 		std::string Name = "Node";  // available for when there is simply no other way to get a node
-		uint32_t ID;  // designates it's index on the level array
-		uint32_t SubID; // if it's a child this sub ID will be it's index in the 2nd dimension of the level array
+		uint32_t ID = 0;  // designates it's index on the level array
+		uint32_t SubID = 0; // if it's a child this sub ID will be it's index in the 2nd dimension of the level array
 		size_t ChildCount = 0;
 		bool Enabled = true;  // same as can tick, disabled nodes still exist, just don't update in update
 		float Transform[4][4] = 
