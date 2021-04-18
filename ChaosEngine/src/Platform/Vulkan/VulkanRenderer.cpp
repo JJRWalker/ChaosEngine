@@ -1180,7 +1180,7 @@ namespace Chaos
 			renderPassInfo.renderArea.offset = { 0, 0 };
 			renderPassInfo.renderArea.extent = m_swapchainExtent;
 			
-			VkClearValue clearColor = { CLEAR_COLOR.X, CLEAR_COLOR.Y, CLEAR_COLOR.Z, CLEAR_COLOR.W };
+			VkClearValue clearColor = { m_clearColour.X, m_clearColour.Y, m_clearColour.Z, m_clearColour.W };
 			renderPassInfo.clearValueCount = 1;
 			renderPassInfo.pClearValues = &clearColor;
 			

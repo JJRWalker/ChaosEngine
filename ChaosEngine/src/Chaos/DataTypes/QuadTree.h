@@ -27,12 +27,14 @@ namespace Chaos
 	class QuadTree
 	{
 		public:
-		QuadTree(Vec2 origin = Vec2(0,0), Vec2 bounds = Vec2(WORLD_SIZE, WORLD_SIZE));
+		QuadTree(Vec2 origin = Vec2(0.0f, 0.0f), Vec2 bounds = Vec2(WORLD_SIZE, WORLD_SIZE));
 		~QuadTree();
 		
 		bool Insert(Collider* node);
 		Collider* QueryRange(Vec2 centre, Vec2 bounds, Collider* foundNodes[MAX_NODES], size_t& insert);
 		Collider* QueryRadius(Vec2 centre, float radius, Collider* foundNodes[MAX_NODES], size_t& insert);
+
+		void Debug();
 		
 		private:
 		

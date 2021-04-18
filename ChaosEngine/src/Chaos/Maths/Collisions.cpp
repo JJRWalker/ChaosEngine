@@ -6,10 +6,12 @@ namespace Chaos
 {
 	bool Collisions::BoxBoxIntersection(Vec2 aOrigin, Vec2 aBounds, Vec2 bOrigin, Vec2 bBounds)
 	{
-		return !(bOrigin.X - bBounds.X > aOrigin.X + aBounds.X || 
-			bOrigin.X + bBounds.X < aOrigin.X - aBounds.X || 
-			bOrigin.Y - bBounds.Y > aOrigin.Y + aBounds.Y || 
-			bOrigin.Y + bBounds.Y < aOrigin.Y - aBounds.Y); 
+		Vec2 aMin = Vec2(aOrigin.X - aBounds.X, aOrigin.Y - aBounds.Y);
+		Vec2 aMax = Vec2(aOrigin.X + aBounds.X, aOrigin.Y + aBounds.Y);
+		Vec2 bMin = Vec2(bOrigin.X - bBounds.X, bOrigin.Y - bBounds.Y);
+		Vec2 bMax = Vec2(bOrigin.X + bBounds.X, bOrigin.Y + bBounds.Y);
+
+		return !(aMax.X < bMin.X || aMin.X > bMax.X || aMin.Y > bMax.Y || aMax.Y < bMin.Y);
 	}
 	
 	

@@ -43,13 +43,13 @@ namespace Chaos
 				if (Nodes[node][child]->Enabled)
 				{
 					Nodes[node][child]->OnUpdate(delta);
-					Nodes[node][child]->Debug();
+					//Nodes[node][child]->Debug();
 					Collider* collider = dynamic_cast<Collider*>(Nodes[node][child]);
 					if (collider)
 					{
+						quadTree.Insert(collider);
 						if (collider->PhysicsUpdateType == PhysicsType::CONTINUOUS)
 						{
-							quadTree.Insert(collider);
 							colliders[collidableCount] = collider;
 							collidableCount++;
 						}
@@ -64,7 +64,12 @@ namespace Chaos
 			colliders[node]->CheckCollisions(&quadTree);
 		}
 		
-		
+		// must check to see if any have left after all have been checked.
+		for (int node = 0; node < collidableCount; ++node)
+		{
+			colliders[node]->CheckCollisionExit();
+		}
+
 		free(colliders);
 	}
 	
@@ -84,9 +89,9 @@ namespace Chaos
 					Collider* collider = dynamic_cast<Collider*>(Nodes[node][child]);
 					if (collider)
 					{
+						quadTree.Insert(collider);
 						if (collider->PhysicsUpdateType == PhysicsType::DISCREET)
 						{
-							quadTree.Insert(collider);
 							colliders[collidableCount] = collider;
 							collidableCount++;
 						}
@@ -100,7 +105,12 @@ namespace Chaos
 			// do all of this inside the collide function
 			colliders[node]->CheckCollisions(&quadTree);
 		}
-		
+
+		// must check to see if any have left after all have been checked.
+		for (int node = 0; node < collidableCount; ++node)
+		{
+			colliders[node]->CheckCollisionExit();
+		}
 		
 		free(colliders);
 	}

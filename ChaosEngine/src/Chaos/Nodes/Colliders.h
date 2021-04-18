@@ -26,6 +26,12 @@ namespace Chaos
 		CONTINUOUS = 1
 	};
 	
+
+	struct CollisionInfo
+	{
+		Collider* pCollider = nullptr;
+		bool Stay = false;
+	};
 	
 	class Collider : public Node
 	{
@@ -35,7 +41,15 @@ namespace Chaos
 		virtual bool CollideWith(Collider* other) = 0;
 		// checks all collisions with quad tree, searches based on the type of colliders involved
 		virtual void CheckCollisions(QuadTree* tree) = 0;
-		
+		virtual void CheckCollisionExit();
+		virtual void InsertOverlap(Collider* collider);
+		virtual void InsertOverlaps(Collider** colliders, size_t size);
+		virtual void RemoveOverlap(Collider* collider);
+		virtual bool OverlapsWith(Collider* other);
+		virtual void ClearOverlaps();
+		virtual void InsertHitNode(Collider* collider);
+
+		public:
 		bool Trigger = false;
 		ColliderType Type;
 		PhysicsType PhysicsUpdateType = PhysicsType::DISCREET;
@@ -43,9 +57,10 @@ namespace Chaos
 		uint32_t ObjectMask = 1;  // seperate bitmask for the type it is
 		Collider* Overlaps[MAX_COLLIDER_OVERLAPS];
 		size_t OverlapsSize = 0;
-		
-		// flag used for determining the collision funcs to call
-		bool Stay = false;
+
+		protected:
+		Collider* m_hitNodes[MAX_COLLIDER_OVERLAPS];
+		size_t m_hitNodesSize = 0;
 	};
 	
 	

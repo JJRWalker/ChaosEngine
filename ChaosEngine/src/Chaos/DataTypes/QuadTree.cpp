@@ -4,11 +4,15 @@
 #include "Chaos/Nodes/Colliders.h"
 #include "Chaos/Maths/Collisions.h"
 
+//#ifdef CHAOS_DEBUG
+#include "Chaos/Core/Application.h"
+#include "Chaos/Renderer/Renderer.h"
+//#endif
+
 namespace Chaos
 {
 	QuadTree::QuadTree(Vec2 origin, Vec2 bounds) : m_origin(origin), m_bounds(bounds)
 	{
-		
 	}
 
 	QuadTree::~QuadTree()
@@ -137,6 +141,35 @@ namespace Chaos
 		}
 		
 		return foundNodes[0];
+	}
+
+
+	void QuadTree::Debug()
+	{
+		Renderer& renderer = Application::Get().GetRenderer();
+
+		Vec2 bottomLeft = Vec2(m_origin.X - m_bounds.X, m_origin.Y - m_bounds.Y);
+		Vec2 bottomRight = Vec2(m_origin.X + m_bounds.X, m_origin.Y - m_bounds.Y);
+		Vec2 topLeft = Vec2(m_origin.X - m_bounds.X, m_origin.Y + m_bounds.Y);
+		Vec2 topRight = Vec2(m_origin.X + m_bounds.X, m_origin.Y + m_bounds.Y);
+
+		renderer.DrawLine(bottomLeft, bottomRight, Vec4(1.0f, 0.1f, 1.0f, 1.0f), 0.1f, 1000);
+		renderer.DrawLine(bottomRight, topRight, Vec4(1.0f, 0.1f, 1.0f, 1.0f), 0.1f, 1000);
+		renderer.DrawLine(topRight, topLeft, Vec4(1.0f, 0.1f, 1.0f, 1.0f), 0.1f, 1000);
+		renderer.DrawLine(topLeft, bottomLeft, Vec4(1.0f, 0.1f, 1.0f, 1.0f), 0.1f, 1000);
+
+		for (size_t i = 0; i < m_size; ++i)
+		{
+			renderer.DrawQuad(m_nodes[i]->GetPosition3D(), Vec2(0.2, 0.2), Vec2::Zero(), Vec4(1.0f, 0.4f, 0.4f, 0.5f), Texture::GetBlank());
+		}
+
+		if (m_divided)
+		{
+			m_children.NorthWest->Debug();
+			m_children.NorthEast->Debug();
+			m_children.SouthWest->Debug();
+			m_children.SouthEast->Debug();
+		}
 	}
 	
 	

@@ -159,7 +159,6 @@ namespace Chaos
 		//VULKAN TEMP
 		private:
 		//constants
-		const Vec4 CLEAR_COLOR = { 0.0f,0.0f, 0.03f, 1.0f };
 		const int MAX_FRAMES_IN_FLIGHT = 2;
 		const int MAX_OBJECTS_PER_DRAW = 10000;
 		const int MAX_TEXTURES_PER_DRAW = 31;
@@ -242,6 +241,8 @@ namespace Chaos
 		std::vector<VulkanVertex> m_vertices;
 		std::vector<uint16_t> m_indices;
 		
+		Vec4 m_clearColour = { 0.0f, 0.0f, 0.03f, 1.0f };
+
 		std::vector<Ref<VulkanTexture>> m_texturesToBind;
 		int m_renderCount = 0;
 		uint16_t m_indOffset = 0;
