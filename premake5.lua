@@ -97,61 +97,6 @@ project "ChaosEngine"
             runtime "Release"
             optimize "on"
 
-project "ControlEditor"
-    location "ControlEditor"
-    kind "ConsoleApp"
-    language "C++"
-    cppdialect "C++17"
-    staticruntime "on"
-
-    targetdir ("build/bin/".. outputdir .. "/%{prj.name}")
-    objdir ("build/int/".. outputdir .. "/%{prj.name}")
-
-    files
-    {
-        "%{prj.name}/src/**.h",
-        "%{prj.name}/src/**.cpp"
-    }
-
-    includedirs
-    {
-        "%{prj.name}/src",
-        "%{prj.name}/vendor",
-        "ChaosEngine/vendor/spdlog/include",
-        "ChaosEngine/src",
-        "ChaosEngine/vendor",
-        "%{IncludeDir.Vulkan}",
-        "%{IncludeDir.ImGUI}"
-    }
-
-    links
-    {
-        "ChaosEngine"
-    }
-
-    filter "system:windows"
-        systemversion "latest"
-
-        defines
-        {
-            "CHAOS_PLATFORM_WINDOWS"
-        }
-
-        filter "configurations:Debug"
-            defines "CHAOS_DEBUG"
-            runtime "Debug"
-            symbols "on"
-
-        filter "configurations:Release"
-            defines "CHAOS_RELEASE"
-            runtime "Release"
-            optimize "on"
-
-        filter "configurations:Distribution"
-            defines "CHAOS_DISTRIBUTION"
-            runtime "Release"
-            optimize "on"
-
 project "Game"
     location "Game"
     kind "ConsoleApp"

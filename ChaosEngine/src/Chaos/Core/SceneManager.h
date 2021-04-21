@@ -7,12 +7,14 @@ namespace Chaos
 {
 	class SceneManager
 	{
-	public:
+		public:
 		static void Load(Scene& scene) { s_currentScene = &scene; s_currentScene->StartScene(); }
-
+		static void Load(Scene* scene) { s_currentScene = scene;
+			s_currentScene->StartScene();}
+		
 		static Scene* GetScene() { if (!s_currentScene) { s_currentScene = new Scene(); } return s_currentScene; }
-
-	private:
+		
+		private:
 		static Scene* s_currentScene;
 	};
 }

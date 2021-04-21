@@ -16,23 +16,20 @@
     <Filter Include="src\Chaos\Debug">
       <UniqueIdentifier>{00D59729-6C60-05EE-7571-88E2E17B61EE}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\Chaos\Entity">
-      <UniqueIdentifier>{1628945F-0221-B3B1-2B53-983617AB92BD}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\Chaos\Entity\Components">
-      <UniqueIdentifier>{6B13C293-D720-F079-6007-EC64CC13BC30}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\Chaos\Entity\Systems">
-      <UniqueIdentifier>{1D34C89F-0959-1720-32A4-FCAF1E28163E}</UniqueIdentifier>
-    </Filter>
     <Filter Include="src\Chaos\Events">
       <UniqueIdentifier>{AEC71C60-9AC0-3BB2-C3F2-2037AF4A1BBE}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\Chaos\Input">
       <UniqueIdentifier>{897AF729-F505-65EE-FE16-E8E26A21C1EE}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Chaos\Nodes">
+      <UniqueIdentifier>{524C522A-BED7-BFEE-C7E8-42E333F31BEF}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\Chaos\Renderer">
       <UniqueIdentifier>{F07968D1-DC5D-2927-45BE-237A31C113A9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Chaos\Serialisation">
+      <UniqueIdentifier>{B0F056BD-1C28-9F54-2532-037891E8C54D}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\Platform">
       <UniqueIdentifier>{21CA02E5-0D2D-9289-B6B2-CA3FA2F45D0C}</UniqueIdentifier>
@@ -84,16 +81,13 @@
     <ClInclude Include="src\Chaos\Core\LayerStack.h">
       <Filter>src\Chaos\Core</Filter>
     </ClInclude>
+    <ClInclude Include="src\Chaos\Core\Level.h">
+      <Filter>src\Chaos\Core</Filter>
+    </ClInclude>
     <ClInclude Include="src\Chaos\Core\Log.h">
       <Filter>src\Chaos\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Chaos\Core\Math.h">
-      <Filter>src\Chaos\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Chaos\Core\Scene.h">
-      <Filter>src\Chaos\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Chaos\Core\SceneManager.h">
       <Filter>src\Chaos\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Chaos\Core\Time.h">
@@ -102,7 +96,7 @@
     <ClInclude Include="src\Chaos\Core\Window.h">
       <Filter>src\Chaos\Core</Filter>
     </ClInclude>
-    <ClInclude Include="src\Chaos\DataTypes\Ray2D.h">
+    <ClInclude Include="src\Chaos\DataTypes\Mat4.h">
       <Filter>src\Chaos\DataTypes</Filter>
     </ClInclude>
     <ClInclude Include="src\Chaos\DataTypes\Vec2.h">
@@ -114,53 +108,23 @@
     <ClInclude Include="src\Chaos\DataTypes\Vec4.h">
       <Filter>src\Chaos\DataTypes</Filter>
     </ClInclude>
+    <ClInclude Include="src\Chaos\Debug\Console.h">
+      <Filter>src\Chaos\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Debug\ImGuiConsole.h">
+      <Filter>src\Chaos\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Debug\ImGuiDebugInfo.h">
+      <Filter>src\Chaos\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Debug\ImGuiFileExplorer.h">
+      <Filter>src\Chaos\Debug</Filter>
+    </ClInclude>
     <ClInclude Include="src\Chaos\Debug\ImGuiLayer.h">
       <Filter>src\Chaos\Debug</Filter>
     </ClInclude>
     <ClInclude Include="src\Chaos\Debug\Timer.h">
       <Filter>src\Chaos\Debug</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Chaos\Entity\Component.h">
-      <Filter>src\Chaos\Entity</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Chaos\Entity\Components\Animator.h">
-      <Filter>src\Chaos\Entity\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Chaos\Entity\Components\BoxCollider2D.h">
-      <Filter>src\Chaos\Entity\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Chaos\Entity\Components\Camera.h">
-      <Filter>src\Chaos\Entity\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Chaos\Entity\Components\CellularAutomata.h">
-      <Filter>src\Chaos\Entity\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Chaos\Entity\Components\Collider.h">
-      <Filter>src\Chaos\Entity\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Chaos\Entity\Components\LineCollider2D.h">
-      <Filter>src\Chaos\Entity\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Chaos\Entity\Components\Render.h">
-      <Filter>src\Chaos\Entity\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Chaos\Entity\Components\Transform.h">
-      <Filter>src\Chaos\Entity\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Chaos\Entity\Components\UIImage.h">
-      <Filter>src\Chaos\Entity\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Chaos\Entity\ECSManager.h">
-      <Filter>src\Chaos\Entity</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Chaos\Entity\Entity.h">
-      <Filter>src\Chaos\Entity</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Chaos\Entity\System.h">
-      <Filter>src\Chaos\Entity</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Chaos\Entity\Systems\RenderSystem.h">
-      <Filter>src\Chaos\Entity\Systems</Filter>
     </ClInclude>
     <ClInclude Include="src\Chaos\Events\ApplicationEvent.h">
       <Filter>src\Chaos\Events</Filter>
@@ -174,7 +138,13 @@
     <ClInclude Include="src\Chaos\Events\MouseEvent.h">
       <Filter>src\Chaos\Events</Filter>
     </ClInclude>
+    <ClInclude Include="src\Chaos\Input\Button.h">
+      <Filter>src\Chaos\Input</Filter>
+    </ClInclude>
     <ClInclude Include="src\Chaos\Input\Input.h">
+      <Filter>src\Chaos\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Input\InputManager.h">
       <Filter>src\Chaos\Input</Filter>
     </ClInclude>
     <ClInclude Include="src\Chaos\Input\KeyCodes.h">
@@ -182,6 +152,15 @@
     </ClInclude>
     <ClInclude Include="src\Chaos\Input\MouseCodes.h">
       <Filter>src\Chaos\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Nodes\Camera.h">
+      <Filter>src\Chaos\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Nodes\Node.h">
+      <Filter>src\Chaos\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Nodes\Sprite.h">
+      <Filter>src\Chaos\Nodes</Filter>
     </ClInclude>
     <ClInclude Include="src\Chaos\Renderer\Renderer.h">
       <Filter>src\Chaos\Renderer</Filter>
@@ -194,6 +173,9 @@
     </ClInclude>
     <ClInclude Include="src\Chaos\Renderer\Texture.h">
       <Filter>src\Chaos\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Serialisation\TextFileReader.h">
+      <Filter>src\Chaos\Serialisation</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\VulkanRenderer.h">
       <Filter>src\Platform\Vulkan</Filter>
@@ -1350,6 +1332,12 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp">
       <Filter>vendor\glm\glm</Filter>
     </ClInclude>
+    <ClInclude Include="src\Chaos\DataTypes\QuadTree.h" />
+    <ClInclude Include="src\Chaos\Nodes\Colliders.h" />
+    <ClInclude Include="src\Chaos\Maths\Collisions.h" />
+    <ClInclude Include="src\Chaos\Nodes\Animator.h" />
+    <ClInclude Include="src\Chaos\Nodes\EditorCameraController.h" />
+    <ClInclude Include="src\Chaos\Debug\ImGuiEditor.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chaos\Core\Application.cpp">
@@ -1358,22 +1346,28 @@
     <ClCompile Include="src\Chaos\Core\LayerStack.cpp">
       <Filter>src\Chaos\Core</Filter>
     </ClCompile>
+    <ClCompile Include="src\Chaos\Core\Level.cpp">
+      <Filter>src\Chaos\Core</Filter>
+    </ClCompile>
     <ClCompile Include="src\Chaos\Core\Log.cpp">
-      <Filter>src\Chaos\Core</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Chaos\Core\Scene.cpp">
-      <Filter>src\Chaos\Core</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Chaos\Core\SceneManager.cpp">
       <Filter>src\Chaos\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\Chaos\Core\Time.cpp">
       <Filter>src\Chaos\Core</Filter>
     </ClCompile>
-    <ClCompile Include="src\Chaos\DataTypes\Ray2D.cpp">
-      <Filter>src\Chaos\DataTypes</Filter>
+    <ClCompile Include="src\Chaos\Debug\Console.cpp">
+      <Filter>src\Chaos\Debug</Filter>
     </ClCompile>
     <ClCompile Include="src\Chaos\Debug\ImGuiBuild.cpp">
+      <Filter>src\Chaos\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Chaos\Debug\ImGuiConsole.cpp">
+      <Filter>src\Chaos\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Chaos\Debug\ImGuiDebugInfo.cpp">
+      <Filter>src\Chaos\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Chaos\Debug\ImGuiFileExplorer.cpp">
       <Filter>src\Chaos\Debug</Filter>
     </ClCompile>
     <ClCompile Include="src\Chaos\Debug\ImGuiLayer.cpp">
@@ -1382,35 +1376,17 @@
     <ClCompile Include="src\Chaos\Debug\Timer.cpp">
       <Filter>src\Chaos\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="src\Chaos\Entity\Components\Animator.cpp">
-      <Filter>src\Chaos\Entity\Components</Filter>
+    <ClCompile Include="src\Chaos\Input\InputManager.cpp">
+      <Filter>src\Chaos\Input</Filter>
     </ClCompile>
-    <ClCompile Include="src\Chaos\Entity\Components\BoxCollider2D.cpp">
-      <Filter>src\Chaos\Entity\Components</Filter>
+    <ClCompile Include="src\Chaos\Nodes\Camera.cpp">
+      <Filter>src\Chaos\Nodes</Filter>
     </ClCompile>
-    <ClCompile Include="src\Chaos\Entity\Components\Camera.cpp">
-      <Filter>src\Chaos\Entity\Components</Filter>
+    <ClCompile Include="src\Chaos\Nodes\Node.cpp">
+      <Filter>src\Chaos\Nodes</Filter>
     </ClCompile>
-    <ClCompile Include="src\Chaos\Entity\Components\CellularAutomata.cpp">
-      <Filter>src\Chaos\Entity\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Chaos\Entity\Components\LineCollider2D.cpp">
-      <Filter>src\Chaos\Entity\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Chaos\Entity\Components\Render.cpp">
-      <Filter>src\Chaos\Entity\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Chaos\Entity\Components\Transform.cpp">
-      <Filter>src\Chaos\Entity\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Chaos\Entity\Components\UIImage.cpp">
-      <Filter>src\Chaos\Entity\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Chaos\Entity\ECSManager.cpp">
-      <Filter>src\Chaos\Entity</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Chaos\Entity\Systems\RenderSystem.cpp">
-      <Filter>src\Chaos\Entity\Systems</Filter>
+    <ClCompile Include="src\Chaos\Nodes\Sprite.cpp">
+      <Filter>src\Chaos\Nodes</Filter>
     </ClCompile>
     <ClCompile Include="src\Chaos\Renderer\Renderer.cpp">
       <Filter>src\Chaos\Renderer</Filter>
@@ -1423,6 +1399,9 @@
     </ClCompile>
     <ClCompile Include="src\Chaos\Renderer\Texture.cpp">
       <Filter>src\Chaos\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Chaos\Serialisation\TextFileReader.cpp">
+      <Filter>src\Chaos\Serialisation</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\VulkanRenderer.cpp">
       <Filter>src\Platform\Vulkan</Filter>
@@ -1442,5 +1421,11 @@
     <ClCompile Include="src\chaospch.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Chaos\DataTypes\QuadTree.cpp" />
+    <ClCompile Include="src\Chaos\Nodes\Colliders.cpp" />
+    <ClCompile Include="src\Chaos\Maths\Collisions.cpp" />
+    <ClCompile Include="src\Chaos\Nodes\Animator.cpp" />
+    <ClCompile Include="src\Chaos\Nodes\EditorCameraController.cpp" />
+    <ClCompile Include="src\Chaos\Debug\ImGuiEditor.cpp" />
   </ItemGroup>
 </Project>

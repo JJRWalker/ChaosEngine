@@ -1,17 +1,17 @@
 @echo off
 
-mkdir "build/cmd/int"
-pushd "build/cmd/int"
+mkdir "build/int"
+pushd "build/int"
 
 ::TIMER TAKEN FROM  https://stackoverflow.com/questions/673523/how-do-i-measure-execution-time-of-a-command-on-the-windows-command-line
 set start=%time%
 
-cl -Zi  /EHsc /c ..\..\..\chaosengine\chaos.cpp ..\..\..\chaosengine\src\chaospch.cpp /I ..\..\..\chaosengine\vendor\spdlog\include /I ..\..\..\chaosengine\src /I ..\..\..\chaosengine\vendor /I ..\..\..\chaosengine\vendor\imgui /I ..\..\..\chaosengine\vendor\glfw\include /std:c++17 /D "CHAOS_PLATFORM_WINDOWS" /D "CHAOS_RELEASE" /MT
+cl -Zi  /EHsc /c ..\..\chaosengine\chaos.cpp ..\..\chaosengine\src\chaospch.cpp /I ..\..\chaosengine\vendor\spdlog\include /I ..\..\chaosengine\src /I ..\..\chaosengine\vendor /I ..\..\chaosengine\vendor\imgui /I ..\..\chaosengine\vendor\glfw\include /std:c++17 /D "CHAOS_PLATFORM_WINDOWS" /D "CHAOS_RELEASE" /MT
 
 popd
 
-mkdir "build/cmd/bin"
-pushd "build/cmd/bin"
+mkdir "build/bin"
+pushd "build/bin"
 
 lib ..\int\chaos.obj ..\int\chaospch.obj
 MOVE ..\int\chaos.lib ..\bin

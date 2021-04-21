@@ -6,7 +6,7 @@
 
 namespace Chaos
 {
-	VulkanSubTexture::VulkanSubTexture(char* filePath, Vec2 coordinates, Vec2 size) : m_filePath(filePath), m_coordinates(coordinates)
+	VulkanSubTexture::VulkanSubTexture(std::string filePath, Vec2 coordinates, Vec2 size) : m_filePath(filePath), m_coordinates(coordinates)
 	{
 		//Check if the renderer already has the texture in it's list of textures to bind, if it does it will set the main texture reference to that texture
 		//if it doesn't it will create a new ref to a new texture 
@@ -30,6 +30,8 @@ namespace Chaos
 		
 		m_texCoords[3].X = min.X;
 		m_texCoords[3].Y = max.Y;
+		
+		m_cellSize = size;
 	}
 	VulkanSubTexture::VulkanSubTexture(Ref<Texture> mainTexture, Vec2 coordinates, Vec2 size) : m_filePath(mainTexture->GetFilePath()), m_coordinates(coordinates)
 	{
@@ -50,6 +52,7 @@ namespace Chaos
 		
 		m_texCoords[3].X = min.X;
 		m_texCoords[3].Y = max.Y;
+		m_cellSize = size;
 	}
 	
 	void VulkanSubTexture::SetTexCoords(Vec2 coordinates, Vec2 cellSize)
@@ -69,7 +72,5 @@ namespace Chaos
 		
 		m_texCoords[3].X = min.X;
 		m_texCoords[3].Y = max.Y;
-		
-		
 	}
 }

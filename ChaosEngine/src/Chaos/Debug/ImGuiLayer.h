@@ -7,23 +7,23 @@ namespace Chaos
 {
 	class ImGuiLayer : public Layer
 	{
-
-
-	public:
+		
+		
+		public:
 		ImGuiLayer();
 		~ImGuiLayer();
-
+		
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
 		virtual void OnUpdate(float deltaTime) override {};
 		virtual void OnImGuiUpdate() override;
-
+		
 		void Begin();
 		void End();
-	private:
+		private:
 		void VulkanInit();
 		
-	private:
+		private:
 		VkDescriptorPool m_descriptorPool;
 		VkDescriptorSetLayout m_descriptorSetLayout;
 		VkRenderPass m_renderpass;
@@ -31,5 +31,7 @@ namespace Chaos
 		std::vector<VkCommandBuffer> m_commandBuffers;
 		std::vector<VkFramebuffer> m_frameBuffers;
 		VkClearValue m_clear;
+		
+		static bool s_ImGuiInited;
 	};
 }

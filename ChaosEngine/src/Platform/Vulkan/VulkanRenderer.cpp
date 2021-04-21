@@ -10,6 +10,7 @@
 #include "chaospch.h"
 #include "VulkanRenderer.h"
 #include "Chaos/Core/Application.h"
+#include "Chaos/Core/Level.h"
 #include <GLFW/glfw3.h>
 
 #include <GLM/glm/gtc/matrix_transform.hpp>
@@ -26,7 +27,7 @@
 #include "Chaos/DataTypes/Vec2.h"
 #include "Chaos/DataTypes/Vec4.h"
 
-#include "Chaos/Entity/Components/Camera.h"
+#include "Chaos/Nodes/Camera.h"
 
 #include <thread>
 #include <functional>
@@ -136,6 +137,15 @@ namespace Chaos
 		//AddQuadToRenderQueue({ Vec3(position.X, position.Y, 0), scale, rotation, colour, texture, nullptr, tilingFactor });
 	}
 	
+	void VulkanRenderer::DrawQuad(float transform[4][4], Vec4& colour, Ref<Texture> texture)
+	{
+		Quad quad;
+		memcpy(quad.Transform, transform, sizeof(transform));
+		quad.tex = texture;
+		quad.Colour = colour;
+		m_quads.push_back(quad);
+	}
+	
 	void VulkanRenderer::DrawQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<SubTexture> subTexture)
 	{
 		m_quads.push_back({ position, scale, rotation, colour, nullptr, subTexture });
@@ -147,12 +157,12 @@ namespace Chaos
 		//getting the vector representation of the line
 		Vec2 line = endPoint - startPoint;
 		//adding half of the line to the start point to get the center
-		Vec2 lineCenter = startPoint + (line / 2);
+		Vec2 lineCenter = startPoint + (line * 0.5f);
 		//using weight provided and start and end point to work out scale
 		Vec2 scale = Vec2(weight, line.Magnitude());
 		//working out rotation using up vector
 		float theta = Vec2::Angle(Vec2(0.0f, 1.0f), line);
-		Vec2 rotation = Vec2(theta, 0.0f);
+		Vec2 rotation = Vec2(theta, theta);
 		
 		DrawQuad(Vec3(lineCenter.X, lineCenter.Y, renderOrder), scale, rotation, colour, Texture::GetBlank());
 	}
@@ -161,19 +171,19 @@ namespace Chaos
 	void VulkanRenderer::DrawScreenSpaceQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<Texture> texture, float tilingFactor)
 	{
 		//get the Camera position
-		Vec3 screenPosition = Application::Get().GetMainCamera()->GetEntity()->GetTransform()->Position();
-		Vec4& cameraBounds = Application::Get().GetMainCamera()->GetBounds();
+		Vec3 screenPosition = Level::Get()->MainCamera()->GetPosition3D();
+		Vec4& cameraBounds = Level::Get()->MainCamera()->GetBounds();
 		
 		//scale based on a percentage of the viewport size ( [1,1] should encompass the whole screen without) does not factor in aspect ratio
 		Vec2 screenScale = Vec2(scale.X * cameraBounds.Right * 2, scale.Y * cameraBounds.Top * 2);
 		
 		//subtract camera bounds from the coords (starting point bottom left)
-		screenPosition = Vec3(screenPosition.X - (cameraBounds.Right * Application::Get().GetMainCamera()->GetAspectRatio()), 
+		screenPosition = Vec3(screenPosition.X - (cameraBounds.Right * Level::Get()->MainCamera()->GetAspectRatio()), 
 							  screenPosition.Y - cameraBounds.Top, position.Z); 
 		
 		//add the position multiplied by the bounds to the bottom left screen position (should be passed in as a number from 1 - 0 for each component)
 		//pass in raw position Z position for render order
-		screenPosition = Vec3(screenPosition.X + (position.X * (cameraBounds.Right * 2 * Application::Get().GetMainCamera()->GetAspectRatio())),
+		screenPosition = Vec3(screenPosition.X + (position.X * (cameraBounds.Right * 2 * Level::Get()->MainCamera()->GetAspectRatio())),
 							  screenPosition.Y + (position.Y * (cameraBounds.Top * 2)),
 							  position.Z);
 		
@@ -184,15 +194,15 @@ namespace Chaos
 	void VulkanRenderer::DrawScreenSpaceQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<SubTexture> subTexture)
 	{
 		//get the Camera position
-		Vec3 screenPosition = Application::Get().GetMainCamera()->GetEntity()->GetTransform()->Position();
-		Vec4& cameraBounds = Application::Get().GetMainCamera()->GetBounds();
+		Vec3 screenPosition = Level::Get()->MainCamera()->GetPosition3D();
+		Vec4& cameraBounds = Level::Get()->MainCamera()->GetBounds();
 		//subtract camera bounds from the coords (starting point bottom left)
-		screenPosition = Vec3(screenPosition.X - (cameraBounds.Right * Application::Get().GetMainCamera()->GetAspectRatio()),
+		screenPosition = Vec3(screenPosition.X - (cameraBounds.Right * Level::Get()->MainCamera()->GetAspectRatio()),
 							  screenPosition.Y - cameraBounds.Top, position.Z);
 		
 		//add the position multiplied by the bounds to the bottom left screen position (should be passed in as a number from 1 - 0 for each component)
 		//pass in raw position Z position for render order
-		screenPosition = Vec3(screenPosition.X + (position.X * (cameraBounds.Right * 2 * Application::Get().GetMainCamera()->GetAspectRatio())),
+		screenPosition = Vec3(screenPosition.X + (position.X * (cameraBounds.Right * 2 * Level::Get()->MainCamera()->GetAspectRatio())),
 							  screenPosition.Y + (position.Y * (cameraBounds.Top * 2)),
 							  position.Z);
 		
@@ -217,7 +227,7 @@ namespace Chaos
 			
 			
 			glm::mat4 transform = glm::translate(glm::mat4(1), { quad.Position.X, quad.Position.Y, 0 })
-				* glm::rotate(glm::mat4(1), glm::radians(-quad.Rotation.X), { 0, 0, 1 })
+				* glm::rotate(glm::mat4(1), -quad.Rotation.X, { 0, 0, 1 })
 				* glm::scale(glm::mat4(1), { quad.Scale.X, quad.Scale.Y, 0.0f });
 			
 			glm::vec4 vertexPositions[4] = { transform * QUAD_VERTEX_POSITIONS[0],
@@ -314,6 +324,19 @@ namespace Chaos
 	
 	//Checks if the renderer currently has the texture in the specified file path stored, if it does it will return true and set old texture to that texture. Else returns false if none exists 
 	bool VulkanRenderer::HasTexture(char* filePath, Ref<Texture> outTexture)
+	{
+		for (auto& t : m_texturesToBind)
+		{
+			if (t->GetFilePath() == filePath)
+			{
+				outTexture = t;
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	bool VulkanRenderer::HasTexture(std::string filePath, Ref<Texture> outTexture)
 	{
 		for (auto& t : m_texturesToBind)
 		{
@@ -1157,7 +1180,7 @@ namespace Chaos
 			renderPassInfo.renderArea.offset = { 0, 0 };
 			renderPassInfo.renderArea.extent = m_swapchainExtent;
 			
-			VkClearValue clearColor = { CLEAR_COLOR.X, CLEAR_COLOR.Y, CLEAR_COLOR.Z, CLEAR_COLOR.W };
+			VkClearValue clearColor = { m_clearColour.X, m_clearColour.Y, m_clearColour.Z, m_clearColour.W };
 			renderPassInfo.clearValueCount = 1;
 			renderPassInfo.pClearValues = &clearColor;
 			
@@ -1550,9 +1573,9 @@ namespace Chaos
 			//ubo.proj = glm::ortho(-5.0f * (float)mSwapchainExtent.width / (float)mSwapchainExtent.height, 5.0f * (float)mSwapchainExtent.width / (float)mSwapchainExtent.height, 5.0f, -5.0f, -5.0f, 5.0f); //glm::perspective(glm::radians(45.0f), (float)swapchainExtent.width / (float)swapchainExtent.height, 0.1f, 1000.0f);
 			
 			
-			ubo.view = Application::Get().GetMainCamera()->GetView();
-			ubo.model = Application::Get().GetMainCamera()->GetModel();
-			ubo.proj = Application::Get().GetMainCamera()->GetProjection();
+			ubo.view = Level::Get()->MainCamera()->GetView();
+			ubo.model = Level::Get()->MainCamera()->GetModel();
+			ubo.proj = Level::Get()->MainCamera()->GetProjection();
 			
 			void* data;
 			vkMapMemory(m_device, m_uniformBuffersMemory[i], 0, sizeof(ubo), 0, &data);

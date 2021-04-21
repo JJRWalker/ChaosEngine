@@ -7,28 +7,30 @@ namespace Chaos
 	class Time
 	{
 		friend class Application;
-	public:
+		public:
 		//inits all resources, must be done before the first frame, default timescale is 1
+		//TODO: load from project file
 		static void Init() {
-			m_deltaTime = 0.0f;
-			m_fixedDeltaTime = 0.22f;
+			m_deltaTime = 0;
+			m_timeScale = 1.0f;
 			m_time = 0.0f;
 			m_timeLastFrame = 0.0f;
-			m_timeScale = 1.0f;
+			m_fixedDeltaTime = 0.016f;
 		}
-
+		
 		inline static float GetDeltaTime() { return m_deltaTime * m_timeScale; }
 		inline static float GetUnscaledDeltaTime() { return m_deltaTime; }
 		inline static float GetFixedDeltaTime() { return m_fixedDeltaTime * m_timeScale; }
 		inline static float GetUnscaledFixedDeltaTime() { return m_fixedDeltaTime; }
-
+		
 		inline static void SetTimeScale(float value) { m_timeScale = value; }
+		inline static float GetTimeScale() { return m_timeScale; }
 		inline static void SetFixedDeltaTimestep(float value) { m_fixedDeltaTime = value; }
-	private:
+		private:
 		static float m_deltaTime;
 		static float m_fixedDeltaTime;
 		static float m_timeScale;
-		static float m_time;
-		static float m_timeLastFrame;
+		static double m_time;
+		static double m_timeLastFrame;
 	};
 }
