@@ -137,15 +137,7 @@ namespace Chaos
 			}
 		}
 		
-		if (negative == positive)
-			return 0;
-		
-		if (positive)
-			return 1;
-		if (negative)
-			return -1;
-		else
-			return 0;
+		return positive - negative;
 	}
 	
 	bool Input::GetButtonDown(const char* buttonName)
