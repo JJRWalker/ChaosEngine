@@ -2,18 +2,11 @@
 #define _GAME_APP_DEFINED
 #include <Chaos.h>
 #include <Chaos/Core/EntryPoint.h>
-#include <Chaos/Entity/Components/Camera.h>
-#include <Chaos/Entity/Components/Render.h>
-#include <Chaos/Entity/Components/BoxCollider2D.h>
 //Template for a fresh project
-
-
 namespace Chaos
 {
 	class ExampleLayer : public Layer
 	{
-		Entity entity;
-		
 		public:
 		ExampleLayer()
 			:Layer("Example") {};
@@ -26,9 +19,6 @@ namespace Chaos
 		
 		void OnAttach() override
 		{
-			//called when this layer is attached to the layer stack
-			entity.AddComponent<Render>();
-			entity.AddComponent<BoxCollider2D>();
 		}
 		
 		void OnDetach() override
