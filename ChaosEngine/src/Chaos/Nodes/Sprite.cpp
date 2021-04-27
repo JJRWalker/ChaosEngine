@@ -15,7 +15,7 @@ namespace Chaos
 	
 	void Sprite::OnUpdate(float delta)
 	{
-		Application::Get().GetRenderer().DrawQuad(GetPosition3D(), GetScale(), Vec2(GetRotation(), GetRotation()), Colour, Texture);
+		//Application::Get().GetRenderer().DrawQuad(GetPosition3D(), GetScale(), Vec2(GetRotation(), GetRotation()), Colour, Texture);
 	}
 	
 	// SUB SPRITE
@@ -25,8 +25,7 @@ namespace Chaos
 	
 	void SubSprite::OnUpdate(float delta)
 	{
-		Application::Get().GetRenderer().DrawQuad(GetPosition3D(), GetScale(), Vec2(GetRotation(), GetRotation()),
-												  m_colour, m_subTex);
+		//Application::Get().GetRenderer().DrawQuad(GetPosition3D(), GetScale(), Vec2(GetRotation(), GetRotation()), m_colour, m_subTex);
 	}
 	
 	void SubSprite::OnDestroy()
@@ -42,8 +41,7 @@ namespace Chaos
 	
 	void UISprite::OnUpdate(float delta)
 	{
-		Application::Get().GetRenderer().DrawScreenSpaceQuad(GetPosition3D(), GetScale(), 
-															 Vec2(GetRotation(), GetRotation()), m_colour, m_texture, 1);
+		//Application::Get().GetRenderer().DrawScreenSpaceQuad(GetPosition3D(), GetScale(), Vec2(GetRotation(), GetRotation()), m_colour, m_texture, 1);
 	}
 	
 	void UISprite::OnDestroy()

@@ -198,13 +198,19 @@
     <ClInclude Include="src\Chaos\Serialisation\TextFileReader.h">
       <Filter>src\Chaos\Serialisation</Filter>
     </ClInclude>
+    <ClInclude Include="src\Platform\Vulkan\VulkanInitalizers.h">
+      <Filter>src\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\Vulkan\VulkanMesh.h">
+      <Filter>src\Platform\Vulkan</Filter>
+    </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\VulkanRenderer.h">
       <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="src\Platform\Vulkan\VulkanSubTexture.h">
+    <ClInclude Include="src\Platform\Vulkan\VulkanTexture.h">
       <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="src\Platform\Vulkan\VulkanTexture.h">
+    <ClInclude Include="src\Platform\Vulkan\VulkanTypes.h">
       <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h">
@@ -1353,6 +1359,10 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp">
       <Filter>vendor\glm\glm</Filter>
     </ClInclude>
+    <ClInclude Include="src\Chaos\Renderer\Material.h" />
+    <ClInclude Include="src\Platform\Vulkan\VulkanMaterial.h" />
+    <ClInclude Include="src\Chaos\Renderer\Mesh.h" />
+    <ClInclude Include="src\Chaos\Serialisation\FileUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chaos\Core\Application.cpp">
@@ -1439,13 +1449,13 @@
     <ClCompile Include="src\Chaos\Serialisation\TextFileReader.cpp">
       <Filter>src\Chaos\Serialisation</Filter>
     </ClCompile>
+    <ClCompile Include="src\Platform\Vulkan\VulkanInitalizers.cpp">
+      <Filter>src\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\Vulkan\VulkanMesh.cpp">
+      <Filter>src\Platform\Vulkan</Filter>
+    </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\VulkanRenderer.cpp">
-      <Filter>src\Platform\Vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Platform\Vulkan\VulkanSubTexture.cpp">
-      <Filter>src\Platform\Vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Platform\Vulkan\VulkanTexture.cpp">
       <Filter>src\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
@@ -1457,5 +1467,9 @@
     <ClCompile Include="src\chaospch.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Platform\Vulkan\VulkanMaterial.cpp" />
+    <ClCompile Include="src\Chaos\Renderer\Material.cpp" />
+    <ClCompile Include="src\Platform\Vulkan\VulkanTexture.cpp" />
+    <ClCompile Include="src\Chaos\Serialisation\FileUtils.cpp" />
   </ItemGroup>
 </Project>

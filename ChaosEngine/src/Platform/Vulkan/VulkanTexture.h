@@ -1,46 +1,49 @@
-#pragma once
+/* date = April 22nd 2021 8:45 am */
+
+#ifndef _VULKAN_TEXTURE_H
+#define _VULKAN_TEXTURE_H
+
 #include "Chaos/Renderer/Texture.h"
-#include "Vulkan/Include/vulkan/vulkan.h"
+#include "VulkanTypes.h"
 
 namespace Chaos
 {
 	class VulkanRenderer;
 	class VulkanTexture : public Texture
 	{
-		
 		public:
 		VulkanTexture();
 		VulkanTexture(std::string filePath);
-		
-		virtual ~VulkanTexture() { Unload(); }
-		
-		//Must explicitly unload textures, note if renderer doesn't exist on load or unload, it will fail to be dealocated or alocated
-		virtual void Load (char* filePath) override;
-		virtual void Load (std::string filePath) override;
-		virtual void Unload() override;
+		VulkanTexture(VulkanRenderer* owningRenderer, std::string filePath);
+
+		void Load(std::string filePath) override;
 		void LoadBlank();
+		void Unload() override;
+
+		std::string GetFilePath() const override;
+
+		uint32_t GetWidth() const override;
+		uint32_t GetHeight() const override;
+		uint32_t GetSize() const override;
+
+		private:
+		void CreateImage(AllocatedBuffer& stagingBuffer, VkExtent3D imageExtent, VkFormat imageFormat);
 		
-		virtual std::string GetFilePath() const override {return m_filePath;}
-		
-		virtual uint32_t GetWidth() const override { return m_width; }
-		virtual uint32_t GetHeight() const override { return m_height; }
-		virtual uint32_t GetSize() const override { return m_size; }
-		
-		VkImage& GetImage() { return m_image; }
-		VkDeviceMemory& GetImageMemory() { return m_imageMemory; }
-		VkImageView& GetImageView() { return m_imageView; }
-		
-		private: 
+		public:
+		AllocatedImage Image;
+		VkImageView ImageView;
+
+		private:
+		//only have getters that return value for the following, we don't want these to be changed outside of Load()
 		std::string m_filePath;
 		uint32_t m_width = 0;
 		uint32_t m_height = 0;
-		uint32_t m_size;
-		VkImage m_image;
-		VkDeviceMemory m_imageMemory;
-		VkImageView m_imageView;
-		//reference to the renderer we created the texture on
-		VulkanRenderer& m_renderer;
-		//has this texture been loaded to
-		bool m_loaded = false; 
+		uint32_t m_size = 0;
+
+		VulkanRenderer* p_owningRenderer = nullptr;
+
+		bool m_loaded = false;
 	};
 }
+
+#endif //_VULKAN_TEXTURE_H

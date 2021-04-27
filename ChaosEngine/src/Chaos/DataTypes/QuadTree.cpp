@@ -160,7 +160,7 @@ namespace Chaos
 
 		for (size_t i = 0; i < m_size; ++i)
 		{
-			renderer.DrawQuad(m_nodes[i]->GetPosition3D(), Vec2(0.2, 0.2), Vec2::Zero(), Vec4(1.0f, 0.4f, 0.4f, 0.5f), Texture::GetBlank());
+			//renderer.DrawQuad(m_nodes[i]->GetPosition3D(), Vec2(0.2f, 0.2f), Vec2::Zero(), Vec4(1.0f, 0.4f, 0.4f, 0.5f), Texture::GetBlank());
 		}
 
 		if (m_divided)

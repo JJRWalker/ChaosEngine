@@ -11,7 +11,7 @@ namespace Chaos
 	
 	void ImGuiDebugInfo::OnUpdate(float deltaTime)
 	{
-		m_fps = 1 / deltaTime;
+		m_fps = (int)(1 / deltaTime);
 		++m_framesSinceAvgFrameCheck;
 		m_timeSinceAvgFrameCheck += deltaTime;
 		
@@ -26,7 +26,7 @@ namespace Chaos
 	
 	void ImGuiDebugInfo::OnFixedUpdate(float fixedDelta)
 	{
-		m_fixedFPS = 1 / fixedDelta;
+		m_fixedFPS = (int)(1 / fixedDelta);
 	}
 	
 	void ImGuiDebugInfo::OnImGuiUpdate()

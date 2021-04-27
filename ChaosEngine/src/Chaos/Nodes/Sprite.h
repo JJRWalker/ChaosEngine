@@ -18,7 +18,7 @@ namespace Chaos
 		void OnUpdate(float delta) override;
 		
 		public:
-		Ref<Texture> Texture = Texture::Create();	//Setting default texture (loads blank)
+		Texture* Texture = Texture::Create();	//Setting default texture (loads blank)
 		Vec4 Colour = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	};
 	
@@ -48,13 +48,13 @@ namespace Chaos
 		void OnUpdate(float delta) override;
 		void OnDestroy() override;
 		
-		void SetTexture(Ref<Texture> tex) { m_texture = tex; }
-		Ref<Texture> GetTexture() { return m_texture; }
+		void SetTexture(Texture* tex) { m_texture = tex; }
+		Texture* GetTexture() { return m_texture; }
 		
 		Vec4& Colour() { return m_colour; }
 		
 		private:
-		Ref<Texture> m_texture = Texture::Create();	//init as a blank texture
+		Texture* m_texture = Texture::Create();	//init as a blank texture
 		Vec4 m_colour = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	};
 }

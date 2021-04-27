@@ -2,37 +2,52 @@
 
 #include "Texture.h"
 #include "Chaos/Renderer/Renderer.h"
-#include "Platform/Vulkan/VulkanTexture.h"
-
+#include "Platform/Vulkan/VulkanRenderer.h"
+#include "Chaos/Core/Application.h"
 
 namespace Chaos
 {
-	Ref<Texture> Texture::s_blankTexture = nullptr;
-	Ref<Texture> Texture::Create(std::string filePath)
+	Texture* Texture::s_blankTexture = nullptr;
+
+	Texture* Texture::Create(std::string filePath)
 	{
 		switch (Renderer::GetAPI())
 		{
-			case RendererAPI::API::None: LOGCORE_ERROR("Render API not supported!"); return nullptr;
-			case RendererAPI::API::Vulkan: return CreateRef<VulkanTexture>(filePath);
+		case RendererAPI::API::None: LOGCORE_ERROR("Render API not supported!"); return nullptr;
+		case RendererAPI::API::Vulkan:
+			{
+				// texture should be created and then uploaded to the renderer
+				// we then return a pointer to the one that exists on the renderer because we want it to have ownership
+				VulkanTexture tex = VulkanTexture(filePath);
+				VulkanRenderer& vkRenderer = (VulkanRenderer&)Application::Get().GetRenderer();
+				vkRenderer.UploadTexture(tex);
+				return &vkRenderer.Textures[tex.Name];
+			}
 		}
 		LOGCORE_ERROR("Render API not found");
 		return nullptr;
 	}
-	//if not given a file path, this will return a blank texture, should only be used once to initalise the const static BLANK_TEXTURE in the header file
-	Ref<Texture> Texture::Create()
+
+	Texture* Texture::Create()
 	{
 		switch (Renderer::GetAPI())
 		{
-			case RendererAPI::API::None: LOGCORE_ERROR("Render API not supported!"); return nullptr;
-			case RendererAPI::API::Vulkan: return CreateRef<VulkanTexture>();
+		case RendererAPI::API::None: LOGCORE_ERROR("Render API not supported!"); return nullptr;
+		case RendererAPI::API::Vulkan:
+			{
+				VulkanTexture tex = VulkanTexture();
+				VulkanRenderer& vkRenderer = (VulkanRenderer&)Application::Get().GetRenderer();
+				vkRenderer.Textures[tex.Name] = tex;
+				return &vkRenderer.Textures[tex.Name];
+			}
 		}
 		LOGCORE_ERROR("Render API not found");
 		return nullptr;
 	}
 	
-	Ref<Texture> Texture::GetBlank()
+	Texture* Texture::GetBlank()
 	{
-		if (s_blankTexture.get() == nullptr)
+		if (!s_blankTexture)
 		{
 			s_blankTexture = Create();
 		}

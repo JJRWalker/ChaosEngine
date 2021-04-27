@@ -20,7 +20,6 @@
 #include "Chaos/DataTypes/Vec2.h"
 #include "Chaos/DataTypes/Vec3.h"
 #include "Chaos/DataTypes/Vec4.h"
-#include "Chaos/DataTypes/Ray2D.h"
 
 //===DEBUG==============================================
 #include "Chaos/Debug/ImGuiLayer.h"

@@ -19,6 +19,7 @@ namespace Chaos
 		
 		void OnAttach() override
 		{
+			
 		}
 		
 		void OnDetach() override

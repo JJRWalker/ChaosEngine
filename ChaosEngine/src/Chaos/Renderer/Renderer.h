@@ -6,20 +6,15 @@
 #include "Chaos/DataTypes/Vec4.h"
 #include "Chaos/Events/ApplicationEvent.h"
 #include "Texture.h"
+#include "Mesh.h"
+#include "Material.h"
 #include "SubTexture.h"
 
 namespace Chaos
 {
-	struct RenderData
-	{
-		size_t TotalQuadsDrawn = 0;
-		size_t NumOfDrawCalls = 0;
-	};
-	
 	class Renderer							
 	{
 		friend class ImGuiLayer;
-		friend class VulkanTexture;
 		public:
 		
 		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
@@ -49,8 +44,10 @@ namespace Chaos
 		virtual bool OnWindowResized(WindowResizeEvent& e) = 0;
 		virtual bool HasTexture(char* filePath, Ref<Texture> outTexture) = 0;
 		virtual bool HasTexture(std::string filePath, Ref<Texture> outTexture) = 0;
-		virtual RenderData& GetDebugInfo() = 0;
-		
+
+		virtual void InitImgui() = 0;
+
+
 		private:
 		static RendererAPI s_rendererAPI;		
 	};

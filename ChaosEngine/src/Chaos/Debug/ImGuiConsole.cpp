@@ -36,7 +36,7 @@ namespace Chaos
 			
 			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.01f, 0.01f, 0.01f, 0.5f));
 			ImGui::SetNextWindowPos(ImVec2(0,0));
-			ImGui::SetNextWindowSize(ImVec2(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight() / 3));
+			ImGui::SetNextWindowSize(ImVec2((float)Application::Get().GetWindow().GetWidth(), (float)Application::Get().GetWindow().GetHeight() / 3));
 			ImGui::Begin("Console", NULL, window_flags);
 			ImGui::PopStyleColor();
 			

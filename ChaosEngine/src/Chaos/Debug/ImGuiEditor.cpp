@@ -10,7 +10,6 @@
 #include <Chaos/Input/Input.h>
 #include <Chaos/Maths/Collisions.h>
 #include <Platform/Vulkan/VulkanRenderer.h>
-#include <Platform/Vulkan/VulkanTexture.h>
 #include <ImGUI/examples/imgui_impl_vulkan.h>
 #include <ImGUI/examples/imgui_impl_glfw.h>
 
@@ -20,13 +19,7 @@ namespace Chaos
 	{
 		Console::AddCommand("ed", [&](){ m_showEditor ? m_showEditor = false : m_showEditor = true; });
 		m_cameraController = Level::Get()->MainCamera()->AddChild<EditorCameraController>();
-		m_cameraController->Enabled = false;
-		
-		VulkanRenderer& renderer = (VulkanRenderer&)Application::Get().GetRenderer();
-		VulkanTexture* vulkanTex = (VulkanTexture*)m_selectedEntTexture.get();
-		
-		m_selectedEntTextureID = (ImTextureID)ImGui_ImplVulkan_AddTexture(renderer.GetTexSampler(), vulkanTex->GetImageView(), VK_IMAGE_LAYOUT_UNDEFINED);
-		
+		m_cameraController->Enabled = false;		
 	}
 	
 	void ImGuiEditor::OnImGuiUpdate() 
@@ -191,13 +184,9 @@ namespace Chaos
 			
 			//Displaying texture on UI
 			
-			VulkanRenderer& renderer = (VulkanRenderer&)Application::Get().GetRenderer();
-			VulkanTexture* vulkanTex = (VulkanTexture*)m_selectedEntTexture.get();
-			
 			if (m_selectedEntTexture->GetFilePath() != path && std::filesystem::exists(path))
 			{
 				m_selectedEntTexture->Load(path);
-				m_selectedEntTextureID = (ImTextureID)ImGui_ImplVulkan_AddTexture(renderer.GetTexSampler(), vulkanTex->GetImageView(), VK_IMAGE_LAYOUT_UNDEFINED);
 			}
 			
 			
@@ -242,13 +231,9 @@ namespace Chaos
 			ImVec2 startCursorPos = ImGui::GetCursorPos();
 			
 			//Display tex as UI image
-			VulkanRenderer& renderer = (VulkanRenderer&)Application::Get().GetRenderer();
-			VulkanTexture* vulkanTex = (VulkanTexture*)m_selectedEntTexture.get();
-			
 			if (m_selectedEntTexture->GetFilePath() != path && std::filesystem::exists(path))
 			{
 				m_selectedEntTexture->Load(path);
-				m_selectedEntTextureID = (ImTextureID)ImGui_ImplVulkan_AddTexture(renderer.GetTexSampler(), vulkanTex->GetImageView(), VK_IMAGE_LAYOUT_UNDEFINED);
 			}
 			
 			

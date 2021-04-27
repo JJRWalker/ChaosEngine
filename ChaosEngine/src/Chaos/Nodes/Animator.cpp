@@ -74,7 +74,7 @@ namespace Chaos
 		if(animation.SpriteSheet)
 		{
 			if (m_spriteSheet.get())
-				*m_spriteSheet->GetMainTexture() = *animation.SpriteSheet;
+				m_spriteSheet->SetMainTexture(animation.SpriteSheet);
 			else
 				m_spriteSheet = SubTexture::Create(animation.SpriteSheet, Vec2(0, 0), animation.FrameSize);
 		}

@@ -16,6 +16,10 @@
 #include <ctime>
 #include <chrono>
 
+
+//temp
+#include "Platform/Vulkan/VulkanRenderer.h"
+
 //inspired by The Cherno's Game engine series, however has and will continue to diverge
 namespace Chaos
 {
@@ -33,6 +37,11 @@ namespace Chaos
 		
 		//Creating renderer
 		m_renderer = std::unique_ptr<Renderer>(Renderer::Create());
+		((VulkanRenderer*)m_renderer.get())->pWindow = m_window.get();
+		m_renderer->InitImgui();
+		Texture* tex = Texture::Create("./Assets/test.png");
+		Texture* lostEmpire = Texture::Create("./Assets/lost_empire.png");
+		((VulkanRenderer*)m_renderer.get())->InitScene();
 		
 		//creating input manager layer
 		m_inputManager = new InputManager("./Assets/Config/Inputs.ini");
@@ -62,7 +71,7 @@ namespace Chaos
 		{
 			//Update time class
 			Time::m_time = m_window->GetWindowTime();
-			Time::m_deltaTime = (Time::m_time - Time::m_timeLastFrame);
+			Time::m_deltaTime = (float)(Time::m_time - Time::m_timeLastFrame);
 			Time::m_timeLastFrame = Time::m_time;
 			
 			//NOTE: this should be done when changing the resolution
@@ -75,10 +84,10 @@ namespace Chaos
 			if (m_renderingImGui)
 			{
 				//Currently causes black screen to be rendered over the top of the main render if not in release mode
-				m_guiLayer->Begin();
+				ImGuiLayer::Begin();
 				for (Layer* layer : m_layerStack)
 					layer->OnImGuiUpdate();
-				m_guiLayer->End();
+				ImGuiLayer::End();
 			}
 			
 			//Do post update steps

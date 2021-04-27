@@ -18,8 +18,8 @@ namespace Chaos
 		virtual void OnUpdate(float deltaTime) override {};
 		virtual void OnImGuiUpdate() override;
 		
-		void Begin();
-		void End();
+		static void Begin();
+		static void End();
 		private:
 		void VulkanInit();
 		

@@ -9,7 +9,7 @@ namespace Chaos
 		public:
 		virtual ~SubTexture() = default;
 		
-		virtual void Load(Ref<Texture> mainTex, Vec2 coordinates, Vec2 size) = 0; 
+		virtual void Load(Texture* mainTex, Vec2 coordinates, Vec2 size) = 0; 
 		virtual void Unload() = 0;
 
 		virtual std::string GetFilePath() const = 0;
@@ -20,9 +20,10 @@ namespace Chaos
 		virtual Vec2& GetCellSize() = 0;
 		virtual Vec2& GetCellCoords() = 0;
 		virtual Vec2& GetTotalCells() = 0;
-		virtual const Ref<Texture> GetMainTexture() const = 0;
+		virtual const Texture* GetMainTexture() const = 0;
+		virtual void SetMainTexture(Texture* tex) = 0;
 		
 		static Ref<SubTexture> Create(std::string path, Vec2 Coordinates, Vec2 size);
-		static Ref<SubTexture> Create(Ref<Texture> mainTexture, Vec2 coordinates, Vec2 size);
+		static Ref<SubTexture> Create(Texture* mainTexture, Vec2 coordinates, Vec2 size);
 	};
 }
