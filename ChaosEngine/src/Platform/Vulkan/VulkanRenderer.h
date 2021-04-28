@@ -129,7 +129,7 @@ namespace Chaos
 		friend class VulkanTexture;
 
 		public:
-		VulkanRenderer();
+		VulkanRenderer(Window* window);
 		~VulkanRenderer();
 
 		// Renderer interface
@@ -153,7 +153,7 @@ namespace Chaos
 		void DrawScreenSpaceQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<SubTexture> subTexture) {};
 
 		void DrawFrame();
-		bool OnWindowResized(WindowResizeEvent& e) { return false; };
+		bool OnWindowResized(WindowResizeEvent& e) {  return false; };
 		bool HasTexture(char* filePath, Ref<Texture> outTexture) { return false; };
 		bool HasTexture(std::string filePath, Ref<Texture> outTexture) { return false; };
 

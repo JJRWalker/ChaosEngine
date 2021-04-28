@@ -5,12 +5,12 @@
 
 namespace Chaos
 {
-	Renderer* Renderer::Create()
+	Renderer* Renderer::Create(Window* window)
 	{
 		switch (RendererAPI::GetAPI())
 		{
 			case RendererAPI::API::Vulkan:
-				return new VulkanRenderer();
+				return new VulkanRenderer(window);
 
 			case RendererAPI::API::None:
 				LOGCORE_ERROR("RENDERER: No rendering API specified");

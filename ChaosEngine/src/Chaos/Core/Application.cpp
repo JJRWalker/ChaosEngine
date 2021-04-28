@@ -36,8 +36,7 @@ namespace Chaos
 		m_window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 		
 		//Creating renderer
-		m_renderer = std::unique_ptr<Renderer>(Renderer::Create());
-		((VulkanRenderer*)m_renderer.get())->pWindow = m_window.get();
+		m_renderer = std::unique_ptr<Renderer>(Renderer::Create(m_window.get()));
 		m_renderer->InitImgui();
 		Texture* tex = Texture::Create("./Assets/test.png");
 		Texture* lostEmpire = Texture::Create("./Assets/lost_empire.png");

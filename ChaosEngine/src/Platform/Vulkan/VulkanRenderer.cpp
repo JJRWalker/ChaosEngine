@@ -38,7 +38,7 @@ const bool USE_VALIDATION_LAYERS = false;
 #endif
 
 namespace Chaos
-{	VulkanRenderer::VulkanRenderer()
+{	VulkanRenderer::VulkanRenderer(Window* window) : pWindow(window)
 	{
 		Init();
 	}
@@ -57,7 +57,17 @@ namespace Chaos
 		VK_CHECK(vkResetCommandBuffer(GetCurrentFrame().MainCommandBuffer, 0));
 
 		uint32_t swapChainImageIndex;
-		VK_CHECK(vkAcquireNextImageKHR(m_device, m_swapchain, 1000000000, GetCurrentFrame().PresentSemaphore, nullptr, &swapChainImageIndex));
+		VkResult result = vkAcquireNextImageKHR(m_device, m_swapchain, 1000000000, GetCurrentFrame().PresentSemaphore, nullptr, &swapChainImageIndex);
+
+		if (result == VK_ERROR_OUT_OF_DATE_KHR)
+		{
+			RecreateSwapchain();
+			return;
+		}
+		else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+		{
+			LOGCORE_ERROR("VULKAN: failed to aquire swapchain image!");
+		}
 
 		VkCommandBuffer cmd = GetCurrentFrame().MainCommandBuffer;
 
@@ -214,7 +224,7 @@ namespace Chaos
 
 	void VulkanRenderer::Init()
 	{
-		WindowExtent = { Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight() };
+		WindowExtent = { pWindow->GetWidth(), pWindow->GetHeight() };
 		InitVulkan();
 		InitSwapchain();
 		InitDefaultRenderPass();
@@ -231,6 +241,86 @@ namespace Chaos
 		//InitScene();
 
 		IsInitialized = true;
+	}
+
+
+	void VulkanRenderer::Cleanup()
+	{
+		if (IsInitialized)
+		{
+			vkDeviceWaitIdle(m_device);
+
+			vkWaitForFences(m_device, 1, &GetCurrentFrame().RenderFence, true, 1000000000);
+
+			CleanupSwapchain();
+
+			MainDeletionQueue.flush();
+
+			vmaDestroyAllocator(m_allocator);
+
+			vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
+
+			vkDestroyDevice(m_device, nullptr);
+			vkb::destroy_debug_utils_messenger(m_instance, m_debugMessenger);
+			vkDestroyInstance(m_instance, nullptr);
+		}
+	}
+
+
+	void VulkanRenderer::CleanupSwapchain()
+	{
+		for (auto framebuffer : m_framebuffers)
+		{
+			vkDestroyFramebuffer(m_device, framebuffer, nullptr);
+		}
+
+		for (auto mat : Materials)
+		{
+			vkDestroyPipeline(m_device, mat.second.Pipeline, nullptr);
+			vkDestroyPipelineLayout(m_device, mat.second.PipelineLayout, nullptr);
+		}
+
+		// reinit all materials
+
+		vkDestroyRenderPass(m_device, m_renderPass, nullptr);
+
+
+		for (int i = 0; i < m_swapchainImages.size(); ++i)
+		{
+			vkDestroyImageView(m_device, m_swapchainImageViews[i], nullptr);
+		}
+
+		vkDestroySwapchainKHR(m_device, m_swapchain, nullptr);
+
+		vkDestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
+
+		for (int i = 0; i < FRAME_OVERLAP; ++i)
+		{
+			vkDestroyFence(m_device, Frames[i].RenderFence, nullptr);
+			vkDestroySemaphore(m_device, Frames[i].PresentSemaphore, nullptr);
+			vkDestroySemaphore(m_device, Frames[i].RenderSemaphore, nullptr);
+		}
+
+		vkDestroyFence(m_device, UploadContext.UploadFence, nullptr);
+	}
+
+
+	void VulkanRenderer::RecreateSwapchain()
+	{
+		vkDeviceWaitIdle(m_device);
+
+		CleanupSwapchain();
+
+		WindowExtent = { pWindow->GetWidth(), pWindow->GetHeight() };
+
+		InitSwapchain();
+		InitDefaultRenderPass();
+		InitFrameBuffers();
+		InitDescriptors();
+		InitPipelines();
+		InitSyncStructures();
+
+		InitScene();
 	}
 
 
@@ -298,29 +388,6 @@ namespace Chaos
 			vkDestroyDescriptorPool(m_device, imguiPool, nullptr);
 			ImGui_ImplVulkan_Shutdown();
 			});
-	}
-
-
-	void VulkanRenderer::Cleanup()
-	{
-		if (IsInitialized)
-		{
-			vkDeviceWaitIdle(m_device);
-
-			vkWaitForFences(m_device, 1, &GetCurrentFrame().RenderFence, true, 1000000000);
-
-			CleanupSwapchain();
-
-			MainDeletionQueue.flush();
-
-			vmaDestroyAllocator(m_allocator);
-
-			vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
-
-			vkDestroyDevice(m_device, nullptr);
-			vkb::destroy_debug_utils_messenger(m_instance, m_debugMessenger);
-			vkDestroyInstance(m_instance, nullptr);
-		}
 	}
 
 
@@ -570,7 +637,7 @@ namespace Chaos
 		VkFenceCreateInfo uploadFenceCreateInfo = VkInit::FenceCreateInfo();
 		VK_CHECK(vkCreateFence(m_device, &uploadFenceCreateInfo, nullptr, &UploadContext.UploadFence));
 
-		MainDeletionQueue.push_function([=]() 
+		SwapchainDeletionQueue.push_function([=]() 
 			{
 				vkDestroyFence(m_device, UploadContext.UploadFence, nullptr);
 			});
@@ -822,35 +889,9 @@ namespace Chaos
 	}
 
 
-	void VulkanRenderer::CleanupSwapchain()
-	{
-		for (auto framebuffer : m_framebuffers)
-		{
-			vkDestroyFramebuffer(m_device, framebuffer, nullptr);
-		}
-
-
-
-		//vkDestroyRenderPass()
-
-		//SwapchainDeletionQueue.flush();
-	}
-
-
-	void VulkanRenderer::RecreateSwapchain()
-	{
-		vkDeviceWaitIdle(m_device);
-
-		CleanupSwapchain();
-
-		InitSwapchain();
-		InitFrameBuffers();
-		InitDefaultRenderPass();
-	}
-
-
 	void VulkanRenderer::InitScene()
 	{
+		Renderables.clear();
 		VkSamplerCreateInfo samplerInfo = VkInit::SamplerCreateInfo(VK_FILTER_NEAREST);
 
 		VkSampler blockySampler;

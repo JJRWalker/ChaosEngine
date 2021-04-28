@@ -12,6 +12,7 @@
 
 namespace Chaos
 {
+	class Window;
 	class Renderer							
 	{
 		friend class ImGuiLayer;
@@ -19,7 +20,7 @@ namespace Chaos
 		
 		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 		
-		static Renderer* Create();
+		static Renderer* Create(Window* window);
 		
 		virtual void DrawQuad(Vec3& position, Vec2& scale, Ref<Texture> texture) = 0;
 		virtual void DrawQuad(Vec3& position, Vec2& scale, Vec4& colour, Ref<Texture> texture)  = 0;
