@@ -1471,5 +1471,6 @@
     <ClCompile Include="src\Chaos\Renderer\Material.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanTexture.cpp" />
     <ClCompile Include="src\Chaos\Serialisation\FileUtils.cpp" />
+    <ClCompile Include="src\Chaos\Renderer\Mesh.cpp" />
   </ItemGroup>
 </Project>

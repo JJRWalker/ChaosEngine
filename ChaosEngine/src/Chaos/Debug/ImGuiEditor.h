@@ -42,7 +42,7 @@ namespace Chaos
 		ImVec2 m_editorWindowPos;
 		ImVec2 m_editorWindowSize;
 		
-		Texture* m_selectedEntTexture = Texture::Create();
+		Texture* m_selectedEntTexture = Texture::CreateBlank("Debug_SelectedEnt");
 		ImTextureID m_selectedEntTextureID;
 	};
 }

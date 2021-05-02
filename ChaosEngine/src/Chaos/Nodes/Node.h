@@ -18,13 +18,16 @@ namespace Chaos
 		public:
 		Node(bool child = false);
 		~Node();
-
+		
 		virtual void OnStart();                  // called on start of level
 		virtual void OnUpdate(float delta);      // called every frame
 		virtual void OnFixedUpdate(float delta); // called on specified fixed step
 		virtual void OnDestroy();                // called when node is destroyed
 		virtual void Debug();                  
 		
+		
+		// returns a 4 x 4 array of all added transforms up heirarchy
+		virtual float* GetGlobalTransform();
 		virtual Vec2 GetPosition();
 		virtual void SetPosition(Vec2 position);
 		virtual Vec3 GetPosition3D();
@@ -38,7 +41,7 @@ namespace Chaos
 		void Rotate(float theta);
 		virtual Vec2 GetScale();
 		virtual void SetScale(Vec2 scale);
-
+		
 		// for seralization
 		size_t GetSize();
 		
@@ -135,11 +138,18 @@ namespace Chaos
 		uint32_t SubID = 0; // if it's a child this sub ID will be it's index in the 2nd dimension of the level array
 		size_t ChildCount = 0;
 		bool Enabled = true;  // same as can tick, disabled nodes still exist, just don't update in update
-		float Transform[4][4] = 
-		{{1, 0, 0, 0},
-			{0, 1, 0, 0},
-			{0, 0, 1, 0},
-			{0, 0, 0, 1}};
+		float Transform[16] = 
+		{1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1};
+		
+		private:
+		float m_globalTransform[16] = 
+		{1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1}; 
 		
 		protected: 
 		Node* p_parent = nullptr;

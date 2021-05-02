@@ -605,6 +605,7 @@
     <ClCompile Include="src\Chaos\Nodes\Node.cpp" />
     <ClCompile Include="src\Chaos\Nodes\Sprite.cpp" />
     <ClCompile Include="src\Chaos\Renderer\Material.cpp" />
+    <ClCompile Include="src\Chaos\Renderer\Mesh.cpp" />
     <ClCompile Include="src\Chaos\Renderer\Renderer.cpp" />
     <ClCompile Include="src\Chaos\Renderer\RendererAPI.cpp" />
     <ClCompile Include="src\Chaos\Renderer\SubTexture.cpp" />

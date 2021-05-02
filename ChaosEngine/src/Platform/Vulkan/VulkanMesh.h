@@ -17,27 +17,19 @@ namespace Chaos
 	{
 		std::vector<VkVertexInputBindingDescription> Bindings;
 		std::vector<VkVertexInputAttributeDescription> Attributes;
-
+		
 		VkPipelineVertexInputStateCreateFlags Flags = 0;
 	};
-
-	struct Vertex
+	
+	struct VulkanVertex : public Vertex 
 	{
-		Vec3 Position;
-		Vec3 Normal;
-		Vec3 Colour;
-		Vec2 UV;
-
 		static VertexInputDescription GetVertexDescription();
 	};
-
+	
 	class VulkanMesh : public Mesh
 	{
 		public:
-		std::vector<Vertex> Vertices;
 		AllocatedBuffer VertexBuffer;
-
-		bool LoadFromOBJ(const char* filename);
 	};
 }
 

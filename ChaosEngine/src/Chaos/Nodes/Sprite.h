@@ -10,22 +10,28 @@
 
 namespace Chaos
 {
+	struct RenderObject;
+	class Material;
 	class Sprite : public Node
 	{
 		public:
 		Sprite(bool child = false);
+		~Sprite();
 		
 		void OnUpdate(float delta) override;
 		
 		public:
-		Texture* Texture = Texture::Create();	//Setting default texture (loads blank)
+		Texture* Texture = Texture::GetBlank();	//Setting default texture (loads blank)
 		Vec4 Colour = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
+		Material* Material = nullptr;
+		private:
+		RenderObject* p_renderObject = nullptr;
 	};
 	
 	class SubSprite : public Node
 	{
 		public:
-		SubSprite(bool child = false) : Node(child) {Name = "SubSprite";}
+		SubSprite(bool child = false);
 		virtual void OnStart() override;
 		virtual void OnUpdate(float delta) override;
 		virtual void OnDestroy() override;
@@ -35,15 +41,18 @@ namespace Chaos
 		
 		Vec4& Colour() { return m_colour; }
 		
+		public:
+		Material* Material = nullptr;
 		private:
-		Ref<SubTexture> m_subTex = SubTexture::Create(Texture::Create(), Vec2(0,0), Vec2(1,1));
+		Ref<SubTexture> m_subTex = SubTexture::Create(Texture::GetBlank(), Vec2(0,0), Vec2(1,1));
 		Vec4 m_colour = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
+		RenderObject* p_renderObject = nullptr;
 	};
 	
 	class UISprite : public Node
 	{
 		public:
-		UISprite(bool child = false) : Node(child) { Name = "UISprite"; }
+		UISprite(bool child = false);
 		void OnStart() override;
 		void OnUpdate(float delta) override;
 		void OnDestroy() override;
@@ -53,9 +62,13 @@ namespace Chaos
 		
 		Vec4& Colour() { return m_colour; }
 		
+		public:
+		Material* Material = nullptr;
+		
 		private:
-		Texture* m_texture = Texture::Create();	//init as a blank texture
+		Texture* m_texture = Texture::GetBlank();	//init as a blank texture
 		Vec4 m_colour = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
+		RenderObject* p_renderObject = nullptr;
 	};
 }
 

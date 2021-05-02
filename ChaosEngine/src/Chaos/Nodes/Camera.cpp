@@ -10,11 +10,24 @@ namespace Chaos
 {
 	void Camera::Recalculate()
 	{
-		m_view = glm::lookAt(glm::vec3(GetPosition().X, GetPosition().Y, 1), glm::vec3(GetPosition().X, GetPosition().Y, -1), glm::vec3(0.0f, 1.0f, 0.0f));
-		m_model = glm::rotate(glm::mat4(1.0f), glm::radians(GetRotation()), glm::vec3(0.0f, 0.0f, 1.0f));
-		m_projection = glm::ortho(m_bounds.X * m_aspectRatio,
-								  m_bounds.Y * m_aspectRatio,
-								  m_bounds.Z, m_bounds.W, -1.0f, 1.0f);
+		switch (m_projectionType)
+		{
+			case EProjectionType::PERSPECTIVE:
+			{
+				m_view = glm::translate(glm::mat4(1.f), {-GetPosition().X, -GetPosition().Y, GetPosition3D().Z});
+				
+				m_projection = glm::perspective(glm::radians(70.f), m_aspectRatio, 0.1f, 200.0f);
+			}break;
+			case EProjectionType::ORTHAGRAPHIC:
+			{
+				m_view = glm::lookAt(glm::vec3(GetPosition().X, GetPosition().Y, 1.0f), glm::vec3(GetPosition().X, GetPosition().Y, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+				m_model = glm::rotate(glm::mat4(1.0f), glm::radians(GetRotation()), glm::vec3(0.0f, 0.0f, 1.0f));
+				m_projection = glm::ortho(m_bounds.X * m_aspectRatio,
+										  m_bounds.Y * m_aspectRatio,
+										  m_bounds.Z, m_bounds.W, GetDepth() -200.0f, GetDepth() + 200.0f);
+			}break;
+		}
+		
 		m_projection[1][1] *= -1;
 	}
 	

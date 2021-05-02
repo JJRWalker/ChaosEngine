@@ -15,10 +15,16 @@
 
 namespace Chaos
 {
+	enum EProjectionType
+	{
+		PERSPECTIVE = 0,
+		ORTHAGRAPHIC = 1
+	};
+	
 	class Camera : public Node
 	{
 		public:
-		Camera(bool child = false) : Node(child) { Name = "Camera"; }
+		Camera(bool child = false) : Node(child) { Name = "Camera"; Recalculate();}
 		
 		// Inherited via Node
 		virtual void OnStart() override;
@@ -37,10 +43,14 @@ namespace Chaos
 		glm::mat4 GetView() { return m_view; }
 		glm::mat4 GetModel() { return m_model; }
 		
+		void SetProjectionType(EProjectionType type) {m_projectionType = type; Recalculate();}
+		EProjectionType GetProjectionType() {return m_projectionType;}
+		
 		private:
 		void Recalculate();
 		
 		private:
+		EProjectionType m_projectionType = EProjectionType::ORTHAGRAPHIC;
 		Vec4 m_bounds = Vec4(-5.0f, 5.0f, -5.0f, 5.0f);
 		float m_aspectRatio = 1.77f;
 		

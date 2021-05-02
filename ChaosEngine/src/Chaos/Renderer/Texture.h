@@ -20,13 +20,10 @@ namespace Chaos
 		virtual uint32_t GetSize() const = 0;
 		
 		static Texture* Create(std::string filePath);
-		static Texture* Create();
+		static Texture* CreateBlank(std::string name);
 		static Texture* GetBlank();
-
+		
 		public:
 		std::string Name = "blank";
-
-		private:
-		static Texture* s_blankTexture;
 	};
 }

@@ -17,7 +17,7 @@ namespace Chaos
 {
 	ImGuiEditor::ImGuiEditor()
 	{
-		Console::AddCommand("ed", [&](){ m_showEditor ? m_showEditor = false : m_showEditor = true; });
+		Console::AddCommand("ed", [&](){ m_showEditor ? m_showEditor = false : m_showEditor = true; m_cameraController->Enabled = true; });
 		m_cameraController = Level::Get()->MainCamera()->AddChild<EditorCameraController>();
 		m_cameraController->Enabled = false;		
 	}
@@ -143,7 +143,7 @@ namespace Chaos
 		ImGui::Begin("Details");
 		//put detail information here...
 		
-		float* pos[2] = { &node->Transform[0][3], &node->Transform[1][3] };
+		float* pos[2] = { &node->Transform[3], &node->Transform[7] };
 		
 		// hack scale. will not modify scale when adjusted. TODO: change this to a different method that uses getters and setters rather than a pointer
 		Vec2 nodeScale = node->GetScale();

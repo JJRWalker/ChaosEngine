@@ -13,7 +13,7 @@ namespace Chaos
 	{
 		if (m_spriteSheet && m_play && m_animation.TotalFrames > 1)
 		{
-			Application::Get().GetRenderer().DrawQuad(GetPosition3D(), GetScale(), Vec2(GetRotation(), GetRotation()), m_spriteSheet);
+			//Application::Get().GetRenderer().DrawQuad(GetPosition3D(), GetScale(), Vec2(GetRotation(), GetRotation()), m_spriteSheet);
 		}
 	}
 	

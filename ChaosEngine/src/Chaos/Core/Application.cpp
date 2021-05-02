@@ -4,6 +4,7 @@
 #include "Chaos/DataTypes/Vec2.h"
 #include "Chaos/Input/Input.h"
 #include "Chaos/Renderer/Texture.h"
+#include "Chaos/Renderer/Material.h"
 #include "Chaos/Renderer/Renderer.h"
 #include "Chaos/Debug/ImGuiLayer.h"
 #include "Chaos/Core/Time.h"
@@ -12,13 +13,12 @@
 #include "Chaos/Debug/ImGuiConsole.h"
 #include "Chaos/Debug/ImGuiEditor.h"
 #include "Chaos/Debug/ImGuiDebugInfo.h"
+#include "Chaos/Nodes/Camera.h"
 
 #include <ctime>
 #include <chrono>
 
-
-//temp
-#include "Platform/Vulkan/VulkanRenderer.h"
+#include "Chaos/Nodes/Sprite.h"
 
 //inspired by The Cherno's Game engine series, however has and will continue to diverge
 namespace Chaos
@@ -35,12 +35,16 @@ namespace Chaos
 		m_window = std::unique_ptr<Window>(Window::Create());
 		m_window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 		
+		m_mainCamera = new Camera();
+		
 		//Creating renderer
 		m_renderer = std::unique_ptr<Renderer>(Renderer::Create(m_window.get()));
 		m_renderer->InitImgui();
-		Texture* tex = Texture::Create("./Assets/test.png");
-		Texture* lostEmpire = Texture::Create("./Assets/lost_empire.png");
-		((VulkanRenderer*)m_renderer.get())->InitScene();
+		m_renderer->SetCamera(m_mainCamera);
+		Material::Create("ui-default", Texture::GetBlank(), "../ChaosEngine/Shaders/spv/ui-default.frag.spv", "../ChaosEngine/Shaders/spv/ui-default.vert.spv");
+		
+		UISprite* spriteui = new UISprite();
+		Sprite* sprite = new Sprite();
 		
 		//creating input manager layer
 		m_inputManager = new InputManager("./Assets/Config/Inputs.ini");
@@ -72,6 +76,8 @@ namespace Chaos
 			Time::m_time = m_window->GetWindowTime();
 			Time::m_deltaTime = (float)(Time::m_time - Time::m_timeLastFrame);
 			Time::m_timeLastFrame = Time::m_time;
+			
+			m_mainCamera->Translate(Vec2(Input::GetButton("horizontal"), Input::GetButton("vertical")) * Time::m_deltaTime * 10);
 			
 			//NOTE: this should be done when changing the resolution
 			//m_mainCamera->SetAspectRatio(m_window->GetAspectRatio());
@@ -113,63 +119,63 @@ namespace Chaos
 		while (m_running)
 		{
 			float fixedDelta = Time::GetFixedDeltaTime();
-
+			
 			//NOTE: not sure why but this needs to be multiplied by 500 instead of 1000
 			std::chrono::milliseconds sleepTime(static_cast<int>(fixedDelta * 500));
-
+			
 			if (m_pauseFixedUpdate)
 			{
 				std::this_thread::sleep_for(sleepTime);
 				continue;
 			}
-
+			
 			for (Layer* layer : m_layerStack)
 			{
 				layer->OnFixedUpdate(fixedDelta);
 			}
-
-
+			
+			
 			if (Level::Get())
 			{
 				Level::Get()->OnFixedUpdate(fixedDelta);
 			}
-
+			
 			std::this_thread::sleep_for(sleepTime);
 		}
 	}
-
+	
 	void Application::OnEvent(Event& e)
 	{
 		//LOGCORE_TRACE(e.ToString());
-
+		
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
-
+		
 		if (e.GetEventType() == EventType::WindowResize)
 		{
 			m_renderer->OnWindowResized((WindowResizeEvent&)e);
 		}
-
+		
 		for (auto it = m_layerStack.end(); it != m_layerStack.begin();)
 		{
 			(*--it)->OnEvent(e);
 			if (e.Handled)
 				break;
 		}
-
+		
 	}
-
+	
 	void Application::StartFixedUpdateThread()
 	{
 		m_fixedUpdateThread = std::thread(&Application::FixedRun, this);
 		m_fixedUpdateThread.detach();
 	}
-
+	
 	void Application::PauseFixedUpdateThread()
 	{
 		m_pauseFixedUpdate = true;
 	}
-
+	
 	void Application::ResumeFixedUpdateThread()
 	{
 		m_pauseFixedUpdate = false;

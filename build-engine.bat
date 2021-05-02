@@ -6,7 +6,7 @@ pushd "build/int"
 ::TIMER TAKEN FROM  https://stackoverflow.com/questions/673523/how-do-i-measure-execution-time-of-a-command-on-the-windows-command-line
 set start=%time%
 
-cl -Zi  /EHsc /c ..\..\chaosengine\chaos.cpp ..\..\chaosengine\src\chaospch.cpp /I ..\..\chaosengine\vendor\spdlog\include /I ..\..\chaosengine\src /I ..\..\chaosengine\vendor /I ..\..\chaosengine\vendor\imgui /I ..\..\chaosengine\vendor\glfw\include /std:c++17 /D "CHAOS_PLATFORM_WINDOWS" /D "CHAOS_RELEASE" /MT
+cl -Zi  /EHsc /c ..\..\chaosengine\chaos.cpp ..\..\chaosengine\src\chaospch.cpp /I ..\..\chaosengine\vendor\spdlog\include /I ..\..\chaosengine\src /I ..\..\chaosengine\vendor /I ..\..\chaosengine\vendor\imgui /I ..\..\chaosengine\vendor\glfw\include /I ../../chaosengine/vendor/vulkan/include /I ../../chaosengine/vendor/glm/glm /std:c++17 /D "CHAOS_PLATFORM_WINDOWS" /D "CHAOS_RELEASE" /MT
 
 popd
 

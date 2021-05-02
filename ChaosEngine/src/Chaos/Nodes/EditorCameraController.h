@@ -14,7 +14,7 @@ namespace Chaos
 		
 		virtual void OnUpdate(float delta) override;
 		private:
-		float m_cameraSpeed = 1.0f;
+		float m_cameraSpeed = 10.0f;
 		Vec2 m_dir;
 	};
 }
