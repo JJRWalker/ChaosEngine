@@ -47,17 +47,32 @@ namespace Chaos
 	}
 	
 	
+	// recursively translates the local local matrix by the parent matrix to get global transform matrix
 	float* Node::GetGlobalTransform()
 	{
 		memcpy((void*)&m_globalTransform[0], (void*)&Transform[0], sizeof(float) * 16);
+		
 		if (p_parent)
 		{
 			float* parentTransform = p_parent->GetGlobalTransform();
-			for (int i = 0; i < 16; ++i)
-			{
-				m_globalTransform[i] += parentTransform[i];
-			}
+			
+			m_globalTransform[0] *= parentTransform[0];
+			m_globalTransform[1] *= parentTransform[1];
+			m_globalTransform[2] *= parentTransform[2];
+			
+			m_globalTransform[4] *= parentTransform[4];
+			m_globalTransform[5] *= parentTransform[5];
+			m_globalTransform[6] *= parentTransform[6];
+			
+			m_globalTransform[8] *= parentTransform[8];
+			m_globalTransform[9] *= parentTransform[9];
+			m_globalTransform[10] *= parentTransform[10];
+			
+			m_globalTransform[12] += parentTransform[12];
+			m_globalTransform[13] += parentTransform[13];
+			m_globalTransform[14] += parentTransform[14];
 		}
+		
 		return &m_globalTransform[0];
 	}
 	

@@ -33,7 +33,7 @@ namespace Chaos
 		m_window = std::unique_ptr<Window>(Window::Create());
 		m_window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 		
-		m_mainCamera = new Camera();
+		m_mainCamera = Level::Get()->MainCamera();
 		
 		//Creating renderer
 		m_renderer = std::unique_ptr<Renderer>(Renderer::Create(m_window.get()));
