@@ -17,7 +17,7 @@ namespace Chaos
 {
 	ImGuiEditor::ImGuiEditor()
 	{
-		Console::AddCommand("ed", [&](){ m_showEditor ? m_showEditor = false : m_showEditor = true; m_cameraController->Enabled = true; });
+		Console::AddCommand("ed", [&](){ m_showEditor ? m_showEditor = false : m_showEditor = true;});
 		m_cameraController = Level::Get()->MainCamera()->AddChild<EditorCameraController>();
 		m_cameraController->Enabled = false;		
 	}
@@ -40,10 +40,10 @@ namespace Chaos
 	
 	void ImGuiEditor::ShowEditor()
 	{
-		//if (!m_cameraController->Enabled)
-		//{
-		//	m_cameraController->Enabled = true;
-		//}
+		if (!m_cameraController->Enabled)
+		{
+			m_cameraController->Enabled = true;
+		}
 		ImGuiWindowFlags window_flags =  ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoBringToFrontOnFocus;
 		
 		//ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.1f, 0.1f, 0.1f, 0.1f));

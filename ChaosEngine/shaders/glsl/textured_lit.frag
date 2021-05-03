@@ -30,5 +30,11 @@ void main()
 	vec3 diffColour = diffuse * lightColour;
 	vec4 result = vec4((ambient + diffColour) * inColor, 1.0f);
     vec4 colour = texture(tex1, inTexCoord);
+
+	if (colour.a <= 0.0f)
+	{
+		discard;
+	}
+
 	outFragColor = vec4(colour * result);
 }

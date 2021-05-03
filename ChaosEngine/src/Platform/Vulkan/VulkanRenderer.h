@@ -79,7 +79,7 @@ namespace Chaos
 		Vec4 FogDistances = { 0.1f,  0.5f, 1.0f, 2.0f};
 		Vec4 AmbiantColour = { 0.5f, 0.5f, 0.5f, 0.2f };
 		Vec4 SunlightDirection = { 0.0f, 0.0f, 1.0f, 1.0f };
-		Vec4 SunlightColour = { 0.8f, 0.8f, 0.0f, 1.0f };
+		Vec4 SunlightColour = { 1.0f, 1.0f, 1.0f, 1.0f };
 	};
 	
 	
@@ -140,6 +140,9 @@ namespace Chaos
 		
 		void InitImgui() override;
 		void SetCamera(Camera* camera) override;
+		
+		void SetVSync(bool state) override;
+		bool GetVSync() override;
 		
 		void UploadMesh(VulkanMesh& mesh);
 		void UploadMaterial(VulkanMaterial& mat);
@@ -210,6 +213,9 @@ namespace Chaos
 		FrameData Frames[FRAME_OVERLAP];
 		
 		private:
+		bool m_vsync = false;
+		VkPresentModeKHR m_presentMode = VK_PRESENT_MODE_MAILBOX_KHR;
+		
 		VmaAllocator m_allocator;
 		
 		VkInstance m_instance;

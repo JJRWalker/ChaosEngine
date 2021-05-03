@@ -24,8 +24,8 @@ void main()
 	vec3 norm = normalize(inNormal);
 	vec3 lightColour = sceneData.sunlightColor.xyz * sceneData.sunlightColor.w;
 	vec3 lightDir = normalize(sceneData.sunlightDirection.xyz);
-	float diffuse = max(dot(norm, lightDir), 0.0) * sceneData.sunlightDirection.w;
+	float diffuse = max(dot(norm, lightDir), 0.0f) * sceneData.sunlightDirection.w;
 	vec3 diffColour = diffuse * lightColour;
-	vec3 result = (ambient + diffColour) * inColor;
+	vec3 result = vec3((ambient + diffColour) * inColor);
 	outFragColor = vec4(result, 1.0f);
 }

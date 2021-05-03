@@ -12,7 +12,7 @@ namespace FileUtils
 		if (filePath.size() == 0)
 			return name;
 		
-		for (int i = filePath.size() - 1; i >= 0; --i)
+		for (size_t i = filePath.size() - 1; i >= 0; --i)
 		{
 			if (filePath[i] == '\\' || filePath[i] == '/')
 			{
@@ -38,7 +38,7 @@ namespace FileUtils
 		
 		size_t newSize = path.size();
 		
-		for (int i = path.size() - 1; i >= 0; --i)
+		for (size_t i = path.size() - 1; i >= 0; --i)
 		{
 			--newSize;
 			if(path[i] == '.')

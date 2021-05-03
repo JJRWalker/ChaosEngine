@@ -55,7 +55,7 @@ namespace Chaos
 		RenderObject quad;
 		quad.Mesh = GetMesh("quad");
 		quad.Material = mat;
-		quad.RenderID = Renderables.size();
+		quad.RenderID = (uint32_t)Renderables.size();
 		memcpy((void*)&quad.Transform[0], (void*)&transform[0], sizeof(float) * 16);
 		
 		Renderables.push_back(quad);
@@ -66,7 +66,7 @@ namespace Chaos
 	
 	void VulkanRenderer::AddRenderable(RenderObject& toAdd)
 	{
-		toAdd.RenderID = Renderables.size();
+		toAdd.RenderID = (uint32_t)Renderables.size();
 		Renderables.push_back(toAdd);
 	}
 	
@@ -195,10 +195,6 @@ namespace Chaos
 		
 		vmaUnmapMemory(m_allocator, GetCurrentFrame().CameraBuffer.Allocation);
 		
-		float framed = (FrameNumber / 120.f);
-		
-		m_sceneParameters.SunlightColour.W = -sin(framed);
-		
 		char* sceneData;
 		vmaMapMemory(m_allocator, m_sceneParameterBuffer.Allocation, (void**)&sceneData);
 		
@@ -220,7 +216,6 @@ namespace Chaos
 		{
 			RenderObject& obj = first[i];
 			memcpy((void*)&sobjectSSBO[i].ModelMatrix, (void*)&obj.Transform, sizeof(float) * 16);
-			sobjectSSBO[i].Optional[0] = 23.4f;
 		}
 		
 		vmaUnmapMemory(m_allocator, GetCurrentFrame().ObjectBuffer.Allocation);
@@ -267,6 +262,32 @@ namespace Chaos
 	void VulkanRenderer::SetCamera(Camera* camera)
 	{
 		pCamera = camera;
+	}
+	
+	
+	void VulkanRenderer::SetVSync(bool state)
+	{
+		if (state == m_vsync)
+			return;
+		
+		if (state)
+		{
+			m_presentMode = VK_PRESENT_MODE_FIFO_KHR;
+		}
+		else
+		{
+			m_presentMode = VK_PRESENT_MODE_MAILBOX_KHR;
+		}
+		
+		RecreateSwapchain();
+		
+		m_vsync = state;
+	}
+	
+	
+	bool VulkanRenderer::GetVSync()
+	{
+		return m_vsync;
 	}
 	
 	
@@ -597,7 +618,7 @@ namespace Chaos
 		pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 		pool_info.maxSets = 1000;
-		pool_info.poolSizeCount = std::size(pool_sizes);
+		pool_info.poolSizeCount = (uint32_t)std::size(pool_sizes);
 		pool_info.pPoolSizes = pool_sizes;
 		
 		VkDescriptorPool imguiPool;
@@ -693,13 +714,10 @@ namespace Chaos
 	
 	void VulkanRenderer::InitSwapchain()
 	{		
-		// TODO: use present mode based on Vsync variable
-		VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR; // VK_PRESENT_MODE_MAILBOX_KHR // mailbox == vsync off
-		
 		vkb::SwapchainBuilder swapchainBuilder(m_physicalDevice, m_device, m_surface);
 		vkb::Swapchain vkbSwapchain = swapchainBuilder
 			.use_default_format_selection()
-			.set_desired_present_mode(presentMode)
+			.set_desired_present_mode(m_presentMode)
 			.set_desired_extent(WindowExtent.width, WindowExtent.height)
 			.build()
 			.value();

@@ -18,8 +18,6 @@
 #include <ctime>
 #include <chrono>
 
-#include "Chaos/Nodes/Sprite.h"
-
 //inspired by The Cherno's Game engine series, however has and will continue to diverge
 namespace Chaos
 {
@@ -41,20 +39,6 @@ namespace Chaos
 		m_renderer = std::unique_ptr<Renderer>(Renderer::Create(m_window.get()));
 		m_renderer->InitImgui();
 		m_renderer->SetCamera(m_mainCamera);
-		Material::Create("ui-default", Texture::GetBlank(), "../ChaosEngine/Shaders/spv/ui-default.frag.spv", "../ChaosEngine/Shaders/spv/ui-default.vert.spv");
-		
-		Material* test = Material::Create("test", Texture::Create("./Assets/sprite.png"), "../ChaosEngine/Shaders/spv/textured_lit.frag.spv", "../ChaosEngine/Shaders/spv/default.vert.spv");
-		
-		Sprite* sprite = new Sprite();
-		sprite->SetScale(Vec2(2.0f, 2.0f));
-		sprite->SetMaterial(test);
-		UISprite* spriteui = new UISprite();
-		spriteui->SetPosition(Vec2(0.5f, 0.5f));
-		spriteui->SetScale(Vec2(0.25f, 0.5f));
-		
-		UISprite* spriteui2 = new UISprite();
-		spriteui2->SetPosition(Vec2(-0.5f, 0.5f));
-		spriteui2->SetScale(Vec2(0.25f, 0.5f));
 		
 		//creating input manager layer
 		m_inputManager = new InputManager("./Assets/Config/Inputs.ini");

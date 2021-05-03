@@ -49,6 +49,8 @@ namespace Chaos
 		virtual void InitImgui() = 0;
 		virtual void SetCamera(Camera* camera) = 0;
 		
+		virtual void SetVSync(bool state) = 0;
+		virtual bool GetVSync() = 0;
 		
 		private:
 		static RendererAPI s_rendererAPI;		
