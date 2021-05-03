@@ -26,7 +26,7 @@ namespace Chaos
 		virtual void Debug();                  
 		
 		
-		// returns a 4 x 4 array of all added transforms up heirarchy
+		// returns a 16 float array of all transforms added up through heirarchy
 		virtual float* GetGlobalTransform();
 		virtual Vec2 GetPosition();
 		virtual void SetPosition(Vec2 position);

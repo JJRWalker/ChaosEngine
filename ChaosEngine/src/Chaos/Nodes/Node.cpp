@@ -53,7 +53,7 @@ namespace Chaos
 		if (p_parent)
 		{
 			float* parentTransform = p_parent->GetGlobalTransform();
-			for (int i = 0; i < 4; ++i)
+			for (int i = 0; i < 16; ++i)
 			{
 				m_globalTransform[i] += parentTransform[i];
 			}
