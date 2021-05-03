@@ -78,7 +78,7 @@ namespace Chaos
 		Vec4 FogColour = { 0.2f, 0.2f, 0.2f, 0.1f };
 		Vec4 FogDistances = { 0.1f,  0.5f, 1.0f, 2.0f};
 		Vec4 AmbiantColour = { 0.5f, 0.5f, 0.5f, 0.2f };
-		Vec4 SunlightDirection = { 1.0f, 1.0f, 0.0f, 1.0f };
+		Vec4 SunlightDirection = { 0.0f, 0.0f, 1.0f, 1.0f };
 		Vec4 SunlightColour = { 0.8f, 0.8f, 0.0f, 1.0f };
 	};
 	
@@ -114,6 +114,7 @@ namespace Chaos
 	
 	
 	constexpr unsigned int FRAME_OVERLAP = 2;
+	const unsigned int MAX_OBJECTS = 1000000;
 	
 	class VulkanRenderer : public Renderer
 	{
@@ -130,10 +131,6 @@ namespace Chaos
 		void RemoveRenderable(RenderObject* toRemove);
 		
 		void DrawLine(Vec2& startPoint, Vec2& endPoint, Vec4& colour, float weight, float renderOrder) {};
-		
-		//UI
-		void DrawScreenSpaceQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<Texture> texture, float tilingFactor) {};
-		void DrawScreenSpaceQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<SubTexture> subTexture) {};
 		
 		void DrawFrame();
 		bool OnWindowResized(WindowResizeEvent& e) {  return false; };
@@ -261,6 +258,16 @@ namespace Chaos
 			{0.5f, 0.5f, 0.0f},
 			{-0.5f, 0.5f, 0.0f},
 			{-0.5f, -0.5f, 0.0f}
+		};
+		
+		const Vec2 QUAD_UV_POSITIONS[6] = 
+		{
+			{0.0f, 1.0f},
+			{1.0f, 1.0f},
+			{1.0f, 0.0f},
+			{1.0f, 0.0f},
+			{0.0f, 0.0f},
+			{0.0f, 1.0f},
 		};
 	};
 }

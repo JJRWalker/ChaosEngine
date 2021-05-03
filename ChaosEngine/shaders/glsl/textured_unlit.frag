@@ -22,13 +22,6 @@ layout(set = 2, binding = 0) uniform sampler2D tex1;
 
 void main()
 {	
-	vec3 ambient = sceneData.ambientColor.xyz * sceneData.ambientColor.w;
-	vec3 norm = normalize(inNormal);
-	vec3 lightColour = sceneData.sunlightColor.xyz * sceneData.sunlightColor.w;
-	vec3 lightDir = normalize(sceneData.sunlightDirection.xyz);
-	float diffuse = max(dot(norm, lightDir), 0.0) * sceneData.sunlightDirection.w;
-	vec3 diffColour = diffuse * lightColour;
-	vec4 result = vec4((ambient + diffColour) * inColor, 1.0f);
     vec4 colour = texture(tex1, inTexCoord);
-	outFragColor = vec4(colour * result);
+	outFragColor = colour;
 }

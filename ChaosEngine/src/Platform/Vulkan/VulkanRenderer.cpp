@@ -38,8 +38,6 @@ const bool USE_VALIDATION_LAYERS = false;
 #define VK_CHECK(x)	x
 #endif
 
-const int MAX_OBJECTS = 100000;
-
 namespace Chaos
 {	VulkanRenderer::VulkanRenderer(Window* window) : pWindow(window)
 	{
@@ -199,8 +197,7 @@ namespace Chaos
 		
 		float framed = (FrameNumber / 120.f);
 		
-		//m_sceneParameters.AmbiantColour = {sin(framed), 0, cos(framed), 1};
-		m_sceneParameters.SunlightDirection.X = -sin(framed);
+		m_sceneParameters.SunlightColour.W = -sin(framed);
 		
 		char* sceneData;
 		vmaMapMemory(m_allocator, m_sceneParameterBuffer.Allocation, (void**)&sceneData);
@@ -250,13 +247,8 @@ namespace Chaos
 				}
 			}
 			
-			//glm::mat4 model = obj.Transform;
-			//final render matrix, that we are calculating on the cpu
-			//glm::mat4 meshMatrix = model;
-			
 			
 			MeshPushConstants constants;
-			//constants.RenderMatrix = meshMatrix;
 			
 			vkCmdPushConstants(cmd, ((VulkanMaterial*)obj.Material)->PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(MeshPushConstants), &constants);
 			
@@ -403,6 +395,8 @@ namespace Chaos
 	
 	void VulkanRenderer::Init()
 	{
+		Renderables.reserve(MAX_OBJECTS);
+		
 		WindowExtent = { pWindow->GetWidth(), pWindow->GetHeight() };
 		InitVulkan();
 		InitSwapchain();
@@ -1213,6 +1207,7 @@ namespace Chaos
 			quadMesh.Vertices[i].Position = QUAD_VERTEX_POSITIONS[i];
 			quadMesh.Vertices[i].Colour = {1.0f, 1.0f, 1.0f};
 			quadMesh.Vertices[i].Normal = {0.0f, 0.0f, 1.0f};
+			quadMesh.Vertices[i].UV = QUAD_UV_POSITIONS[i];
 		}
 		
 		UploadMesh(triMesh);
@@ -1382,6 +1377,10 @@ namespace Chaos
 		colourBlending.logicOp = VK_LOGIC_OP_COPY;
 		colourBlending.attachmentCount = 1;
 		colourBlending.pAttachments = &ColourBlendAttachment;
+		colourBlending.blendConstants[0] = 0.0f;
+		colourBlending.blendConstants[1] = 0.0f;
+		colourBlending.blendConstants[2] = 0.0f;
+		colourBlending.blendConstants[3] = 0.0f;
 		
 		VkGraphicsPipelineCreateInfo pipelineInfo = {};
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;

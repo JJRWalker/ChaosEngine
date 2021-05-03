@@ -43,8 +43,18 @@ namespace Chaos
 		m_renderer->SetCamera(m_mainCamera);
 		Material::Create("ui-default", Texture::GetBlank(), "../ChaosEngine/Shaders/spv/ui-default.frag.spv", "../ChaosEngine/Shaders/spv/ui-default.vert.spv");
 		
-		UISprite* spriteui = new UISprite();
+		Material* test = Material::Create("test", Texture::Create("./Assets/sprite.png"), "../ChaosEngine/Shaders/spv/textured_lit.frag.spv", "../ChaosEngine/Shaders/spv/default.vert.spv");
+		
 		Sprite* sprite = new Sprite();
+		sprite->SetScale(Vec2(2.0f, 2.0f));
+		sprite->SetMaterial(test);
+		UISprite* spriteui = new UISprite();
+		spriteui->SetPosition(Vec2(0.5f, 0.5f));
+		spriteui->SetScale(Vec2(0.25f, 0.5f));
+		
+		UISprite* spriteui2 = new UISprite();
+		spriteui2->SetPosition(Vec2(-0.5f, 0.5f));
+		spriteui2->SetScale(Vec2(0.25f, 0.5f));
 		
 		//creating input manager layer
 		m_inputManager = new InputManager("./Assets/Config/Inputs.ini");
@@ -77,7 +87,7 @@ namespace Chaos
 			Time::m_deltaTime = (float)(Time::m_time - Time::m_timeLastFrame);
 			Time::m_timeLastFrame = Time::m_time;
 			
-			m_mainCamera->Translate(Vec2(Input::GetButton("horizontal"), Input::GetButton("vertical")) * Time::m_deltaTime * 10);
+			//m_mainCamera->Translate(Vec2(Input::GetButton("horizontal"), Input::GetButton("vertical")) * Time::m_deltaTime * 10);
 			
 			//NOTE: this should be done when changing the resolution
 			//m_mainCamera->SetAspectRatio(m_window->GetAspectRatio());

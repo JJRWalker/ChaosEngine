@@ -11,9 +11,9 @@ namespace Chaos
 	Sprite::Sprite(bool child) : Node(child)
 	{
 		Name = "Sprite";
-		Material = Material::Get("default");
+		p_material = Material::Get("default");
 		
-		p_renderObject = Application::Get().GetRenderer().AddQuad(GetGlobalTransform(), Material);
+		p_renderObject = Application::Get().GetRenderer().AddQuad(GetGlobalTransform(), p_material);
 	}
 	
 	
@@ -30,14 +30,27 @@ namespace Chaos
 	}
 	
 	
+	void Sprite::SetMaterial(Material* mat) 
+	{
+		p_renderObject->Material = mat; 
+		p_material = mat;
+	}
+	
+	
+	Material* Sprite::GetMaterial()
+	{
+		return p_material;
+	}
+	
+	
 	// SUB SPRITE
 	SubSprite::SubSprite(bool child) : Node(child)
 	{
 		Name = "SubSprite";
 		
-		Material = Material::Get("default");
+		p_material = Material::Get("default");
 		
-		p_renderObject = Application::Get().GetRenderer().AddQuad(GetGlobalTransform(), Material);
+		p_renderObject = Application::Get().GetRenderer().AddQuad(GetGlobalTransform(), p_material);
 	}
 	
 	
@@ -50,6 +63,20 @@ namespace Chaos
 		memcpy((void*)&p_renderObject->Transform[0], (void*)&GetGlobalTransform()[0], sizeof(float) * 16);
 	}
 	
+	
+	void SubSprite::SetMaterial(Material* mat) 
+	{
+		p_renderObject->Material = mat; 
+		p_material = mat;
+	}
+	
+	
+	Material* SubSprite::GetMaterial()
+	{
+		return p_material;
+	}
+	
+	
 	void SubSprite::OnDestroy()
 	{
 		
@@ -59,9 +86,9 @@ namespace Chaos
 	UISprite::UISprite(bool child) : Node(child)
 	{
 		Name = "UISprite";
-		Material = Material::Get("ui-default");
+		p_material = Material::Get("ui-default");
 		
-		p_renderObject = Application::Get().GetRenderer().AddQuad(GetGlobalTransform(), Material);
+		p_renderObject = Application::Get().GetRenderer().AddQuad(GetGlobalTransform(), p_material);
 	}
 	
 	
@@ -74,6 +101,20 @@ namespace Chaos
 	{
 		memcpy((void*)&p_renderObject->Transform[0], (void*)&GetGlobalTransform()[0], sizeof(float) * 16);
 	}
+	
+	
+	void UISprite::SetMaterial(Material* mat) 
+	{
+		p_renderObject->Material = mat; 
+		p_material = mat;
+	}
+	
+	
+	Material* UISprite::GetMaterial()
+	{
+		return p_material;
+	}
+	
 	
 	void UISprite::OnDestroy()
 	{
