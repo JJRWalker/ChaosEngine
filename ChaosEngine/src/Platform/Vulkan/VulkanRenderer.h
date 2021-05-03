@@ -174,6 +174,9 @@ namespace Chaos
 		void InitDefaultPipeline();
 		void InitSamplers();
 		
+		VulkanMaterial& RecreateMaterial(VulkanMaterial& mat);
+		void RecreateMaterials();
+		
 		void CleanupSwapchain();
 		void RecreateSwapchain();
 		

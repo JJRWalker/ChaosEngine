@@ -393,18 +393,9 @@ namespace Chaos
 		
 		VkPipeline pipeline = pipelineBuilder.BuildPipeline(m_device, m_renderPass);
 		
-		VulkanMaterial material(pipeline, pipelineLayout, name, this);
+		VulkanMaterial material(pipeline, pipelineLayout, name, fragShader, vertShader, this);
 		material.SetTexture(texture);
 		UploadMaterial(material);
-		
-		vkDestroyShaderModule(m_device, fragShader, nullptr);
-		vkDestroyShaderModule(m_device, vertShader, nullptr);
-		
-		MainDeletionQueue.push_function([=]()
-										{
-											vkDestroyPipeline(m_device, pipeline, nullptr);
-											vkDestroyPipelineLayout(m_device, pipelineLayout, nullptr);
-										});
 		
 		return &Materials[name];
 	}
@@ -454,6 +445,86 @@ namespace Chaos
 	}
 	
 	
+	VulkanMaterial& VulkanRenderer::RecreateMaterial(VulkanMaterial& mat)
+	{
+		PipelineBuilder pipelineBuilder;
+		pipelineBuilder.ShaderStages.push_back(VkInit::PipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT, mat.VertShader));
+		pipelineBuilder.ShaderStages.push_back(VkInit::PipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, mat.FragShader));
+		
+		
+		VkPipelineLayoutCreateInfo pipelineLayoutInfo = VkInit::PipelineLayoutCreateInfo();
+		
+		VkPushConstantRange pushConstant;
+		pushConstant.offset = 0;
+		pushConstant.size = sizeof(MeshPushConstants);
+		pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+		
+		pipelineLayoutInfo.pPushConstantRanges = &pushConstant;
+		pipelineLayoutInfo.pushConstantRangeCount = 1;
+		
+		VkDescriptorSetLayout setLayouts[] = { m_globalSetLayout, m_objectSetLayout, m_singleTextureSetLayout };
+		
+		pipelineLayoutInfo.setLayoutCount = 3;
+		pipelineLayoutInfo.pSetLayouts = setLayouts;
+		
+		VkPipelineLayout pipelineLayout;
+		
+		VK_CHECK(vkCreatePipelineLayout(m_device, &pipelineLayoutInfo, nullptr, &pipelineLayout));
+		
+		
+		pipelineBuilder.VertexInputInfo = VkInit::VertexInputCreateInfo();
+		
+		pipelineBuilder.InputAssembly = VkInit::InputAssemblyCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+		
+		pipelineBuilder.Viewport.x = 0.0f;
+		pipelineBuilder.Viewport.y = 0.0f;
+		pipelineBuilder.Viewport.width = (float)WindowExtent.width;
+		pipelineBuilder.Viewport.height = (float)WindowExtent.height;
+		pipelineBuilder.Viewport.minDepth = 0.0f;
+		pipelineBuilder.Viewport.maxDepth = 1.0f;
+		
+		pipelineBuilder.Scissor.offset = { 0, 0 };
+		pipelineBuilder.Scissor.extent = WindowExtent;
+		
+		pipelineBuilder.Rasterizer = VkInit::RasterizationStateCreateInfo(VK_POLYGON_MODE_FILL);
+		
+		pipelineBuilder.Multisampling = VkInit::MultisamlingStateCreateInfo();
+		
+		pipelineBuilder.ColourBlendAttachment = VkInit::ColourBlendAttachmentState();
+		
+		pipelineBuilder.PipelineLayout = pipelineLayout;
+		
+		VertexInputDescription vertexDescription = VulkanVertex::GetVertexDescription();
+		
+		pipelineBuilder.VertexInputInfo.pVertexAttributeDescriptions = vertexDescription.Attributes.data();
+		pipelineBuilder.VertexInputInfo.vertexAttributeDescriptionCount = (uint32_t)vertexDescription.Attributes.size();
+		
+		pipelineBuilder.VertexInputInfo.pVertexBindingDescriptions = vertexDescription.Bindings.data();
+		pipelineBuilder.VertexInputInfo.vertexBindingDescriptionCount = (uint32_t)vertexDescription.Bindings.size();
+		
+		pipelineBuilder.DepthStencil = VkInit::DepthStencilCreateInfo(true, true, VK_COMPARE_OP_LESS_OR_EQUAL);
+		
+		VkPipeline pipeline = pipelineBuilder.BuildPipeline(m_device, m_renderPass);
+		
+		VulkanMaterial material(pipeline, pipelineLayout, mat.Name, mat.FragShader, mat.VertShader, this);
+		material.SetTexture(mat.pTexture);
+		UploadMaterial(material);
+		
+		return Materials[mat.Name];
+	}
+	
+	
+	void VulkanRenderer::RecreateMaterials()
+	{
+		for (auto& it : Materials)
+		{
+			// NOTE: probably should find a better solution to this, rather than checking if it's the default every itteration
+			if (it.first != "default")
+				it.second = RecreateMaterial(it.second);
+		}
+	}
+	
+	
 	void VulkanRenderer::CleanupSwapchain()
 	{
 		for (auto framebuffer : m_framebuffers)
@@ -466,8 +537,6 @@ namespace Chaos
 			vkDestroyPipeline(m_device, mat.second.Pipeline, nullptr);
 			vkDestroyPipelineLayout(m_device, mat.second.PipelineLayout, nullptr);
 		}
-		
-		// reinit all materials
 		
 		vkDestroyRenderPass(m_device, m_renderPass, nullptr);
 		
@@ -506,6 +575,8 @@ namespace Chaos
 		InitDescriptors();
 		InitDefaultPipeline();
 		InitSyncStructures();
+		
+		RecreateMaterials();
 	}
 	
 	
@@ -1034,17 +1105,8 @@ namespace Chaos
 		
 		VkPipeline pipeline = pipelineBuilder.BuildPipeline(m_device, m_renderPass);
 		
-		VulkanMaterial defaultMat(pipeline, pipelineLayout, "default", this);
+		VulkanMaterial defaultMat(pipeline, pipelineLayout, "default", fragShader, vertShader, this);
 		UploadMaterial(defaultMat);
-		
-		vkDestroyShaderModule(m_device, fragShader, nullptr);
-		vkDestroyShaderModule(m_device, vertShader, nullptr);
-		
-		MainDeletionQueue.push_function([=]()
-										{
-											vkDestroyPipeline(m_device, pipeline, nullptr);
-											vkDestroyPipelineLayout(m_device, pipelineLayout, nullptr);
-										});
 	}
 	
 	

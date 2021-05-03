@@ -15,7 +15,7 @@ namespace Chaos
 	{
 		public:
 		VulkanMaterial() {};
-		VulkanMaterial(VkPipeline pipeline, VkPipelineLayout pipelineLayout, const std::string& name, VulkanRenderer* owningRenderer);
+		VulkanMaterial(VkPipeline pipeline, VkPipelineLayout pipelineLayout, const std::string& name, VkShaderModule frag, VkShaderModule vert, VulkanRenderer* owningRenderer);
 		
 		Vec4 GetColour() override;
 		void SetColour(Vec4 colour) override;
@@ -32,6 +32,8 @@ namespace Chaos
 		VkDescriptorSet TextureSet = VK_NULL_HANDLE;
 		VkPipeline Pipeline = VK_NULL_HANDLE;
 		VkPipelineLayout PipelineLayout = VK_NULL_HANDLE;
+		VkShaderModule FragShader;
+		VkShaderModule VertShader;
 		
 		private:
 		VulkanRenderer* p_owningRenderer;

@@ -7,11 +7,13 @@
 
 namespace Chaos
 {
-	VulkanMaterial::VulkanMaterial(VkPipeline pipeline, VkPipelineLayout pipelineLayout, const std::string& name, VulkanRenderer* owningRenderer)
+	VulkanMaterial::VulkanMaterial(VkPipeline pipeline, VkPipelineLayout pipelineLayout, const std::string& name, VkShaderModule frag, VkShaderModule vert, VulkanRenderer* owningRenderer)
 	{
 		Pipeline = pipeline;
 		PipelineLayout = pipelineLayout;
 		Name = name;
+		FragShader = frag;
+		VertShader = vert;
 		p_owningRenderer = owningRenderer;
 	}
 	
