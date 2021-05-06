@@ -462,6 +462,12 @@ namespace Chaos
 	
 	VulkanMaterial& VulkanRenderer::RecreateMaterial(VulkanMaterial& mat)
 	{
+		if (Materials.find(mat.Name) == Materials.end())
+		{
+			LOGCORE_ERROR("VULKAN: MATERIAL: Tried to recreate a material that isn't in the materials map: {0}", mat.Name);
+			return mat;
+		}
+		
 		PipelineBuilder pipelineBuilder;
 		pipelineBuilder.ShaderStages.push_back(VkInit::PipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT, mat.VertShader));
 		pipelineBuilder.ShaderStages.push_back(VkInit::PipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, mat.FragShader));
@@ -521,9 +527,12 @@ namespace Chaos
 		
 		VkPipeline pipeline = pipelineBuilder.BuildPipeline(m_device, m_renderPass);
 		
-		VulkanMaterial material(pipeline, pipelineLayout, mat.Name, mat.FragShader, mat.VertShader, this);
-		material.SetTexture(mat.pTexture);
-		UploadMaterial(material);
+		mat.CleanUp();
+		
+		mat.Pipeline = pipeline;
+		mat.PipelineLayout = pipelineLayout;
+		
+		mat.SetTexture(mat.pTexture);  // reset the texture to init the descriptor sets
 		
 		return Materials[mat.Name];
 	}
@@ -547,23 +556,17 @@ namespace Chaos
 			vkDestroyFramebuffer(m_device, framebuffer, nullptr);
 		}
 		
-		for (auto mat : Materials)
-		{
-			vkDestroyPipeline(m_device, mat.second.Pipeline, nullptr);
-			vkDestroyPipelineLayout(m_device, mat.second.PipelineLayout, nullptr);
-		}
-		
 		vkDestroyRenderPass(m_device, m_renderPass, nullptr);
 		
 		
-		for (int i = 0; i < m_swapchainImages.size(); ++i)
+		// swapchain images are destroyed when the swapchain is
+		// only need to destroy the image views
+		for (int i = 0; i < m_swapchainImageViews.size(); ++i)
 		{
 			vkDestroyImageView(m_device, m_swapchainImageViews[i], nullptr);
 		}
 		
 		vkDestroySwapchainKHR(m_device, m_swapchain, nullptr);
-		
-		vkDestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
 		
 		for (int i = 0; i < FRAME_OVERLAP; ++i)
 		{
@@ -587,7 +590,7 @@ namespace Chaos
 		InitSwapchain();
 		InitDefaultRenderPass();
 		InitFrameBuffers();
-		InitDescriptors();
+		//InitDescriptors();
 		InitDefaultPipeline();
 		InitSyncStructures();
 		
@@ -708,6 +711,8 @@ namespace Chaos
 		
 		vkGetPhysicalDeviceProperties(m_physicalDevice, &m_physicalDeviceProperties);
 		
+		LOGCORE_INFO("GPU: {0}", m_physicalDeviceProperties.deviceName);
+		LOGCORE_INFO("API version: {0}", m_physicalDeviceProperties.apiVersion);
 		LOGCORE_INFO("GPU min buffer alignment: {0}", m_physicalDeviceProperties.limits.minUniformBufferOffsetAlignment);
 	}
 	
@@ -927,7 +932,7 @@ namespace Chaos
 		
 		VkDescriptorPoolCreateInfo poolInfo = {};
 		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		poolInfo.flags = 0;
+		poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 		poolInfo.maxSets = 10;
 		poolInfo.poolSizeCount = (uint32_t)sizes.size();
 		poolInfo.pPoolSizes = sizes.data();

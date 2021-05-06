@@ -17,6 +17,15 @@ namespace Chaos
 		p_owningRenderer = owningRenderer;
 	}
 	
+	
+	void VulkanMaterial::CleanUp()
+	{
+		vkFreeDescriptorSets(p_owningRenderer->m_device, p_owningRenderer->m_descriptorPool, 1, &TextureSet);
+		vkDestroyPipeline(p_owningRenderer->m_device, Pipeline, nullptr);
+		vkDestroyPipelineLayout(p_owningRenderer->m_device, PipelineLayout, nullptr);
+	}
+	
+	
 	Vec4 VulkanMaterial::GetColour() 
 	{ 
 		return Colour;
