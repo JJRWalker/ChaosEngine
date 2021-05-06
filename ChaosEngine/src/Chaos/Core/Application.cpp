@@ -104,6 +104,8 @@ namespace Chaos
 			m_renderer->DrawFrame();
 			Input::UpdateMouseEndFramePosition();
 		}
+		
+		while(m_runningFixedUpdate); // wait for last fixed update to finish
 	}
 	
 	//gets whatever level is active and calls the fixed update function on that level at the fixed update delta time interval
@@ -112,6 +114,7 @@ namespace Chaos
 	{
 		while (m_running)
 		{
+			m_runningFixedUpdate = true;
 			float fixedDelta = Time::GetFixedDeltaTime();
 			
 			//NOTE: not sure why but this needs to be multiplied by 500 instead of 1000
@@ -134,6 +137,7 @@ namespace Chaos
 				Level::Get()->OnFixedUpdate(fixedDelta);
 			}
 			
+			m_runningFixedUpdate = false;
 			std::this_thread::sleep_for(sleepTime);
 		}
 	}

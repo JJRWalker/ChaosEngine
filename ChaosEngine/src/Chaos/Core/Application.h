@@ -53,6 +53,7 @@ namespace Chaos
 		
 		private:
 		bool m_running = true;
+		bool m_runningFixedUpdate = false;
 		bool m_pauseFixedUpdate = false;
 		bool m_renderingImGui = true;
 		std::unique_ptr<Window> m_window;
