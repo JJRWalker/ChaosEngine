@@ -20,17 +20,6 @@ namespace Chaos
 		
 		static void Begin();
 		static void End();
-		private:
-		void VulkanInit();
-		
-		private:
-		VkDescriptorPool m_descriptorPool;
-		VkDescriptorSetLayout m_descriptorSetLayout;
-		VkRenderPass m_renderpass;
-		VkCommandPool m_commandPool;
-		std::vector<VkCommandBuffer> m_commandBuffers;
-		std::vector<VkFramebuffer> m_frameBuffers;
-		VkClearValue m_clear;
 		
 		static bool s_ImGuiInited;
 	};

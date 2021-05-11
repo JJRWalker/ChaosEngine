@@ -51,14 +51,14 @@ namespace Chaos
 			
 			ImGui::EndChild();
 			ImGui::Separator();
-			
+
 			if (ImGui::InputText("Input", m_inputBuffer, 256, ImGuiInputTextFlags_EnterReturnsTrue|ImGuiInputTextFlags_CallbackCompletion|ImGuiInputTextFlags_CallbackHistory, &ConsoleEditTextCallbackStub, (void*)this))
 			{
 				Console::ParseCommand(m_inputBuffer);
 				strcpy(m_inputBuffer, "");
 				m_resetFocus = true;
 			}
-			
+
 			if (m_resetFocus)
 			{
 				ImGui::SetKeyboardFocusHere(-1);
@@ -72,24 +72,26 @@ namespace Chaos
 				Console::ClearHistory();
 			}
 			
-			bool show = true;
-			
-			//ImGui::ShowDemoWindow(&show);
-			
 			ImGui::End();
 		}
 		
 	}
 	
-	//Currently just returns 0, text input reuqired a callback function but we don't really need that complex a system
+	//Currently just returns 0, text input required a callback function but we don't really need that complex a system
 	int ImGuiConsole::ConsoleEditTextCallbackStub(ImGuiInputTextCallbackData* data)
 	{
-		//ImGuiConsole* console = (ImGuiConsole*)data->UserData;
-		return 0;
+		ImGuiConsole* console = (ImGuiConsole*)data->UserData;
+		return console->ConsoleTextEditCallback(data);
 	}
 	
 	int ImGuiConsole::ConsoleTextEditCallback(ImGuiInputTextCallbackData* data)
 	{
+		if (data->EventFlag | ImGuiKey_UpArrow)
+		{
+			data->DeleteChars(0, data->BufTextLen);
+			m_historySelection = (m_historySelection - 1) % Console::ConsoleHistory.size();
+			data->InsertChars(0, Console::ConsoleHistory[m_historySelection]);
+		}
 		return 0;
 	}
 	

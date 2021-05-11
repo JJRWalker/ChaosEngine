@@ -13,10 +13,13 @@
 #include "Chaos/Debug/ImGuiConsole.h"
 #include "Chaos/Debug/ImGuiEditor.h"
 #include "Chaos/Debug/ImGuiDebugInfo.h"
+#include "Chaos/Debug/ImGuiProfiler.h"
 #include "Chaos/Nodes/Camera.h"
 
 #include <ctime>
 #include <chrono>
+
+#include "Chaos/Debug/Timer.h"
 
 //inspired by The Cherno's Game engine series, however has and will continue to diverge
 namespace Chaos
@@ -51,6 +54,7 @@ namespace Chaos
 		PushOverlay(m_guiLayer);
 		PushOverlay(new ImGuiEditor());
 		PushOverlay(new ImGuiDebugInfo());
+		PushOverlay(new ImGuiProfiler());
 		
 		//init time
 		Time::Init();		
@@ -66,6 +70,8 @@ namespace Chaos
 		StartFixedUpdateThread();
 		while (m_running)
 		{
+			PROFILED_FUNC();
+			
 			//Update time class
 			Time::m_time = m_window->GetWindowTime();
 			Time::m_deltaTime = (float)(Time::m_time - Time::m_timeLastFrame);
