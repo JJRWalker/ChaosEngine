@@ -166,6 +166,7 @@
     <ClInclude Include="src\Chaos\Debug\ImGuiEditor.h" />
     <ClInclude Include="src\Chaos\Debug\ImGuiFileExplorer.h" />
     <ClInclude Include="src\Chaos\Debug\ImGuiLayer.h" />
+    <ClInclude Include="src\Chaos\Debug\ImGuiProfiler.h" />
     <ClInclude Include="src\Chaos\Debug\Timer.h" />
     <ClInclude Include="src\Chaos\Events\ApplicationEvent.h" />
     <ClInclude Include="src\Chaos\Events\Event.h" />
@@ -595,6 +596,7 @@
     <ClCompile Include="src\Chaos\Debug\ImGuiEditor.cpp" />
     <ClCompile Include="src\Chaos\Debug\ImGuiFileExplorer.cpp" />
     <ClCompile Include="src\Chaos\Debug\ImGuiLayer.cpp" />
+    <ClCompile Include="src\Chaos\Debug\ImGuiProfiler.cpp" />
     <ClCompile Include="src\Chaos\Debug\Timer.cpp" />
     <ClCompile Include="src\Chaos\Input\InputManager.cpp" />
     <ClCompile Include="src\Chaos\Maths\Collisions.cpp" />

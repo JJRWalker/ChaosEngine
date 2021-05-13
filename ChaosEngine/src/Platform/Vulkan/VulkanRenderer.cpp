@@ -14,6 +14,8 @@
 #include "ImGUI/examples/imgui_impl_vulkan.h"
 #include "ImGUI/examples/imgui_impl_glfw.h"
 
+#include "Chaos/Debug/Timer.h"
+
 #define VMA_IMPLEMENTATION
 #include "Vma/vk_mem_alloc.h"
 
@@ -22,6 +24,7 @@
 
 #ifdef CHAOS_DEBUG
 const bool USE_VALIDATION_LAYERS = true;
+
 
 #define VK_CHECK(x)												\
 do													\
@@ -41,7 +44,7 @@ const bool USE_VALIDATION_LAYERS = false;
 namespace Chaos
 {	VulkanRenderer::VulkanRenderer(Window* window) : pWindow(window)
 	{
-		Init();
+		
 	}
 	
 	VulkanRenderer::~VulkanRenderer()
@@ -101,6 +104,8 @@ namespace Chaos
 	
 	void VulkanRenderer::DrawFrame()
 	{
+		PROFILED_FUNC();
+		
 		VK_CHECK(vkWaitForFences(m_device, 1, &GetCurrentFrame().RenderFence, true, 1000000000));
 		VK_CHECK(vkResetFences(m_device, 1, &GetCurrentFrame().RenderFence));
 		
@@ -216,6 +221,7 @@ namespace Chaos
 		{
 			RenderObject& obj = first[i];
 			memcpy((void*)&sobjectSSBO[i].ModelMatrix, (void*)&obj.Transform, sizeof(float) * 16);
+			memcpy((void*)&sobjectSSBO[i].ShaderDataArray1, (void*)&obj.ShaderDataArray1, sizeof(float) * 16);
 		}
 		
 		vmaUnmapMemory(m_allocator, GetCurrentFrame().ObjectBuffer.Allocation);
@@ -431,7 +437,10 @@ namespace Chaos
 		
 		LOGCORE_INFO("VULKAN RENDERER INITIALISED");
 		
+		InitDefaultMaterials();
 		LoadDefaultMeshes();
+		
+		LOGCORE_INFO("VULKAN DEFAULT RESOURCES INITIALISED");
 		
 		IsInitialized = true;
 	}
@@ -1194,7 +1203,9 @@ namespace Chaos
 	
 	void VulkanRenderer::InitDefaultMaterials()
 	{
+		Material::Create("ui-default", GetBlankTexture(), "../ChaosEngine/Shaders/spv/ui-default.frag.spv", "../ChaosEngine/Shaders/spv/ui-default.vert.spv");
 		
+		Material::Create("subsprite-default", GetBlankTexture(), "../ChaosEngine/Shaders/spv/textured_atlus_lit.frag.spv", "../ChaosEngine/Shaders/spv/default.vert.spv");
 	}
 	
 	
@@ -1308,7 +1319,7 @@ namespace Chaos
 	
 	void VulkanRenderer::UploadTexture(VulkanTexture& tex)
 	{
-		Textures[tex.Name] = tex;
+		Textures[tex.Name] = (VulkanTexture&&)tex;
 	}
 	
 	

@@ -200,12 +200,12 @@ namespace Chaos
 		}
 		if (node->GetChild<SubSprite>())
 		{
-			std::string path = node->GetChild<SubSprite>()->GetSubTexture()->GetFilePath();
+			std::string path = node->GetChild<SubSprite>()->GetMaterial()->GetTexture()->GetFilePath();
 			
 			SubSprite* subSprite = node->GetChild<SubSprite>();
-			float* coord[2] = { &subSprite->GetSubTexture()->GetCellCoords().X, &subSprite->GetSubTexture()->GetCellCoords().Y };
+			float* coord[2] = { };
 			
-			float* size[2] = { &subSprite->GetSubTexture()->GetCellSize().X, &subSprite->GetSubTexture()->GetCellSize().Y };
+			float* size[2] = { };
 			
 			ImGui::DragFloat2("Sprite Coordinate", *coord, 1);
 			
@@ -213,18 +213,18 @@ namespace Chaos
 			
 			if (ImGui::Button("Change texture"))
 			{
-				std::string path = node->GetChild<SubSprite>()->GetSubTexture()->GetFilePath();
+				std::string path = node->GetChild<SubSprite>()->GetMaterial()->GetTexture()->GetFilePath();
 				if(path != "")
 					m_filePath = path;
 				//kinda messy, but need to modify this layer stack after we finish itterating over them
 				Application::Get().AddPostUpdateCallback([&](){Application::Get().PushOverlay(new ImGuiFileExplorer(m_filePath, [&](){m_selectedEntities
-																															[m_selectedEntities.size() - 1]->GetChild<SubSprite>()->SetSubTexture(SubTexture::Create(m_filePath, Vec2(0,0), Vec2(32,32)));} ));});
+																															[m_selectedEntities.size() - 1]->GetChild<SubSprite>()->GetMaterial()->SetTexture(Texture::Create(m_filePath));} ));});
 				
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("Set Coords"))
 			{
-				subSprite->GetSubTexture()->SetTexCoords(subSprite->GetSubTexture()->GetCellCoords(), subSprite->GetSubTexture()->GetCellSize());
+				
 			}
 			
 			//storing start cursor pos before drawing the image, used to overlay buttons ontop of it later
@@ -247,6 +247,7 @@ namespace Chaos
 				ImGui::Image(m_selectedEntTextureID, { DETAILS_WINDOW_SIZE.X, DETAILS_WINDOW_SIZE.X * aspectRatio }, ImVec2{ 0, -1 }, ImVec2{ 1, 0 });
 			}
 			
+			/*
 			//Overlaying buttons ontop of the image to select the cell we want
 			ImVec2 buttonSize = ImVec2 (DETAILS_WINDOW_SIZE.X / subSprite->GetSubTexture()->GetTotalCells().X, (DETAILS_WINDOW_SIZE.X * aspectRatio) / subSprite->GetSubTexture()->GetTotalCells().Y);
 			
@@ -254,7 +255,7 @@ namespace Chaos
 			
 			for (int x = 0; x < subSprite->GetSubTexture()->GetTotalCells().X; ++x)
 			{
-				for (int y = 0; y < subSprite->GetSubTexture()->GetTotalCells().Y; ++y)
+				for (int y = 0; y < subSprite->().Y; ++y)
 				{
 					ImGui::SetCursorPos(ImVec2(startCursorPos.x + (x * buttonSize.x), startCursorPos.y + (y * buttonSize.y)));
 					char buttonName[10];
@@ -263,13 +264,14 @@ namespace Chaos
 					ImGui::PushID(buttonID);
 					if (ImGui::Button("", buttonSize))
 					{
-						subSprite->GetSubTexture()->SetTexCoords(Vec2((float)x,(float)y), subSprite->GetSubTexture()->GetCellSize());
+						subSprite->SetCoords(Vec2((float)x,(float)y));
 					}
 					ImGui::PopStyleColor();
 					ImGui::PopID();
 					buttonID++;
 				}
 			}
+			*/
 			
 		}
 		ImGui::End();

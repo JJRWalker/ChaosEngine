@@ -78,6 +78,8 @@ namespace Chaos
 			if (std::is_bas_of<Node, T>::value)
 			{
 				ChildCount++;
+				child->ID = ID;
+				child->SubID = ChildCount;
 				Level::Get()->Nodes[ID][ChildCount] = child;
 				child->p_parent = this;
 			}
@@ -87,7 +89,7 @@ namespace Chaos
 		template <typename T> T* GetChild()
 		{
 			Level* level = Level::Get();
-			for (int i = 0; i < ChildCount; ++i)
+			for (int i = 1; i <= ChildCount; ++i)
 			{
 				T* node = dynamic_cast<T*>(level->Nodes[ID][i]);
 				if (node)
@@ -95,7 +97,7 @@ namespace Chaos
 					return node;
 				}
 			}
-			//LOGCORE_ERROR("NODE: {0}: Failed to get component on node returning nullptr!", Name);
+			LOGCORE_ERROR("NODE: {0}: Failed to get component on node returning nullptr!", Name);
 			return nullptr;
 		}
 		
@@ -145,6 +147,7 @@ namespace Chaos
 			0, 0, 0, 1};
 		
 		private:
+		// Private as it needs to be recalculated each time we want to get it.
 		float m_globalTransform[16] = 
 		{1, 0, 0, 0,
 			0, 1, 0, 0,

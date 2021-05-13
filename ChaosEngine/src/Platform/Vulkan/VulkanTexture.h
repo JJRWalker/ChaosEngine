@@ -19,6 +19,12 @@ namespace Chaos
 		VulkanTexture(std::string filePath);
 		VulkanTexture(VulkanRenderer* owningRenderer, std::string filePath);
 		
+		VulkanTexture(VulkanTexture& copy);
+		VulkanTexture(VulkanTexture&& moved) noexcept;
+		
+		VulkanTexture operator=(VulkanTexture&& moved) noexcept;
+		
+		
 		void Load(std::string filePath) override;
 		void LoadBlank();
 		void Unload() override;

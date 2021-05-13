@@ -10,6 +10,7 @@ layout (location = 0) out vec3 outColor;
 layout (location = 1) out vec3 outNormal;
 layout (location = 2) out vec3 outFragPos;
 layout (location = 3) out vec2 outTexCoord;
+layout (location = 4) out mat4 outOptionalData; 
 
 layout (set = 0, binding = 0) uniform CameraBuffer{
 	mat4 view;
@@ -42,4 +43,5 @@ void main()
 	outColor = vColor;
 	outNormal = vNormal;
 	outTexCoord = vTexCoord;
+	outOptionalData = objectBuffer.objects[gl_BaseInstance].optionalData;
 }

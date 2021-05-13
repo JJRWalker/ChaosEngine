@@ -20,6 +20,7 @@ namespace Chaos
 		Mesh* Mesh;
 		Material* Material;
 		float Transform[16];
+		float ShaderDataArray1[16];
 		uint32_t RenderID = 0;
 	};
 	
@@ -32,6 +33,8 @@ namespace Chaos
 		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 		
 		static Renderer* Create(Window* window);
+		
+		virtual void Init() = 0;
 		
 		// returns a render object pointer allowing you to update the transform from render component
 		virtual RenderObject* AddQuad(float transform[16], Material* mat) = 0;

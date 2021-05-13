@@ -1363,6 +1363,7 @@
     <ClInclude Include="src\Platform\Vulkan\VulkanMaterial.h" />
     <ClInclude Include="src\Chaos\Renderer\Mesh.h" />
     <ClInclude Include="src\Chaos\Serialisation\FileUtils.h" />
+    <ClInclude Include="src\Chaos\Debug\ImGuiProfiler.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chaos\Core\Application.cpp">
@@ -1472,5 +1473,6 @@
     <ClCompile Include="src\Platform\Vulkan\VulkanTexture.cpp" />
     <ClCompile Include="src\Chaos\Serialisation\FileUtils.cpp" />
     <ClCompile Include="src\Chaos\Renderer\Mesh.cpp" />
+    <ClCompile Include="src\Chaos\Debug\ImGuiProfiler.cpp" />
   </ItemGroup>
 </Project>

@@ -86,7 +86,7 @@ namespace Chaos
 	struct GPUObjectData
 	{
 		float ModelMatrix[16];
-		float Optional[16];
+		float ShaderDataArray1[16];
 	};
 	
 	
@@ -150,7 +150,7 @@ namespace Chaos
 		
 		void DrawObjects(VkCommandBuffer cmd, RenderObject* first, size_t count);
 		
-		void Init();
+		void Init() override;
 		void Cleanup();
 		
 		AllocatedBuffer CreateBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);

@@ -11,7 +11,9 @@ namespace Chaos
 	Sprite::Sprite(bool child) : Node(child)
 	{
 		Name = "Sprite";
-		p_material = Material::Get("default");
+		
+		if (!p_material)
+			p_material = Material::Get("default");
 		
 		p_renderObject = Application::Get().GetRenderer().AddQuad(GetGlobalTransform(), p_material);
 	}
@@ -43,81 +45,54 @@ namespace Chaos
 	}
 	
 	
+	void Sprite::SetShaderFloatData(size_t index, float value)
+	{
+		p_renderObject->ShaderDataArray1[index] = value;
+	}
+	
+	
 	// SUB SPRITE
-	SubSprite::SubSprite(bool child) : Node(child)
+	SubSprite::SubSprite(bool child) : Sprite(child)
 	{
 		Name = "SubSprite";
 		
-		p_material = Material::Get("default");
-		
-		p_renderObject = Application::Get().GetRenderer().AddQuad(GetGlobalTransform(), p_material);
+		SetMaterial(Material::Get("subsprite-default"));
 	}
 	
 	
-	void SubSprite::OnStart()
+	// not keen on this approach. Kinda removes visibility from what's actually going on.
+	// not explicit that shader data array index 0 and 1 are used by the subsprite material
+	// could be reused by the user and cause issues
+	void SubSprite::SetCoords(Vec2 coords)
 	{
+		SetShaderFloatData(0, coords.X);
+		SetShaderFloatData(1, coords.Y);
 	}
 	
-	void SubSprite::OnUpdate(float delta)
+	
+	void SubSprite::SetTotalCells(Vec2 dimensions)
 	{
-		memcpy((void*)&p_renderObject->Transform[0], (void*)&GetGlobalTransform()[0], sizeof(float) * 16);
+		SetShaderFloatData(2, dimensions.X);
+		SetShaderFloatData(3, dimensions.Y);
 	}
 	
 	
-	void SubSprite::SetMaterial(Material* mat) 
+	Vec2 SubSprite::GetCoords()
 	{
-		p_renderObject->Material = mat; 
-		p_material = mat;
+		return Vec2(p_renderObject->ShaderDataArray1[0], p_renderObject->ShaderDataArray1[1]);
 	}
 	
 	
-	Material* SubSprite::GetMaterial()
+	Vec2 SubSprite::GetTotalCells()
 	{
-		return p_material;
+		return Vec2(p_renderObject->ShaderDataArray1[2], p_renderObject->ShaderDataArray1[3]);
 	}
 	
-	
-	void SubSprite::OnDestroy()
-	{
-		
-	}
 	
 	// UI SPRITE
-	UISprite::UISprite(bool child) : Node(child)
+	UISprite::UISprite(bool child) : Sprite(child)
 	{
 		Name = "UISprite";
-		p_material = Material::Get("ui-default");
-		
-		p_renderObject = Application::Get().GetRenderer().AddQuad(GetGlobalTransform(), p_material);
-	}
-	
-	
-	void UISprite::OnStart()
-	{
-		
-	}
-	
-	void UISprite::OnUpdate(float delta)
-	{
-		memcpy((void*)&p_renderObject->Transform[0], (void*)&GetGlobalTransform()[0], sizeof(float) * 16);
-	}
-	
-	
-	void UISprite::SetMaterial(Material* mat) 
-	{
-		p_renderObject->Material = mat; 
-		p_material = mat;
-	}
-	
-	
-	Material* UISprite::GetMaterial()
-	{
-		return p_material;
-	}
-	
-	
-	void UISprite::OnDestroy()
-	{
-		
+		SetMaterial(Material::Get("ui-default"));
 	}
 }

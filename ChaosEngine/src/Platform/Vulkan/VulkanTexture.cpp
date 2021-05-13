@@ -43,6 +43,53 @@ namespace Chaos
 	}
 	
 	
+	VulkanTexture::VulkanTexture(VulkanTexture& copy)
+	{
+		Image = copy.Image;
+		ImageView = copy.ImageView;
+		LoadProtection = copy.LoadProtection;
+		
+		m_filePath = copy.m_filePath;
+		m_width = copy.m_width;
+		m_height = copy.m_height;
+		m_size = copy.m_size;
+		p_owningRenderer = copy.p_owningRenderer;
+		m_loaded = copy.m_loaded;
+	}
+	
+	
+	VulkanTexture::VulkanTexture(VulkanTexture&& moved) noexcept
+	{
+		Image = moved.Image;
+		ImageView = moved.ImageView;
+		LoadProtection = moved.LoadProtection;
+		
+		m_filePath = moved.m_filePath;
+		m_width = moved.m_width;
+		m_height = moved.m_height;
+		m_size = moved.m_size;
+		p_owningRenderer = moved.p_owningRenderer;
+		m_loaded = moved.m_loaded;
+	}
+	
+	
+	VulkanTexture VulkanTexture::operator=(VulkanTexture&& moved) noexcept
+	{
+		Image = moved.Image;
+		ImageView = moved.ImageView;
+		LoadProtection = moved.LoadProtection;
+		
+		m_filePath = moved.m_filePath;
+		m_width = moved.m_width;
+		m_height = moved.m_height;
+		m_size = moved.m_size;
+		p_owningRenderer = moved.p_owningRenderer;
+		m_loaded = moved.m_loaded;
+		
+		return *this;
+	}
+	
+	
 	//tries to load the texture specified, if a texture is already loaded, it will call unload first
 	void VulkanTexture::Load(std::string filePath)
 	{

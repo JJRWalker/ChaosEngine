@@ -23,58 +23,31 @@ namespace Chaos
 		void SetMaterial(Material* mat);
 		Material* GetMaterial();
 		
+		void SetShaderFloatData(size_t index, float value);
+		
 		public:
 		Texture* Texture = Texture::GetBlank();	//Setting default texture (loads blank)
 		Vec4 Colour = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
-		private:
+		protected:
 		Material* p_material = nullptr;
 		RenderObject* p_renderObject = nullptr;
 	};
 	
-	class SubSprite : public Node
+	class SubSprite : public Sprite
 	{
 		public:
 		SubSprite(bool child = false);
-		virtual void OnStart() override;
-		virtual void OnUpdate(float delta) override;
-		virtual void OnDestroy() override;
 		
-		void SetMaterial(Material* mat);
-		Material* GetMaterial();
-		
-		void SetSubTexture(Ref<SubTexture> subTex) { m_subTex = subTex; }
-		Ref<SubTexture>GetSubTexture() { return m_subTex; }
-		
-		Vec4& Colour() { return m_colour; }
-		
-		private:
-		Ref<SubTexture> m_subTex = SubTexture::Create(Texture::GetBlank(), Vec2(0,0), Vec2(1,1));
-		Vec4 m_colour = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
-		RenderObject* p_renderObject = nullptr;
-		Material* p_material = nullptr;
+		void SetCoords(Vec2 coords);
+		void SetTotalCells(Vec2 dimensions); // total number of cells in x and y. NOT pixel size of grid
+		Vec2 GetTotalCells();
+		Vec2 GetCoords();
 	};
 	
-	class UISprite : public Node
+	class UISprite : public Sprite
 	{
 		public:
 		UISprite(bool child = false);
-		void OnStart() override;
-		void OnUpdate(float delta) override;
-		void OnDestroy() override;
-		
-		void SetMaterial(Material* mat);
-		Material* GetMaterial();
-		
-		void SetTexture(Texture* tex) { m_texture = tex; }
-		Texture* GetTexture() { return m_texture; }
-		
-		Vec4& Colour() { return m_colour; }
-		
-		private:
-		Texture* m_texture = Texture::GetBlank();	//init as a blank texture
-		Vec4 m_colour = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
-		RenderObject* p_renderObject = nullptr;
-		Material* p_material = nullptr;
 	};
 }
 

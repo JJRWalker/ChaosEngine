@@ -6,6 +6,11 @@ layout (location = 0) in vec3 inColor;
 layout (location = 1) in vec3 inNormal;
 layout (location = 2) in vec3 inFragPos;
 layout (location = 3) in vec2 inTexCoord;
+
+// index 0 = cell coord x
+// index 1 = cell coord y
+// index 3 = total cells x
+// index 4 = total cells y
 layout (location = 4) in mat4 inOptionalData; 
 
 //output write
@@ -30,7 +35,16 @@ void main()
 	float diffuse = max(dot(norm, lightDir), 0.0) * sceneData.sunlightDirection.w;
 	vec3 diffColour = diffuse * lightColour;
 	vec4 result = vec4((ambient + diffColour) * inColor, 1.0f);
-    vec4 colour = texture(tex1, inTexCoord);
+
+    vec2 atlusCell = vec2(inOptionalData[0][0], inOptionalData[0][1]);
+    vec2 atlusDimensions = vec2(inOptionalData[0][2], inOptionalData[0][3]);
+    vec2 atlusCellSize = vec2(1.0f / atlusDimensions.x, 1.0f / atlusDimensions.y); 
+
+    vec2 texCoord;
+    texCoord.x = atlusCell.x * atlusCellSize.x + (inTexCoord.x * atlusCellSize.x);
+    texCoord.y = atlusCell.y * atlusCellSize.y + (inTexCoord.y * atlusCellSize.y);
+
+    vec4 colour = texture(tex1, texCoord);
 
 	if (colour.a <= 0.0f)
 	{

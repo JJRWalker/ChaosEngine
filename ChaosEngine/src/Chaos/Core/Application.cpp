@@ -40,6 +40,7 @@ namespace Chaos
 		
 		//Creating renderer
 		m_renderer = std::unique_ptr<Renderer>(Renderer::Create(m_window.get()));
+		m_renderer->Init();
 		m_renderer->InitImgui();
 		m_renderer->SetCamera(m_mainCamera);
 		

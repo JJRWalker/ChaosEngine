@@ -144,13 +144,19 @@ namespace Chaos
 	{
 		std::map<std::string, Button>::iterator it = InputManager::Get()->GetButtonMap().find(buttonName);
 		
-		return it->second.Pressed;
+		if (it != InputManager::Get()->GetButtonMap().end())
+			return it->second.Pressed;
+		
+		return false;
 	}
 	
 	bool Input::GetButtonUp(const char* buttonName)
 	{
 		std::map<std::string, Button>::iterator it = InputManager::Get()->GetButtonMap().find(buttonName);
 		
-		return it->second.Released;
+		if (it != InputManager::Get()->GetButtonMap().end())
+			return it->second.Released;
+		
+		return false;
 	}
 }
