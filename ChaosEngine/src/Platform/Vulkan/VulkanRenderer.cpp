@@ -41,6 +41,8 @@ const bool USE_VALIDATION_LAYERS = false;
 #define VK_CHECK(x)	x
 #endif
 
+const size_t MAX_DESCRIPTOR_SETS = 1000;
+
 namespace Chaos
 {	VulkanRenderer::VulkanRenderer(Window* window) : pWindow(window)
 	{
@@ -56,8 +58,8 @@ namespace Chaos
 	RenderObject* VulkanRenderer::AddQuad(float transform[16], Material* mat)
 	{
 		RenderObject quad;
-		quad.Mesh = GetMesh("quad");
-		quad.Material = mat;
+		quad.pMesh = GetMesh("quad");
+		quad.pMaterial = mat;
 		quad.RenderID = (uint32_t)Renderables.size();
 		memcpy((void*)&quad.Transform[0], (void*)&transform[0], sizeof(float) * 16);
 		
@@ -228,39 +230,48 @@ namespace Chaos
 		
 		Mesh* lastMesh = nullptr;
 		Material* lastMaterial = nullptr;
+		Texture* lastTexture = nullptr;
 		
 		for (int i = 0; i < count; ++i)
 		{
 			RenderObject& obj = first[i];
 			
-			if (obj.Material != lastMaterial)
+			if (obj.pMaterial != lastMaterial)
 			{
-				vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, ((VulkanMaterial*)obj.Material)->Pipeline);
-				lastMaterial = obj.Material;
+				vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, ((VulkanMaterial*)obj.pMaterial)->Pipeline);
+				lastMaterial = obj.pMaterial;
 				
 				uint32_t uniformOffset = (uint32_t)PadUniformBufferSize(sizeof(GPUSceneData) * frameIndex);
 				
-				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, ((VulkanMaterial*)obj.Material)->PipelineLayout, 0, 1, &GetCurrentFrame().GlobalDescriptor, 1, &uniformOffset);
-				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, ((VulkanMaterial*)obj.Material)->PipelineLayout, 1, 1, &GetCurrentFrame().ObjectDescriptor, 0, nullptr);
-				if (((VulkanMaterial*)obj.Material)->TextureSet != VK_NULL_HANDLE)
+				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, ((VulkanMaterial*)obj.pMaterial)->PipelineLayout, 0, 1, &GetCurrentFrame().GlobalDescriptor, 1, &uniformOffset);
+				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, ((VulkanMaterial*)obj.pMaterial)->PipelineLayout, 1, 1, &GetCurrentFrame().ObjectDescriptor, 0, nullptr);
+				
+				
+			}
+			
+			if (obj.pTexture != lastTexture)
+			{
+				if (((VulkanTexture*)obj.pTexture)->TextureSet != VK_NULL_HANDLE)
 				{
-					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, ((VulkanMaterial*)obj.Material)->PipelineLayout, 2, 1, &((VulkanMaterial*)obj.Material)->TextureSet, 0, nullptr);
+					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, ((VulkanMaterial*)obj.pMaterial)->PipelineLayout, 2, 1, &((VulkanTexture*)obj.pTexture)->TextureSet, 0, nullptr);
 				}
+				
+				lastTexture = obj.pTexture;
 			}
 			
 			
 			MeshPushConstants constants;
 			
-			vkCmdPushConstants(cmd, ((VulkanMaterial*)obj.Material)->PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(MeshPushConstants), &constants);
+			vkCmdPushConstants(cmd, ((VulkanMaterial*)obj.pMaterial)->PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(MeshPushConstants), &constants);
 			
-			if (obj.Mesh != lastMesh)
+			if (obj.pMesh != lastMesh)
 			{
 				VkDeviceSize offset = 0;
-				vkCmdBindVertexBuffers(cmd, 0, 1, &((VulkanMesh*)obj.Mesh)->VertexBuffer.Buffer, &offset);
-				lastMesh = obj.Mesh;
+				vkCmdBindVertexBuffers(cmd, 0, 1, &((VulkanMesh*)obj.pMesh)->VertexBuffer.Buffer, &offset);
+				lastMesh = obj.pMesh;
 			}
 			
-			vkCmdDraw(cmd, (uint32_t)obj.Mesh->Vertices.size(), 1, 0, i);
+			vkCmdDraw(cmd, (uint32_t)obj.pMesh->Vertices.size(), 1, 0, i);
 		}
 	}
 	
@@ -339,7 +350,7 @@ namespace Chaos
 	}
 	
 	
-	VulkanMaterial* VulkanRenderer::CreateMaterial(std::string name, Texture* texture, std::string fragShaderPath, std::string vertShaderPath)
+	VulkanMaterial* VulkanRenderer::CreateMaterial(std::string name, std::string fragShaderPath, std::string vertShaderPath)
 	{
 		VkShaderModule fragShader;
 		if (!LoadShaderModule(fragShaderPath.c_str(), &fragShader))
@@ -413,7 +424,6 @@ namespace Chaos
 		VkPipeline pipeline = pipelineBuilder.BuildPipeline(m_device, m_renderPass);
 		
 		VulkanMaterial material(pipeline, pipelineLayout, name, fragShader, vertShader, this);
-		material.SetTexture(texture);
 		UploadMaterial(material);
 		
 		return &Materials[name];
@@ -540,8 +550,6 @@ namespace Chaos
 		
 		mat.Pipeline = pipeline;
 		mat.PipelineLayout = pipelineLayout;
-		
-		mat.SetTexture(mat.pTexture);  // reset the texture to init the descriptor sets
 		
 		return Materials[mat.Name];
 	}
@@ -904,6 +912,7 @@ namespace Chaos
 		VkFenceCreateInfo fenceCreateInfo = VkInit::FenceCreateInfo(VK_FENCE_CREATE_SIGNALED_BIT);
 		VkSemaphoreCreateInfo semaphoreCreateInfo = VkInit::SemaphoreCreateInfo();
 		
+		VK_CHECK(vkCreateFence(m_device, &fenceCreateInfo, nullptr, &m_descriptorFence));
 		
 		for (int i = 0; i < FRAME_OVERLAP; ++i)
 		{
@@ -922,10 +931,10 @@ namespace Chaos
 		VkFenceCreateInfo uploadFenceCreateInfo = VkInit::FenceCreateInfo();
 		VK_CHECK(vkCreateFence(m_device, &uploadFenceCreateInfo, nullptr, &UploadContext.UploadFence));
 		
-		SwapchainDeletionQueue.push_function([=]() 
-											 {
-												 vkDestroyFence(m_device, UploadContext.UploadFence, nullptr);
-											 });
+		MainDeletionQueue.push_function([=]()
+										{
+											vkDestroyFence(m_device, m_descriptorFence, nullptr);
+										});
 	}
 	
 	
@@ -942,7 +951,7 @@ namespace Chaos
 		VkDescriptorPoolCreateInfo poolInfo = {};
 		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-		poolInfo.maxSets = 10;
+		poolInfo.maxSets = MAX_DESCRIPTOR_SETS;
 		poolInfo.poolSizeCount = (uint32_t)sizes.size();
 		poolInfo.pPoolSizes = sizes.data();
 		
@@ -1203,9 +1212,9 @@ namespace Chaos
 	
 	void VulkanRenderer::InitDefaultMaterials()
 	{
-		Material::Create("ui-default", GetBlankTexture(), "../ChaosEngine/Shaders/spv/ui-default.frag.spv", "../ChaosEngine/Shaders/spv/ui-default.vert.spv");
+		Material::Create("ui-default", "../ChaosEngine/Shaders/spv/ui-default.frag.spv", "../ChaosEngine/Shaders/spv/ui-default.vert.spv");
 		
-		Material::Create("subsprite-default", GetBlankTexture(), "../ChaosEngine/Shaders/spv/textured_atlus_lit.frag.spv", "../ChaosEngine/Shaders/spv/default.vert.spv");
+		Material::Create("subsprite-default","../ChaosEngine/Shaders/spv/textured_atlus_lit.frag.spv", "../ChaosEngine/Shaders/spv/default.vert.spv");
 	}
 	
 	

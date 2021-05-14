@@ -23,13 +23,16 @@ namespace Chaos
 		void SetMaterial(Material* mat);
 		Material* GetMaterial();
 		
+		void SetTexture(Texture* tex);
+		Texture* GetTexture();
+		
 		void SetShaderFloatData(size_t index, float value);
 		
 		public:
-		Texture* Texture = Texture::GetBlank();	//Setting default texture (loads blank)
 		Vec4 Colour = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
 		protected:
 		Material* p_material = nullptr;
+		Texture* p_texture = Texture::GetBlank();
 		RenderObject* p_renderObject = nullptr;
 	};
 	

@@ -17,10 +17,7 @@ namespace Chaos
 		virtual std::string GetName() = 0;
 		virtual void SetName(std::string name) = 0;
 		
-		virtual Texture* GetTexture() = 0;
-		virtual void SetTexture(Texture* tex) = 0;
-		
-		static Material* Create(std::string name, Texture* texture, std::string fragShaderPath, std::string vertShaderPath);
+		static Material* Create(std::string name, std::string fragShaderPath, std::string vertShaderPath);
 		static Material* Get(std::string name);
 	};
 }

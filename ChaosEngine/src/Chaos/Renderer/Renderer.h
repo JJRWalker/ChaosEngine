@@ -17,8 +17,9 @@ namespace Chaos
 	
 	struct RenderObject
 	{
-		Mesh* Mesh;
-		Material* Material;
+		Mesh* pMesh = nullptr;
+		Material* pMaterial = nullptr;
+		Texture* pTexture = Texture::GetBlank();
 		float Transform[16];
 		float ShaderDataArray1[16];
 		uint32_t RenderID = 0;

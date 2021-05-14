@@ -26,13 +26,8 @@ namespace Chaos
 		std::string GetName() override;
 		void SetName(std::string name) override;
 		
-		Texture* GetTexture() override;
-		void SetTexture(Texture* tex) override;
-		
 		std::string Name;
-		VulkanTexture* pTexture = nullptr;
 		Vec4 Colour = { 1.0f, 1.0f, 1.0f, 1.0f };
-		VkDescriptorSet TextureSet = VK_NULL_HANDLE;
 		VkPipeline Pipeline = VK_NULL_HANDLE;
 		VkPipelineLayout PipelineLayout = VK_NULL_HANDLE;
 		VkShaderModule FragShader;

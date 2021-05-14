@@ -41,6 +41,7 @@ namespace Chaos
 		public:
 		AllocatedImage Image;
 		VkImageView ImageView;
+		VkDescriptorSet TextureSet = VK_NULL_HANDLE;
 		bool LoadProtection = false;
 		
 		private:

@@ -75,8 +75,10 @@ namespace Chaos
 	
 	VulkanTexture VulkanTexture::operator=(VulkanTexture&& moved) noexcept
 	{
+		Name = moved.Name;
 		Image = moved.Image;
 		ImageView = moved.ImageView;
+		TextureSet = moved.TextureSet;
 		LoadProtection = moved.LoadProtection;
 		
 		m_filePath = moved.m_filePath;
@@ -149,6 +151,30 @@ namespace Chaos
 		// create image with staging buffer
 		CreateImage(stagingBuffer, imageExtent, imageFormat);
 		
+		VkDescriptorSetAllocateInfo allocInfo = {};
+		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.pNext = nullptr;
+		allocInfo.descriptorPool = p_owningRenderer->m_descriptorPool;
+		allocInfo.descriptorSetCount = 1;
+		allocInfo.pSetLayouts = &p_owningRenderer->m_singleTextureSetLayout;
+		
+		
+		VkResult result = vkAllocateDescriptorSets(p_owningRenderer->m_device, &allocInfo, &TextureSet);
+
+		if (result != VK_SUCCESS)
+		{
+			LOGCORE_ERROR("VULKAN: TEXTURE: Cannot allocate descriptor: {0}", result);
+		}
+		
+		VkDescriptorImageInfo imageBufferInfo;
+		imageBufferInfo.sampler = p_owningRenderer->m_nearestNeighbourSampler;
+		imageBufferInfo.imageView = ImageView;
+		imageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		
+		VkWriteDescriptorSet textureSet = VkInit::WriteDescriptorImage(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, TextureSet, &imageBufferInfo, 0);
+		
+		vkUpdateDescriptorSets(p_owningRenderer->m_device, 1, &textureSet, 0, nullptr);
+		
 		delete pixels;
 		
 		m_loaded = true;
@@ -185,6 +211,30 @@ namespace Chaos
 		
 		CreateImage(stagingBuffer, imageExtent, imageFormat);
 		
+		VkDescriptorSetAllocateInfo allocInfo = {};
+		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.pNext = nullptr;
+		allocInfo.descriptorPool = p_owningRenderer->m_descriptorPool;
+		allocInfo.descriptorSetCount = 1;
+		allocInfo.pSetLayouts = &p_owningRenderer->m_singleTextureSetLayout;
+		
+		
+		VkResult result = vkAllocateDescriptorSets(p_owningRenderer->m_device, &allocInfo, &TextureSet);
+
+		if (result != VK_SUCCESS)
+		{
+			LOGCORE_ERROR("VULKAN: TEXTURE (BLANK): Cannot allocate descriptor: {0}", result);
+		}
+		
+		VkDescriptorImageInfo imageBufferInfo;
+		imageBufferInfo.sampler = p_owningRenderer->m_nearestNeighbourSampler;
+		imageBufferInfo.imageView = ImageView;
+		imageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		
+		VkWriteDescriptorSet textureSet = VkInit::WriteDescriptorImage(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, TextureSet, &imageBufferInfo, 0);
+		
+		vkUpdateDescriptorSets(p_owningRenderer->m_device, 1, &textureSet, 0, nullptr);
+		
 		m_loaded = true;
 	}
 	
@@ -196,6 +246,7 @@ namespace Chaos
 		m_height = 0;
 		vmaDestroyImage(p_owningRenderer->m_allocator, Image.Image, Image.Allocation);
 		vkDestroyImageView(p_owningRenderer->m_device, ImageView, nullptr);
+		vkFreeDescriptorSets(p_owningRenderer->m_device, p_owningRenderer->m_descriptorPool, 1, &TextureSet);
 		
 		m_loaded = false;
 	}

@@ -160,7 +160,7 @@ namespace Chaos
 		VulkanTexture* GetBlankTexture();
 		VulkanTexture* CreateBlankTexture(std::string name);
 		
-		VulkanMaterial* CreateMaterial(std::string name, Texture* texture, std::string fragShaderPath, std::string vertShaderPath);
+		VulkanMaterial* CreateMaterial(std::string name, std::string fragShaderPath, std::string vertShaderPath);
 		void InitDefaultMaterials();
 		
 		private:
@@ -250,6 +250,7 @@ namespace Chaos
 		VkDescriptorSetLayout m_objectSetLayout;
 		VkDescriptorSetLayout m_singleTextureSetLayout;
 		VkDescriptorPool m_descriptorPool;
+		VkFence m_descriptorFence;
 		
 		GPUSceneData m_sceneParameters;
 		AllocatedBuffer m_sceneParameterBuffer;

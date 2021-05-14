@@ -166,7 +166,7 @@ namespace Chaos
 		
 		if(node->GetChild<Sprite>())
 		{
-			std::string path = node->GetChild<Sprite>()->Texture->GetFilePath();
+			std::string path = node->GetChild<Sprite>()->GetTexture()->GetFilePath();
 			if (ImGui::Button("Change texture"))
 			{
 				
@@ -175,7 +175,7 @@ namespace Chaos
 				
 				Application::Get().AddPostUpdateCallback([&]() { Application::Get().PushOverlay(new ImGuiFileExplorer(
 																													  m_filePath, [&](){
-																														  m_selectedEntities[m_selectedEntities.size() - 1]->GetChild<Sprite>()->Texture->Load(m_filePath);
+																														  m_selectedEntities[m_selectedEntities.size() - 1]->GetChild<Sprite>()->GetTexture()->Load(m_filePath);
 																													  } ));});
 				
 			}
@@ -200,7 +200,7 @@ namespace Chaos
 		}
 		if (node->GetChild<SubSprite>())
 		{
-			std::string path = node->GetChild<SubSprite>()->GetMaterial()->GetTexture()->GetFilePath();
+			std::string path = node->GetChild<SubSprite>()->GetTexture()->GetFilePath();
 			
 			SubSprite* subSprite = node->GetChild<SubSprite>();
 			float* coord[2] = { };
@@ -213,12 +213,12 @@ namespace Chaos
 			
 			if (ImGui::Button("Change texture"))
 			{
-				std::string path = node->GetChild<SubSprite>()->GetMaterial()->GetTexture()->GetFilePath();
+				std::string path = node->GetChild<SubSprite>()->GetTexture()->GetFilePath();
 				if(path != "")
 					m_filePath = path;
 				//kinda messy, but need to modify this layer stack after we finish itterating over them
 				Application::Get().AddPostUpdateCallback([&](){Application::Get().PushOverlay(new ImGuiFileExplorer(m_filePath, [&](){m_selectedEntities
-																															[m_selectedEntities.size() - 1]->GetChild<SubSprite>()->GetMaterial()->SetTexture(Texture::Create(m_filePath));} ));});
+																															[m_selectedEntities.size() - 1]->GetChild<SubSprite>()->SetTexture(Texture::Create(m_filePath));} ));});
 				
 			}
 			ImGui::SameLine();

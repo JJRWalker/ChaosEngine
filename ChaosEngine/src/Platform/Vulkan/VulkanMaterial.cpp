@@ -20,7 +20,6 @@ namespace Chaos
 	
 	void VulkanMaterial::CleanUp()
 	{
-		vkFreeDescriptorSets(p_owningRenderer->m_device, p_owningRenderer->m_descriptorPool, 1, &TextureSet);
 		vkDestroyPipeline(p_owningRenderer->m_device, Pipeline, nullptr);
 		vkDestroyPipelineLayout(p_owningRenderer->m_device, PipelineLayout, nullptr);
 	}
@@ -48,42 +47,6 @@ namespace Chaos
 	void VulkanMaterial::SetName(std::string name) 
 	{
 		
-	}
-	
-	
-	Texture* VulkanMaterial::GetTexture()
-	{
-		return pTexture;
-	}
-	
-	
-	void VulkanMaterial::SetTexture(Texture* tex)
-	{
-		if (!tex)
-		{
-			LOGCORE_WARN("MATERIAL: SET TEXTURE: texture passed to set texture function was null, aborting texture change");
-			return;
-		}
-		
-		pTexture = (VulkanTexture*)tex;
-		
-		VkDescriptorSetAllocateInfo allocInfo = {};
-		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		allocInfo.pNext = nullptr;
-		allocInfo.descriptorPool = p_owningRenderer->m_descriptorPool;
-		allocInfo.descriptorSetCount = 1;
-		allocInfo.pSetLayouts = &p_owningRenderer->m_singleTextureSetLayout;
-		
-		vkAllocateDescriptorSets(p_owningRenderer->m_device, &allocInfo, &TextureSet);
-		
-		VkDescriptorImageInfo imageBufferInfo;
-		imageBufferInfo.sampler = p_owningRenderer->m_nearestNeighbourSampler;
-		imageBufferInfo.imageView = pTexture->ImageView;
-		imageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		
-		VkWriteDescriptorSet textureSet = VkInit::WriteDescriptorImage(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, TextureSet, &imageBufferInfo, 0);
-		
-		vkUpdateDescriptorSets(p_owningRenderer->m_device, 1, &textureSet, 0, nullptr);
 	}
 }
 
