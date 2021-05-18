@@ -11,14 +11,8 @@ namespace Chaos
 	Sprite::Sprite(bool child) : Node(child)
 	{
 		Name = "Sprite";
-		
-		
-		if (!p_material)
-			p_material = Material::Get("default");
-		
-		p_renderObject = Application::Get().GetRenderer().AddQuad(GetGlobalTransform(), p_material);
-		
-		p_renderObject->pTexture = p_texture;
+				
+		p_renderObject = Application::Get().GetRenderer().AddQuad(GetGlobalTransform(), Material::Get("default"));
 	}
 	
 	
@@ -38,26 +32,24 @@ namespace Chaos
 	void Sprite::SetMaterial(Material* mat) 
 	{
 		p_renderObject->pMaterial = mat; 
-		p_material = mat;
 	}
 	
 	
 	Material* Sprite::GetMaterial()
 	{
-		return p_material;
+		return p_renderObject->pMaterial;
 	}
 	
 	
 	void Sprite::SetTexture(Texture* tex)
 	{
-		p_texture = tex;
 		p_renderObject->pTexture = tex;
 	}
 	
 	
 	Texture* Sprite::GetTexture()
 	{
-		return p_texture;
+		return p_renderObject->pTexture;
 	}
 	
 	

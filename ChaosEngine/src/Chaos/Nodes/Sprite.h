@@ -1,4 +1,7 @@
 /* date = January 30th 2021 1:58 pm */
+/* Main sprite class is essentially a wrapper around a render object that can be stored as a node or child node in the level
+ * this also provides functions that are more intuitive for a user hopefully making things clearer.
+*/
 
 #ifndef _SPRITE_H
 #define _SPRITE_H
@@ -31,8 +34,6 @@ namespace Chaos
 		public:
 		Vec4 Colour = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
 		protected:
-		Material* p_material = nullptr;
-		Texture* p_texture = Texture::GetBlank();
 		RenderObject* p_renderObject = nullptr;
 	};
 	
