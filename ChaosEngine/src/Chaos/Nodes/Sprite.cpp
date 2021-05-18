@@ -12,7 +12,7 @@ namespace Chaos
 	{
 		Name = "Sprite";
 				
-		p_renderObject = Application::Get().GetRenderer().AddQuad(GetGlobalTransform(), Material::Get("default"));
+		p_renderObject = Application::Get().GetRenderer().AddQuad(GetGlobalTransform(), Material::Get("textured-default"));
 	}
 	
 	

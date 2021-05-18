@@ -23,7 +23,7 @@ namespace Chaos
                     Stop();
 					return;
 				}
-				m_time = m_length - m_time;
+				m_time -= m_length;
             }
             
 			
