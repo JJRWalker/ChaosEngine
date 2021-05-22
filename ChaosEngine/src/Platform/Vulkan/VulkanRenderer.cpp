@@ -1070,13 +1070,13 @@ namespace Chaos
 	void VulkanRenderer::InitDefaultPipeline()
 	{
 		VkShaderModule fragShader;
-		if (!LoadShaderModule("../ChaosEngine/shaders/spv/default_lit.frag.spv", &fragShader))
+		if (!LoadShaderModule("Assets/shaders/spv/default_lit.frag.spv", &fragShader))
 		{
 			LOGCORE_WARN("Failed to load triangle frag shader module");
 		}
 		
 		VkShaderModule vertShader;
-		if (!LoadShaderModule("../ChaosEngine/shaders/spv/default.vert.spv", &vertShader))
+		if (!LoadShaderModule("Assets/shaders/spv/default.vert.spv", &vertShader))
 		{
 			LOGCORE_WARN("Failed to load triangle vert shader module");
 		}
@@ -1212,9 +1212,9 @@ namespace Chaos
 	
 	void VulkanRenderer::InitDefaultMaterials()
 	{
-		Material::Create("ui-default", "../ChaosEngine/Shaders/spv/ui-default.frag.spv", "../ChaosEngine/Shaders/spv/ui-default.vert.spv");
+		Material::Create("ui-default", "Assets/Shaders/spv/ui-default.frag.spv", "Assets/Shaders/spv/ui-default.vert.spv");
 		
-		Material::Create("subsprite-default","../ChaosEngine/Shaders/spv/textured_atlus_lit.frag.spv", "../ChaosEngine/Shaders/spv/default.vert.spv");
+		Material::Create("subsprite-default","Assets/Shaders/spv/textured_atlus_lit.frag.spv", "Assets/Shaders/spv/default.vert.spv");
 	}
 	
 	

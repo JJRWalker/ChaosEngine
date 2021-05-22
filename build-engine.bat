@@ -8,6 +8,10 @@ set start=%time%
 
 cl -Zi  /EHsc /c ..\..\chaosengine\chaos.cpp ..\..\chaosengine\src\chaospch.cpp /I ..\..\chaosengine\vendor\spdlog\include /I ..\..\chaosengine\src /I ..\..\chaosengine\vendor /I ..\..\chaosengine\vendor\imgui /I ..\..\chaosengine\vendor\glfw\include /I ../../chaosengine/vendor/vulkan/include /I ../../chaosengine/vendor/glm/glm /std:c++17 /D "CHAOS_PLATFORM_WINDOWS" /D "CHAOS_RELEASE" /MT
 
+if errorLevel 1 echo ENGINE BUILD FAILED
+if errorLevel 1 EXIT
+if errorLevel 0 echo ENGINE BUILD SUCCESSFUL
+
 popd
 
 mkdir "build/bin"
@@ -36,4 +40,3 @@ if 1%ms% lss 100 set ms=0%ms%
 :: Mission accomplished
 set /a totalsecs = %hours%*3600 + %mins%*60 + %secs%
 echo build took %hours%:%mins%:%secs%.%ms% (%totalsecs%.%ms%s total)
-
