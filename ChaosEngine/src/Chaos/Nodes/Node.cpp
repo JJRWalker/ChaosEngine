@@ -47,6 +47,19 @@ namespace Chaos
 	}
 	
 	
+	void Node::SetEnabled(bool state)
+	{
+		Enabled = state;
+	}
+	
+	
+	bool Node::IsEnabled()
+	{
+		return Enabled;
+	}
+	
+	
+	
 	// recursively translates the local local matrix by the parent matrix to get global transform matrix
 	float* Node::GetGlobalTransform()
 	{

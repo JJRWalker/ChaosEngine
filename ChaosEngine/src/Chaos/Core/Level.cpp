@@ -40,7 +40,7 @@ namespace Chaos
 		{
 			for (int child = 0; child <= Nodes[node][0]->ChildCount; ++child)
 			{
-				if (Nodes[node][child]->Enabled)
+				if (Nodes[node][child]->IsEnabled())
 				{
 					Nodes[node][child]->OnUpdate(delta);
 					//Nodes[node][child]->Debug();
@@ -69,7 +69,7 @@ namespace Chaos
 		{
 			colliders[node]->CheckCollisionExit();
 		}
-
+		
 		free(colliders);
 	}
 	
@@ -83,7 +83,7 @@ namespace Chaos
 		{
 			for (int child = 0; child <= Nodes[node][0]->ChildCount; ++child)
 			{
-				if (Nodes[node][child]->Enabled)
+				if (Nodes[node][child]->IsEnabled())
 				{
 					Nodes[node][child]->OnFixedUpdate(delta);
 					Collider* collider = dynamic_cast<Collider*>(Nodes[node][child]);
@@ -105,7 +105,7 @@ namespace Chaos
 			// do all of this inside the collide function
 			colliders[node]->CheckCollisions(&quadTree);
 		}
-
+		
 		// must check to see if any have left after all have been checked.
 		for (int node = 0; node < collidableCount; ++node)
 		{
@@ -118,12 +118,12 @@ namespace Chaos
 	void Level::Save(const char* filePath)
 	{
 		std::fstream out(filePath, std::ios::out | std::ios::binary);
-
+		
 		if (!out)
 			LOGCORE_ERROR("SAVE LEVEL: could not create output file!");
 		
 		out.write((char*)&NodeCount, sizeof(size_t));
-
+		
 		for (int node = 0; node < NodeCount; ++node)
 		{
 			out.write((char*)&Nodes[node][0]->ChildCount, sizeof(size_t));
@@ -143,18 +143,18 @@ namespace Chaos
 	{
 		Application::Get().PauseFixedUpdateThread();
 		std::fstream in(filePath, std::ios::in | std::ios::binary);
-
+		
 		
 		if (!in)
 		{
 			LOGCORE_WARN("LOAD LEVEL: file path not found ({0})", filePath);
 			return;
 		}
-
+		
 		Level* buffer = (Level*)malloc(sizeof(Level));
-
+		
 		in.read((char*)&buffer->NodeCount, sizeof(size_t));
-
+		
 		for (int node = 0; node < buffer->NodeCount; ++node)
 		{
 			size_t childCount = 0;
@@ -170,14 +170,14 @@ namespace Chaos
 				memcpy(buffer->Nodes[node][child], data.data(), nodeSize);
 			}
 		}
-
+		
 		//in.read((char*)buffer, sizeof(Level));
 		in.close();
 		memcpy(this, buffer, sizeof(*buffer));
 		free(buffer);
-
+		
 		Start();
-
+		
 		Application::Get().ResumeFixedUpdateThread();
 	}
 	

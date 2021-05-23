@@ -19,7 +19,7 @@ namespace Chaos
 	{
 		Console::AddCommand("ed", [&](){ m_showEditor ? m_showEditor = false : m_showEditor = true;});
 		m_cameraController = Level::Get()->MainCamera()->AddChild<EditorCameraController>();
-		m_cameraController->Enabled = false;		
+		m_cameraController->SetEnabled(false);		
 	}
 	
 	void ImGuiEditor::OnImGuiUpdate() 
@@ -40,9 +40,9 @@ namespace Chaos
 	
 	void ImGuiEditor::ShowEditor()
 	{
-		if (!m_cameraController->Enabled)
+		if (!m_cameraController->IsEnabled())
 		{
-			m_cameraController->Enabled = true;
+			m_cameraController->SetEnabled(true);
 		}
 		ImGuiWindowFlags window_flags =  ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoBringToFrontOnFocus;
 		
@@ -164,7 +164,7 @@ namespace Chaos
 		//Render component..
 		//currently hard coded inputs in future should be automatic depending on the variable type
 		
-		if(node->GetChild<Sprite>())
+		if(node->HasChild<Sprite>())
 		{
 			std::string path = node->GetChild<Sprite>()->GetTexture()->GetFilePath();
 			if (ImGui::Button("Change texture"))
@@ -198,7 +198,7 @@ namespace Chaos
 				ImGui::Image(m_selectedEntTextureID, { DETAILS_WINDOW_SIZE.X, DETAILS_WINDOW_SIZE.X * aspectRatio }, ImVec2{ 0, -1 }, ImVec2{ 1, 0 });
 			}
 		}
-		if (node->GetChild<SubSprite>())
+		if (node->HasChild<SubSprite>())
 		{
 			std::string path = node->GetChild<SubSprite>()->GetTexture()->GetFilePath();
 			
@@ -281,6 +281,9 @@ namespace Chaos
 	
 	void ImGuiEditor::UpdateSelectedEntity()
 	{
+		if (ImGui::IsAnyWindowHovered())
+			return;
+		
 		Vec2 mouseWorldPoint =  Level::Get()->MainCamera()->ScreenToWorld(Input::GetMousePosition());
 		
 		if(Input::IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !m_clicked)

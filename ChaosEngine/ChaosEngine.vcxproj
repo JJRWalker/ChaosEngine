@@ -155,6 +155,7 @@
     <ClInclude Include="src\Chaos\Core\Math.h" />
     <ClInclude Include="src\Chaos\Core\Time.h" />
     <ClInclude Include="src\Chaos\Core\Window.h" />
+    <ClInclude Include="src\Chaos\DataTypes\ChaoticArray.h" />
     <ClInclude Include="src\Chaos\DataTypes\QuadTree.h" />
     <ClInclude Include="src\Chaos\DataTypes\Vec2.h" />
     <ClInclude Include="src\Chaos\DataTypes\Vec3.h" />
@@ -587,6 +588,7 @@
     <ClCompile Include="src\Chaos\Core\Level.cpp" />
     <ClCompile Include="src\Chaos\Core\Log.cpp" />
     <ClCompile Include="src\Chaos\Core\Time.cpp" />
+    <ClCompile Include="src\Chaos\DataTypes\ChaoticArray.cpp" />
     <ClCompile Include="src\Chaos\DataTypes\QuadTree.cpp" />
     <ClCompile Include="src\Chaos\Debug\Console.cpp" />
     <ClCompile Include="src\Chaos\Debug\Debug.cpp" />

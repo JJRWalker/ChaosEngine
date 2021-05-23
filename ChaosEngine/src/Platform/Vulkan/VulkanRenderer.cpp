@@ -41,7 +41,6 @@ const bool USE_VALIDATION_LAYERS = false;
 #define VK_CHECK(x)	x
 #endif
 
-const size_t MAX_DESCRIPTOR_SETS = 1000;
 
 namespace Chaos
 {	VulkanRenderer::VulkanRenderer(Window* window) : pWindow(window)
@@ -57,28 +56,33 @@ namespace Chaos
 	
 	RenderObject* VulkanRenderer::AddQuad(float transform[16], Material* mat)
 	{
-		RenderObject quad;
-		quad.pMesh = GetMesh("quad");
-		quad.pMaterial = mat;
-		quad.RenderID = (uint32_t)Renderables.size();
-		memcpy((void*)&quad.Transform[0], (void*)&transform[0], sizeof(float) * 16);
+		RenderObject* quad = new RenderObject();
+		quad->pMesh = GetMesh("quad");
+		quad->pMaterial = mat;
+		memcpy((void*)&quad->Transform[0], (void*)&transform[0], sizeof(float) * 16);
 		
-		Renderables.push_back(quad);
+		if (!Renderables.Push(quad))
+		{
+			LOGCORE_ERROR("VULKAN RENDERER: Ran out of room in the render object array, some objects not added to queue");
+		}
 		
-		return &Renderables[Renderables.size() - 1];
+		return quad;
 	}
 	
 	
-	void VulkanRenderer::AddRenderable(RenderObject& toAdd)
+	RenderObject* VulkanRenderer::AddRenderable(RenderObject* toAdd)
 	{
-		toAdd.RenderID = (uint32_t)Renderables.size();
-		Renderables.push_back(toAdd);
+		if (!Renderables.Push(toAdd))
+		{
+			LOGCORE_ERROR("VULKAN RENDERER: Ran out of room in the render object array, some objects not added to queue");
+		}
+		return toAdd;
 	}
 	
 	
 	void VulkanRenderer::RemoveRenderable(RenderObject* toRemove)
 	{
-		Renderables.erase(Renderables.begin() + toRemove->RenderID);
+		Renderables.Remove(toRemove);
 	}
 	
 	
@@ -148,7 +152,7 @@ namespace Chaos
 		
 		vkCmdBeginRenderPass(cmd, &rpInfo, VK_SUBPASS_CONTENTS_INLINE);
 		
-		DrawObjects(cmd, Renderables.data(), Renderables.size());
+		DrawObjects(cmd, Renderables);
 		
 		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
 		
@@ -185,7 +189,7 @@ namespace Chaos
 	}
 	
 	
-	void VulkanRenderer::DrawObjects(VkCommandBuffer cmd, RenderObject* first, size_t count)
+	void VulkanRenderer::DrawObjects(VkCommandBuffer cmd, ChaoticArray<RenderObject*>& renderObjData)
 	{
 		GPUCameraData camData;
 		if (pCamera)
@@ -219,11 +223,15 @@ namespace Chaos
 		
 		GPUObjectData* sobjectSSBO = (GPUObjectData*)objectData;
 		
-		for (int i = 0; i < count; ++i)
+		for (int i = 0; i < renderObjData.Size; ++i)
 		{
-			RenderObject& obj = first[i];
+			if (!renderObjData.Data[i])
+				continue;
+			
+			RenderObject& obj = *renderObjData.Data[i];
 			memcpy((void*)&sobjectSSBO[i].ModelMatrix, (void*)&obj.Transform, sizeof(float) * 16);
 			memcpy((void*)&sobjectSSBO[i].ShaderDataArray1, (void*)&obj.ShaderDataArray1, sizeof(float) * 16);
+			
 		}
 		
 		vmaUnmapMemory(m_allocator, GetCurrentFrame().ObjectBuffer.Allocation);
@@ -232,9 +240,12 @@ namespace Chaos
 		Material* lastMaterial = nullptr;
 		Texture* lastTexture = nullptr;
 		
-		for (int i = 0; i < count; ++i)
+		for (int i = 0; i < renderObjData.Size; ++i)
 		{
-			RenderObject& obj = first[i];
+			if (!renderObjData.Data[i])
+				continue;
+			
+			RenderObject& obj = *renderObjData.Data[i];
 			
 			if (obj.pMaterial != lastMaterial)
 			{
@@ -432,8 +443,6 @@ namespace Chaos
 	
 	void VulkanRenderer::Init()
 	{
-		Renderables.reserve(MAX_OBJECTS);
-		
 		WindowExtent = { pWindow->GetWidth(), pWindow->GetHeight() };
 		InitVulkan();
 		InitSwapchain();

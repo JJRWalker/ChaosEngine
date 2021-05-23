@@ -15,6 +15,7 @@
 
 //===DATA TYPES================================
 #include <Chaos/DataTypes/QuadTree.cpp>
+#include <Chaos/DataTypes/ChaoticArray.cpp>
 
 //===DEBUG======================================
 #include <Chaos/Debug/Console.cpp>
@@ -33,6 +34,7 @@
 #include <Chaos/Nodes/Sprite.cpp>
 #include <Chaos/Nodes/Colliders.cpp>
 #include <Chaos/Nodes/EditorCameraController.cpp>
+#include <Chaos/Nodes/Animator.cpp>
 
 //===RENDERER===================================
 #include <Chaos/Renderer/RendererAPI.cpp>
@@ -50,7 +52,6 @@
 #include <Platform/Vulkan/VulkanTexture.cpp>
 #include <Platform/Vulkan/VulkanMaterial.cpp>
 #include <Platform/Vulkan/VulkanMesh.cpp>
-//#include <Platform/Vulkan/VulkanSubTexture.cpp>
 #include <Platform/Vulkan/VulkanRenderer.cpp>
 
 //===INPUT=====================================

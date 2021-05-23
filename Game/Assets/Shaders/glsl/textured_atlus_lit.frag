@@ -39,10 +39,12 @@ void main()
     vec2 atlusCell = vec2(inOptionalData[0][0], inOptionalData[0][1]);
     vec2 atlusDimensions = vec2(inOptionalData[0][2], inOptionalData[0][3]);
     vec2 atlusCellSize = vec2(1.0f / atlusDimensions.x, 1.0f / atlusDimensions.y); 
+	vec2 tilingFactor = vec2(inOptionalData[1][0], inOptionalData[1][1]);
 
     vec2 texCoord;
-    texCoord.x = atlusCell.x * atlusCellSize.x + (inTexCoord.x * atlusCellSize.x);
-    texCoord.y = atlusCell.y * atlusCellSize.y + (inTexCoord.y * atlusCellSize.y);
+    texCoord.x = (atlusCell.x * atlusCellSize.x + (fract(inTexCoord.x * tilingFactor.x) * atlusCellSize.x));
+    texCoord.y = (atlusCell.y * atlusCellSize.y + (fract(inTexCoord.y * tilingFactor.y) * atlusCellSize.y));
+
 
     vec4 colour = texture(tex1, texCoord);
 

@@ -39,7 +39,7 @@ namespace Chaos
 		
 		// returns a render object pointer allowing you to update the transform from render component
 		virtual RenderObject* AddQuad(float transform[16], Material* mat) = 0;
-		virtual void AddRenderable(RenderObject& toAdd) = 0;
+		virtual RenderObject* AddRenderable(RenderObject* toAdd) = 0;
 		virtual void RemoveRenderable(RenderObject* toRemove) = 0;
 		
 		virtual void DrawLine(Vec2& startPoint, Vec2& endPoint, Vec4& colour, float weight, float renderOrder) = 0;

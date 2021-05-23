@@ -23,7 +23,9 @@ namespace Chaos
 		virtual void OnUpdate(float delta);      // called every frame
 		virtual void OnFixedUpdate(float delta); // called on specified fixed step
 		virtual void OnDestroy();                // called when node is destroyed
-		virtual void Debug();                  
+		virtual void Debug();
+		virtual void SetEnabled(bool state);
+		virtual bool IsEnabled();
 		
 		
 		// returns a 16 float array of all transforms added up through heirarchy
@@ -102,6 +104,17 @@ namespace Chaos
 		}
 		
 		
+		template <typename T> T* GetChild(int index)
+		{
+			if (index >= ChildCount)
+			{
+				LOGCORE_ERROR("NODE: {0}: Get child index out of range, returning nullptr!", Name);
+				return nullptr;
+			}
+			return Level::Get()->Nodes[ID][index];
+		}
+		
+		
 		template <typename T> T* GetChildren(size_t& size)
 		{
 			T* returnedNodes[MAX_CHILD_NODES];
@@ -124,22 +137,26 @@ namespace Chaos
 		}
 		
 		
-		template <typename T> T* GetChild(int index)
+		template <typename T> bool HasChild()
 		{
-			if (index >= ChildCount)
+			Level* level = Level::Get();
+			for (int i = 1; i <= ChildCount; ++i)
 			{
-				LOGCORE_ERROR("NODE: {0}: Get child index out of range, returning nullptr!", Name);
-				return nullptr;
+				T* node = dynamic_cast<T*>(level->Nodes[ID][i]);
+				if (node)
+				{
+					return true;
+				}
 			}
-			return Level::Get()->Nodes[ID][index];
+			return false;
 		}
+		
 		
 		public:
 		std::string Name = "Node";  // available for when there is simply no other way to get a node
 		uint32_t ID = 0;  // designates it's index on the level array
 		uint32_t SubID = 0; // if it's a child this sub ID will be it's index in the 2nd dimension of the level array
 		size_t ChildCount = 0;
-		bool Enabled = true;  // same as can tick, disabled nodes still exist, just don't update in update
 		float Transform[16] = 
 		{1, 0, 0, 0,
 			0, 1, 0, 0,
@@ -156,6 +173,8 @@ namespace Chaos
 		
 		protected: 
 		Node* p_parent = nullptr;
+		
+		bool Enabled = true;  // same as can tick, disabled nodes still exist, just don't update in update
 	};
 }
 

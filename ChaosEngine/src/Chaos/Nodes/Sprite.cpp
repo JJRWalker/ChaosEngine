@@ -11,7 +11,7 @@ namespace Chaos
 	Sprite::Sprite(bool child) : Node(child)
 	{
 		Name = "Sprite";
-				
+		
 		p_renderObject = Application::Get().GetRenderer().AddQuad(GetGlobalTransform(), Material::Get("textured-default"));
 	}
 	
@@ -26,6 +26,16 @@ namespace Chaos
 	{
 		// copy current global transform to the render object
 		memcpy((void*)&p_renderObject->Transform[0], (void*)&GetGlobalTransform()[0], sizeof(float) * 16);
+	}
+	
+	
+	void Sprite::SetEnabled(bool state)
+	{
+		Enabled = state;
+		if (!state)
+			Application::Get().GetRenderer().RemoveRenderable(p_renderObject);
+		else
+			Application::Get().GetRenderer().AddRenderable(p_renderObject);
 	}
 	
 	
@@ -65,6 +75,7 @@ namespace Chaos
 		Name = "SubSprite";
 		
 		SetMaterial(Material::Get("subsprite-default"));
+		SetTilingFactor(Vec2(1.0f, 1.0f));
 	}
 	
 	
@@ -85,6 +96,13 @@ namespace Chaos
 	}
 	
 	
+	void SubSprite::SetTilingFactor(Vec2 tilingFactor)
+	{
+		SetShaderFloatData(4, tilingFactor.X);
+		SetShaderFloatData(5, tilingFactor.Y);
+	}
+	
+	
 	Vec2 SubSprite::GetCoords()
 	{
 		return Vec2(p_renderObject->ShaderDataArray1[0], p_renderObject->ShaderDataArray1[1]);
@@ -94,6 +112,12 @@ namespace Chaos
 	Vec2 SubSprite::GetTotalCells()
 	{
 		return Vec2(p_renderObject->ShaderDataArray1[2], p_renderObject->ShaderDataArray1[3]);
+	}
+	
+	
+	Vec2 SubSprite::GetTilingFactor()
+	{
+		return Vec2(p_renderObject->ShaderDataArray1[4], p_renderObject->ShaderDataArray1[5]);
 	}
 	
 	

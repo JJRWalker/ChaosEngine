@@ -22,6 +22,7 @@ namespace Chaos
 		~Sprite();
 		
 		void OnUpdate(float delta) override;
+		void SetEnabled(bool state) override;
 		
 		void SetMaterial(Material* mat);
 		Material* GetMaterial();
@@ -44,8 +45,11 @@ namespace Chaos
 		
 		void SetCoords(Vec2 coords);
 		void SetTotalCells(Vec2 dimensions); // total number of cells in x and y. NOT pixel size of grid
+		void SetTilingFactor(Vec2 tilingFactor);
+		
 		Vec2 GetTotalCells();
 		Vec2 GetCoords();
+		Vec2 GetTilingFactor();
 	};
 	
 	class UISprite : public Sprite

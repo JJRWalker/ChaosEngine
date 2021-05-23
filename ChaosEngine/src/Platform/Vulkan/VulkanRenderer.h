@@ -6,6 +6,7 @@
 #include "VulkanTypes.h"
 #include "Chaos/Renderer/Renderer.h"
 #include "Chaos/DataTypes/Vec4.h"
+#include "Chaos/DataTypes/ChaoticArray.h"
 
 #include "VulkanMesh.h"
 #include "VulkanMaterial.h"
@@ -114,7 +115,8 @@ namespace Chaos
 	
 	
 	constexpr unsigned int FRAME_OVERLAP = 2;
-	const unsigned int MAX_OBJECTS = 1000000;
+	const unsigned int MAX_OBJECTS = 100000;
+	const size_t MAX_DESCRIPTOR_SETS = 1000;
 	
 	class VulkanRenderer : public Renderer
 	{
@@ -127,7 +129,7 @@ namespace Chaos
 		
 		// Renderer interface
 		RenderObject* AddQuad(float transform[16], Material* mat) override;
-		void AddRenderable(RenderObject& toAdd) override;
+		RenderObject* AddRenderable(RenderObject* toAdd) override;
 		void RemoveRenderable(RenderObject* toRemove);
 		
 		void DrawLine(Vec2& startPoint, Vec2& endPoint, Vec4& colour, float weight, float renderOrder) {};
@@ -148,7 +150,7 @@ namespace Chaos
 		void UploadMaterial(VulkanMaterial& mat);
 		void UploadTexture(VulkanTexture& tex);
 		
-		void DrawObjects(VkCommandBuffer cmd, RenderObject* first, size_t count);
+		void DrawObjects(VkCommandBuffer cmd, ChaoticArray<RenderObject*>& renderObjData);
 		
 		void Init() override;
 		void Cleanup();
@@ -203,7 +205,9 @@ namespace Chaos
 		DeletionQueue MainDeletionQueue;
 		DeletionQueue SwapchainDeletionQueue;
 		
-		std::vector<RenderObject> Renderables;
+		//TODO OPTIMISATION: Multi thread recording of renderables. Currently has a big overhead here. Divide and conquer!
+		//NOTE: Should be stable frame rate when inserting and removing, but has to itterate over it's max capacity every time.
+		ChaoticArray<RenderObject*> Renderables = ChaoticArray<RenderObject*>(MAX_OBJECTS);
 		std::unordered_map<std::string, VulkanMaterial> Materials;
 		std::unordered_map<std::string, VulkanMesh> Meshes;
 		std::unordered_map<std::string, VulkanTexture> Textures;
