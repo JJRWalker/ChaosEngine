@@ -30,6 +30,12 @@ namespace Chaos
 			case RendererAPI::API::Vulkan:
 			{
 				VulkanRenderer& vkRenderer = (VulkanRenderer&)Application::Get().GetRenderer();
+				
+				if (vkRenderer.Materials.find(name) == vkRenderer.Materials.end())
+				{
+					LOGCORE_ERROR("MATERIAL: cannot get material {0}", name);
+				}
+				
 				return &vkRenderer.Materials[name];
 			}
 		}

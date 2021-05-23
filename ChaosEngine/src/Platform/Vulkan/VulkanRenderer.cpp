@@ -1224,6 +1224,8 @@ namespace Chaos
 		Material::Create("ui-default", "Assets/Shaders/spv/ui-default.frag.spv", "Assets/Shaders/spv/ui-default.vert.spv");
 		
 		Material::Create("subsprite-default","Assets/Shaders/spv/textured_atlus_lit.frag.spv", "Assets/Shaders/spv/default.vert.spv");
+		
+		Material::Create("textured-default", "Assets/Shaders/spv/textured_lit.frag.spv", "Assets/Shaders/spv/default.vert.spv");
 	}
 	
 	
