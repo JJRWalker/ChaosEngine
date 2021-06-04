@@ -23,6 +23,7 @@ namespace Chaos
 		float Transform[16];
 		float ShaderDataArray1[16];
 		uint32_t RenderID = 0;
+		bool RenderOneTime = false;
 	};
 	
 	
@@ -57,6 +58,6 @@ namespace Chaos
 		virtual bool GetVSync() = 0;
 		
 		private:
-		static RendererAPI s_rendererAPI;		
+		static RendererAPI s_rendererAPI;
 	};
 }

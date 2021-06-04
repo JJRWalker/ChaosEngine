@@ -8,7 +8,8 @@
 #include "Chaos/Core/Application.h"
 #include "Chaos/Renderer/Renderer.h"
 
-const float DEBUG_LINE_WEIGHT = 0.02f;
+const float DEBUG_LINE_WEIGHT = 0.025f;
+const float DEBUG_RENDER_ORDER = 1.0f;
 
 namespace Chaos
 {
@@ -174,14 +175,14 @@ namespace Chaos
 		
 		OverlapsSize = 0;
 	}
-
-
+	
+	
 	void Chaos::Collider::InsertHitNode(Collider* collider)
 	{
 		m_hitNodes[m_hitNodesSize] = collider;
 		++m_hitNodesSize;
 	}
-
+	
 	
 	BoxCollider2D::BoxCollider2D(bool child) : Collider(child)
 	{
@@ -200,10 +201,10 @@ namespace Chaos
 		Vec2 bottomRight = Vec2(pos.X + Bounds.X , pos.Y - Bounds.Y );
 		Vec2 bottomLeft = Vec2(pos.X - Bounds.X , pos.Y - Bounds.Y );
 		
-		renderer.DrawLine(topLeft, topRight, Vec4(0.0f, 1.0f, 0.0f, 0.8f), DEBUG_LINE_WEIGHT, 1000.f);
-		renderer.DrawLine(topRight, bottomRight, Vec4(0.0f, 1.0f, 0.0f, 0.8f), DEBUG_LINE_WEIGHT, 1000.f);
-		renderer.DrawLine(bottomRight, bottomLeft, Vec4(0.0f, 1.0f, 0.0f, 0.8f), DEBUG_LINE_WEIGHT, 1000.f);
-		renderer.DrawLine(bottomLeft, topLeft, Vec4(0.0f, 1.0f, 0.0f, 0.8f), DEBUG_LINE_WEIGHT, 1000.f);
+		renderer.DrawLine(topLeft, topRight, Vec4(0.0f, 1.0f, 0.0f, 0.8f), DEBUG_LINE_WEIGHT, DEBUG_RENDER_ORDER);
+		renderer.DrawLine(topRight, bottomRight, Vec4(0.0f, 1.0f, 0.0f, 0.8f), DEBUG_LINE_WEIGHT, DEBUG_RENDER_ORDER);
+		renderer.DrawLine(bottomRight, bottomLeft, Vec4(0.0f, 1.0f, 0.0f, 0.8f), DEBUG_LINE_WEIGHT, DEBUG_RENDER_ORDER);
+		renderer.DrawLine(bottomLeft, topLeft, Vec4(0.0f, 1.0f, 0.0f, 0.8f), DEBUG_LINE_WEIGHT, DEBUG_RENDER_ORDER);
 	}
 	
 	
@@ -298,7 +299,7 @@ namespace Chaos
 		}
 		
 		InsertOverlaps(m_hitNodes, m_hitNodesSize);
-
+		
 		for (size_t i = 0; i < m_hitNodesSize; ++i)
 		{
 			m_hitNodes[i]->InsertOverlap(this);

@@ -118,6 +118,7 @@ namespace Chaos
 		}
 		
 		static Vec2 Zero() { return Vec2(0.0f, 0.0f); }
+		static Vec2 Up() { return Vec2(0.0f, 1.0f); }
 #pragma endregion
 		
 #pragma region OPERATORS

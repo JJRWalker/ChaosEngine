@@ -179,6 +179,7 @@
     <ClInclude Include="src\Chaos\Input\KeyCodes.h" />
     <ClInclude Include="src\Chaos\Input\MouseCodes.h" />
     <ClInclude Include="src\Chaos\Maths\Collisions.h" />
+    <ClInclude Include="src\Chaos\Maths\Ray2D.h" />
     <ClInclude Include="src\Chaos\Nodes\Animator.h" />
     <ClInclude Include="src\Chaos\Nodes\Camera.h" />
     <ClInclude Include="src\Chaos\Nodes\Colliders.h" />
@@ -602,6 +603,7 @@
     <ClCompile Include="src\Chaos\Debug\Timer.cpp" />
     <ClCompile Include="src\Chaos\Input\InputManager.cpp" />
     <ClCompile Include="src\Chaos\Maths\Collisions.cpp" />
+    <ClCompile Include="src\Chaos\Maths\Ray2D.cpp" />
     <ClCompile Include="src\Chaos\Nodes\Animator.cpp" />
     <ClCompile Include="src\Chaos\Nodes\Camera.cpp" />
     <ClCompile Include="src\Chaos\Nodes\Colliders.cpp" />

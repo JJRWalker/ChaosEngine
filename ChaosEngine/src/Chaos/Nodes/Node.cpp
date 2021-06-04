@@ -169,7 +169,7 @@ namespace Chaos
 		
 		Transform[0] = cosf(rotation) * scale.X;
 		Transform[1] = -sinf(rotation) * scale.X;
-		Transform[4] = sin(rotation) * scale.Y;
+		Transform[4] = sinf(rotation) * scale.Y;
 		Transform[5] = cosf(rotation) * scale.Y;
 	}
 	
@@ -210,7 +210,7 @@ namespace Chaos
 		
 		Transform[0] = cosf(rotation) * scale.X;
 		Transform[1] = -sinf(rotation) * scale.X;
-		Transform[4] = sin(rotation) * scale.Y;
+		Transform[4] = sinf(rotation) * scale.Y;
 		Transform[5] = cosf(rotation) * scale.Y;
 	}
 	

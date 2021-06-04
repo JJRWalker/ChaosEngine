@@ -12,6 +12,7 @@
 
 //===MATHS======================================
 #include <Chaos/Maths/Collisions.cpp>
+#include <Chaos/Maths/Ray2D.cpp>
 
 //===DATA TYPES================================
 #include <Chaos/DataTypes/QuadTree.cpp>
@@ -27,6 +28,7 @@
 #include <Chaos/Debug/ImGuiDebugInfo.cpp>
 #include <Chaos/Debug/ImGuiProfiler.cpp>
 #include <Chaos/Debug/Timer.cpp>
+#include <Chaos/Debug/Debug.cpp>
 
 //===NODE=====================================
 #include <Chaos/Nodes/Node.cpp>

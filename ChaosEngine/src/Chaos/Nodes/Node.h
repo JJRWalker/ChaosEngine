@@ -77,7 +77,7 @@ namespace Chaos
 		
 		template <typename T> void AddChild(T* child)
 		{
-			if (std::is_bas_of<Node, T>::value)
+			if (std::is_base_of<Node, T>::value)
 			{
 				ChildCount++;
 				child->ID = ID;
@@ -157,6 +157,7 @@ namespace Chaos
 		uint32_t ID = 0;  // designates it's index on the level array
 		uint32_t SubID = 0; // if it's a child this sub ID will be it's index in the 2nd dimension of the level array
 		size_t ChildCount = 0;
+		bool DebugEnabled = false;
 		float Transform[16] = 
 		{1, 0, 0, 0,
 			0, 1, 0, 0,

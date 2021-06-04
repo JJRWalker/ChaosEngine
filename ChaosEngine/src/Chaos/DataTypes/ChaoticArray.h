@@ -74,7 +74,7 @@ namespace Chaos
 				return false;
 			}
 			Data[index] = nullptr;
-			FreeSlots[FreeSlotsSize] = index;
+			FreeSlots[FreeSlotsSize] = (int)index;
 			++FreeSlotsSize;
 			return true;
 		}

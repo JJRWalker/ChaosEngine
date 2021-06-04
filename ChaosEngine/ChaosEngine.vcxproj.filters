@@ -1365,6 +1365,7 @@
     <ClInclude Include="src\Chaos\Serialisation\FileUtils.h" />
     <ClInclude Include="src\Chaos\Debug\ImGuiProfiler.h" />
     <ClInclude Include="src\Chaos\DataTypes\ChaoticArray.h" />
+    <ClInclude Include="src\Chaos\Maths\Ray2D.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chaos\Core\Application.cpp">
@@ -1476,5 +1477,6 @@
     <ClCompile Include="src\Chaos\Renderer\Mesh.cpp" />
     <ClCompile Include="src\Chaos\Debug\ImGuiProfiler.cpp" />
     <ClCompile Include="src\Chaos\DataTypes\ChaoticArray.cpp" />
+    <ClCompile Include="src\Chaos\Maths\Ray2D.cpp" />
   </ItemGroup>
 </Project>

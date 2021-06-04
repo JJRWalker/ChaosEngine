@@ -132,7 +132,7 @@ namespace Chaos
 		RenderObject* AddRenderable(RenderObject* toAdd) override;
 		void RemoveRenderable(RenderObject* toRemove);
 		
-		void DrawLine(Vec2& startPoint, Vec2& endPoint, Vec4& colour, float weight, float renderOrder) {};
+		void DrawLine(Vec2& startPoint, Vec2& endPoint, Vec4& colour, float weight, float renderOrder);
 		
 		void DrawFrame();
 		bool OnWindowResized(WindowResizeEvent& e) {  return false; };

@@ -86,6 +86,36 @@ namespace Chaos
 	}
 	
 	
+	void VulkanRenderer::DrawLine(Vec2& startPoint, Vec2& endPoint, Vec4& colour, float weight, float renderOrder)
+	{
+		
+		Vec2 lineVec = endPoint - startPoint;
+		Vec2 centre = startPoint + (lineVec * 0.5f);
+		Vec2 scale = Vec2(weight, lineVec.Magnitude());
+		float theta = Vec2::Angle(Vec2::Up(), lineVec);
+		
+		float transform[16];
+		
+		memset(transform, 0, sizeof(float) * 16);
+		
+		// set position
+		transform[12] = centre.X;
+		transform[13] = centre.Y;
+		transform[14] = renderOrder;
+		
+		// set rotation and scale
+		transform[0] = cosf(theta) * scale.X;
+		transform[1] = -sinf(theta) * scale.X;
+		transform[4] = sinf(theta) * scale.Y;
+		transform[5] = cosf(theta) * scale.Y;
+		transform[10] = 1.0f;
+		transform[15] = 1.0f;
+		
+		RenderObject* line = AddQuad(transform, GetMaterial("textured-default"));
+		line->RenderOneTime = true;
+	}
+	
+	
 	bool VulkanRenderer::HasTexture(std::string name, Texture** outTexture)
 	{
 		if (Textures.find(name) != Textures.end())
@@ -283,6 +313,9 @@ namespace Chaos
 			}
 			
 			vkCmdDraw(cmd, (uint32_t)obj.pMesh->Vertices.size(), 1, 0, i);
+			
+			if (obj.RenderOneTime)
+				Renderables.Remove(i);
 		}
 	}
 	
@@ -1252,6 +1285,7 @@ namespace Chaos
 		triMesh.Vertices[1].Normal = { 1.0f, 1.0f, 0.0f };
 		triMesh.Vertices[2].Normal = { 1.0f, 1.0f, 0.0f };
 		
+		triMesh.Name = "tri";
 		
 		VulkanMesh quadMesh{};
 		quadMesh.Vertices.resize(6);
@@ -1263,6 +1297,8 @@ namespace Chaos
 			quadMesh.Vertices[i].Normal = {0.0f, 0.0f, 1.0f};
 			quadMesh.Vertices[i].UV = QUAD_UV_POSITIONS[i];
 		}
+		
+		quadMesh.Name = "quad";
 		
 		UploadMesh(triMesh);
 		UploadMesh(quadMesh);
