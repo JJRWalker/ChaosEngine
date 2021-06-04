@@ -34,6 +34,3 @@ Features currently implemented:
 * Controller support for input system
 * Level serialization
 * Audio
-
-## Known Issues
-* Rendering ImGui causes a blank screen to be rendered over the top of game primatives being rendered to screen, UI is still displayed. Only appears to affect some systems after a recent graphics driver update. Unfortunately I lack the variety of hardware to test this.
