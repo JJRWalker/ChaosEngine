@@ -315,7 +315,7 @@ namespace Chaos
 			vkCmdDraw(cmd, (uint32_t)obj.pMesh->Vertices.size(), 1, 0, i);
 			
 			if (obj.RenderOneTime)
-				Renderables.Remove(i);
+				Renderables.Destroy(i);
 		}
 	}
 	

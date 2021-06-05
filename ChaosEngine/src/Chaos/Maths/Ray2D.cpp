@@ -3,6 +3,7 @@
 #include "Ray2D.h"
 #include "Chaos/Core/Level.h"
 #include "Chaos/Nodes/Colliders.h"
+#include "Chaos/DataTypes/QuadTree.h"
 
 namespace Chaos
 {
@@ -26,48 +27,62 @@ namespace Chaos
 		
 		Collider* hit = nullptr;
 		
-		for (size_t node = 0; node < level->NodeCount; ++node)
+		QuadTree quadTree;
+		
+		for (int node = 0; node < level->NodeCount; ++node)
 		{
-			for (size_t child = 0; child <= level->Nodes[node][0]->ChildCount; ++child)
+			for (int child = 0; child <= level->Nodes[node][0]->ChildCount; ++child)
 			{
-				if (Collider* collider = dynamic_cast<Collider*>(level->Nodes[node][child]))
+				if (level->Nodes[node][child]->IsEnabled())
 				{
-					Vec2 colliderPosition = collider->GetPosition();
-					
-					switch (collider->Type)
-					{
-						case ColliderType::BOX2D:
-						{
-							BoxCollider2D* boxCollider = (BoxCollider2D*)collider;
-							
-							float boxLeft = colliderPosition.X - boxCollider->Bounds.X;
-							float boxRight = colliderPosition.X + boxCollider->Bounds.X;
-							float boxBottom = colliderPosition.Y - boxCollider->Bounds.Y;
-							float boxTop = colliderPosition.Y + boxCollider->Bounds.Y;
-							
-							float fLow = 0.0f;
-							float fHigh = 1.0f;
-							
-							if (!ClipLine(boxLeft, boxRight, origin.X, endPoint.X, fLow, fHigh))
-								continue;
-							
-							if (!ClipLine(boxBottom, boxTop, origin.Y, endPoint.Y, fLow, fHigh))
-								continue;
-							
-							Vec2 pointOfIntersection = origin + (ray * fLow);
-							
-							if ((pointOfIntersection - origin).Magnitude() < shortestDistance)
-							{
-								closestPoint = pointOfIntersection;
-								shortestDistance = (pointOfIntersection - origin).Magnitude();
-								hit = collider;
-							}
-							
-						}break;
-					}
+					if(Collider* collider = dynamic_cast<Collider*>(level->Nodes[node][child]))
+						quadTree.Insert(collider);
 				}
 			}
 		}
+		
+		Collider** nodesInRange = (Collider**)malloc(quadTree.Size() * sizeof(Collider*));
+		size_t nodesInRangeSize = 0;
+		
+		quadTree.QueryLine(origin, endPoint, nodesInRange, nodesInRangeSize);
+		
+		for (size_t node = 0; node < nodesInRangeSize; ++node)
+		{
+			Vec2 colliderPosition = nodesInRange[node]->GetPosition();
+			
+			switch (nodesInRange[node]->Type)
+			{
+				case ColliderType::BOX2D:
+				{
+					BoxCollider2D* boxCollider = (BoxCollider2D*)nodesInRange[node];
+					
+					float boxLeft = colliderPosition.X - boxCollider->Bounds.X;
+					float boxRight = colliderPosition.X + boxCollider->Bounds.X;
+					float boxBottom = colliderPosition.Y - boxCollider->Bounds.Y;
+					float boxTop = colliderPosition.Y + boxCollider->Bounds.Y;
+					
+					float fLow = 0.0f;
+					float fHigh = 1.0f;
+					
+					if (!ClipLine(boxLeft, boxRight, origin.X, endPoint.X, fLow, fHigh))
+						continue;
+					
+					if (!ClipLine(boxBottom, boxTop, origin.Y, endPoint.Y, fLow, fHigh))
+						continue;
+					
+					Vec2 pointOfIntersection = origin + (ray * fLow);
+					
+					if ((pointOfIntersection - origin).Magnitude() < shortestDistance)
+					{closestPoint = pointOfIntersection;
+						shortestDistance = (pointOfIntersection - origin).Magnitude();
+						hit = nodesInRange[node];
+					}
+					
+				}break;
+			}
+		}
+		
+		free(nodesInRange);
 		
 		if (hit)
 		{

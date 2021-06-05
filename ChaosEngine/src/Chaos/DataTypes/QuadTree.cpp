@@ -220,6 +220,21 @@ namespace Chaos
 	}
 	
 	
+	size_t QuadTree::Size()
+	{
+		size_t size = QUAD_TREE_CAPACITY;
+		if (m_divided)
+		{
+			size += m_children.NorthWest->Size();
+			size += m_children.NorthEast->Size();
+			size += m_children.SouthWest->Size();
+			size += m_children.SouthEast->Size();
+		}
+		
+		return size;
+	}
+	
+	
 	void QuadTree::Subdivide()
 	{
 		float halfWidth = m_bounds.X * 0.5f;

@@ -35,6 +35,8 @@ namespace Chaos
 		Collider* QueryRadius(Vec2 centre, float radius, Collider* foundNodes[MAX_NODES], size_t& insert);
 		Collider* QueryLine(Vec2 start, Vec2 end, Collider* foundNodes[MAX_NODES], size_t& insert);
 		
+		size_t Size();
+		
 		void Debug();
 		
 		private:
