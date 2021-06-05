@@ -84,13 +84,6 @@ namespace Chaos
 	};
 	
 	
-	struct GPUObjectData
-	{
-		float ModelMatrix[16];
-		float ShaderDataArray1[16];
-	};
-	
-	
 	struct FrameData
 	{
 		VkSemaphore PresentSemaphore, RenderSemaphore;

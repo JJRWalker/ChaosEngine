@@ -15,13 +15,22 @@ namespace Chaos
 	class Window;
 	class Camera;
 	
+	// EXPANSION: should just need to add an additional float array here
+	// Be sure to add that array to all shaders too! This kinda sucks but has to happen right now. Otherwise nothing will be rendered.
+	// POTENTIAL TODO: late in development, some kind of auto shader layout generation before compilation.
+	struct ShaderObjectData
+	{
+		float Transform[16];
+		float DataArray1[16]; // for engine use
+		float CustomDataArray1[16]; // for user use
+	};
+	
 	struct RenderObject
 	{
 		Mesh* pMesh = nullptr;
 		Material* pMaterial = nullptr;
 		Texture* pTexture = Texture::GetBlank();
-		float Transform[16];
-		float ShaderDataArray1[16];
+		ShaderObjectData ShaderData;
 		uint32_t RenderID = 0;
 		bool RenderOneTime = false;
 	};

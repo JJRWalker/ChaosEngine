@@ -30,6 +30,9 @@ namespace Chaos
 		void SetTexture(Texture* tex);
 		Texture* GetTexture();
 		
+		void SetColour(Vec4 colour);
+		Vec4 GetColour();
+		
 		void SetShaderFloatData(size_t index, float value);
 		
 		public:

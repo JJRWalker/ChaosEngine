@@ -59,7 +59,7 @@ namespace Chaos
 		RenderObject* quad = new RenderObject();
 		quad->pMesh = GetMesh("quad");
 		quad->pMaterial = mat;
-		memcpy((void*)&quad->Transform[0], (void*)&transform[0], sizeof(float) * 16);
+		memcpy((void*)&quad->ShaderData.Transform[0], (void*)&transform[0], sizeof(float) * 16);
 		
 		if (!Renderables.Push(quad))
 		{
@@ -251,7 +251,7 @@ namespace Chaos
 		void* objectData;
 		vmaMapMemory(m_allocator, GetCurrentFrame().ObjectBuffer.Allocation, &objectData);
 		
-		GPUObjectData* sobjectSSBO = (GPUObjectData*)objectData;
+		ShaderObjectData* sobjectSSBO = (ShaderObjectData*)objectData;
 		
 		for (int i = 0; i < renderObjData.Size; ++i)
 		{
@@ -259,9 +259,8 @@ namespace Chaos
 				continue;
 			
 			RenderObject& obj = *renderObjData.Data[i];
-			memcpy((void*)&sobjectSSBO[i].ModelMatrix, (void*)&obj.Transform, sizeof(float) * 16);
-			memcpy((void*)&sobjectSSBO[i].ShaderDataArray1, (void*)&obj.ShaderDataArray1, sizeof(float) * 16);
 			
+			memcpy((void*)&sobjectSSBO[i], (void*)&obj.ShaderData, sizeof(ShaderObjectData));
 		}
 		
 		vmaUnmapMemory(m_allocator, GetCurrentFrame().ObjectBuffer.Allocation);
@@ -740,7 +739,7 @@ namespace Chaos
 		m_debugMessenger = vkbInst.debug_messenger;
 		
 		
-		//																																				TODO: Make platform agnostic
+		//																																				TODO: Long-term Make platform agnostic
 		if (glfwCreateWindowSurface(m_instance, (GLFWwindow*)pWindow->GetNativeWindow(), nullptr, &m_surface) != VK_SUCCESS)
 		{
 			LOGCORE_ERROR("VULKAN: failed to create window surface!");
@@ -1045,7 +1044,7 @@ namespace Chaos
 		{
 			Frames[i].CameraBuffer = CreateBuffer(sizeof(GPUCameraData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 			
-			Frames[i].ObjectBuffer = CreateBuffer(sizeof(GPUObjectData) * MAX_OBJECTS, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+			Frames[i].ObjectBuffer = CreateBuffer(sizeof(ShaderObjectData) * MAX_OBJECTS, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 			
 			VkDescriptorSetAllocateInfo allocInfo = {};
 			allocInfo.pNext = nullptr;
@@ -1078,7 +1077,7 @@ namespace Chaos
 			VkDescriptorBufferInfo objectBufferInfo;
 			objectBufferInfo.buffer = Frames[i].ObjectBuffer.Buffer;
 			objectBufferInfo.offset = 0;
-			objectBufferInfo.range = sizeof(GPUObjectData) * MAX_OBJECTS;
+			objectBufferInfo.range = sizeof(ShaderObjectData) * MAX_OBJECTS;
 			
 			VkWriteDescriptorSet camWrite = VkInit::WriteDescriptorBuffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, Frames[i].GlobalDescriptor, &camInfo, 0);
 			

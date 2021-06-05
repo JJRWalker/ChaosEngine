@@ -13,6 +13,9 @@ namespace Chaos
 		Name = "Sprite";
 		
 		p_renderObject = Application::Get().GetRenderer().AddQuad(GetGlobalTransform(), Material::Get("textured-default"));
+		memset(p_renderObject->ShaderData.DataArray1, 0, sizeof(float) * 16);
+		memset(p_renderObject->ShaderData.CustomDataArray1, 0, sizeof(float) * 16);
+		SetColour(Vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	}
 	
 	
@@ -25,7 +28,7 @@ namespace Chaos
 	void Sprite::OnUpdate(float delta)
 	{
 		// copy current global transform to the render object
-		memcpy((void*)&p_renderObject->Transform[0], (void*)&GetGlobalTransform()[0], sizeof(float) * 16);
+		memcpy((void*)&p_renderObject->ShaderData.Transform[0], (void*)&GetGlobalTransform()[0], sizeof(float) * 16);
 	}
 	
 	
@@ -63,9 +66,23 @@ namespace Chaos
 	}
 	
 	
+	void Sprite::SetColour(Vec4 colour)
+	{
+		memcpy((void*)&p_renderObject->ShaderData.DataArray1, (void*)&colour, sizeof(float) * 4);
+		
+	}
+	
+	
+	Vec4 Sprite::GetColour()
+	{
+		return Vec4(p_renderObject->ShaderData.DataArray1[0],
+					p_renderObject->ShaderData.DataArray1[1], p_renderObject->ShaderData.DataArray1[2], p_renderObject->ShaderData.DataArray1[3]);
+	}
+	
+	
 	void Sprite::SetShaderFloatData(size_t index, float value)
 	{
-		p_renderObject->ShaderDataArray1[index] = value;
+		p_renderObject->ShaderData.DataArray1[index] = value;
 	}
 	
 	
@@ -84,40 +101,40 @@ namespace Chaos
 	// could be reused by the user and cause issues
 	void SubSprite::SetCoords(Vec2 coords)
 	{
-		SetShaderFloatData(0, coords.X);
-		SetShaderFloatData(1, coords.Y);
+		SetShaderFloatData(4, coords.X);
+		SetShaderFloatData(5, coords.Y);
 	}
 	
 	
 	void SubSprite::SetTotalCells(Vec2 dimensions)
 	{
-		SetShaderFloatData(2, dimensions.X);
-		SetShaderFloatData(3, dimensions.Y);
+		SetShaderFloatData(6, dimensions.X);
+		SetShaderFloatData(7, dimensions.Y);
 	}
 	
 	
 	void SubSprite::SetTilingFactor(Vec2 tilingFactor)
 	{
-		SetShaderFloatData(4, tilingFactor.X);
-		SetShaderFloatData(5, tilingFactor.Y);
+		SetShaderFloatData(8, tilingFactor.X);
+		SetShaderFloatData(9, tilingFactor.Y);
 	}
 	
 	
 	Vec2 SubSprite::GetCoords()
 	{
-		return Vec2(p_renderObject->ShaderDataArray1[0], p_renderObject->ShaderDataArray1[1]);
+		return Vec2(p_renderObject->ShaderData.DataArray1[4], p_renderObject->ShaderData.DataArray1[5]);
 	}
 	
 	
 	Vec2 SubSprite::GetTotalCells()
 	{
-		return Vec2(p_renderObject->ShaderDataArray1[2], p_renderObject->ShaderDataArray1[3]);
+		return Vec2(p_renderObject->ShaderData.DataArray1[6], p_renderObject->ShaderData.DataArray1[7]);
 	}
 	
 	
 	Vec2 SubSprite::GetTilingFactor()
 	{
-		return Vec2(p_renderObject->ShaderDataArray1[4], p_renderObject->ShaderDataArray1[5]);
+		return Vec2(p_renderObject->ShaderData.DataArray1[8], p_renderObject->ShaderData.DataArray1[9]);
 	}
 	
 	
