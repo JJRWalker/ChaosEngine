@@ -112,6 +112,7 @@ namespace Chaos
 		transform[15] = 1.0f;
 		
 		RenderObject* line = AddQuad(transform, GetMaterial("textured-default"));
+		memcpy((void*)&line->ShaderData.DataArray1, (void*)&colour, sizeof(float) * 4);
 		line->RenderOneTime = true;
 	}
 	

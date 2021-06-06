@@ -36,7 +36,10 @@ void main()
 	float diffuse = max(dot(norm, lightDir), 0.0) * sceneData.sunlightDirection.w;
 	vec3 diffColour = diffuse * lightColour;
 	vec4 result = vec4((ambient + diffColour) * inColor, 1.0f);
-    vec4 colour = texture(tex1, inTexCoord);
+
+	mat4 engineData = inObjData.shaderFloatArray1;
+
+    vec4 colour = texture(tex1, inTexCoord) * vec4(engineData[0][0], engineData[0][1], engineData[0][2], engineData[0][3]);
 
 	if (colour.a <= 0.0f)
 	{
