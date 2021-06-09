@@ -267,7 +267,7 @@ namespace Chaos
 			Vec2 start = Vec2(pos.X + Radius * cos(i * stepIncrement), pos.Y + Radius * sin(i * stepIncrement));
 			Vec2 end = Vec2(pos.X + Radius * cos((i + 1) * stepIncrement), pos.Y + Radius * sin((i + 1) * stepIncrement));
 			
-			renderer.DrawLine(start, end, Vec4(0.3f, 1.0f, 0.3f, 0.8f), DEBUG_LINE_WEIGHT, 1000.f);
+			renderer.DrawLine(start, end, Vec4(0.3f, 1.0f, 0.3f, 0.8f), DEBUG_LINE_WEIGHT, DEBUG_RENDER_ORDER);
 		}
 	}
 	

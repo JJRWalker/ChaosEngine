@@ -15,8 +15,20 @@ namespace Chaos
 		Vec2() { X = 0; Y = 0; }
 		
 		//Functions, nonstatic
-		float Magnitude() { return sqrtf((X * X) + (Y * Y));}
-		Vec2 Normalised() { 
+		float Magnitude() 
+		{ 
+			return sqrtf((X * X) + (Y * Y));
+		}
+		
+		
+		float MagnitudeSq()
+		{
+			return (X * X) + (Y * Y);
+		}
+		
+		
+		inline Vec2 Normalised() 
+		{ 
 			float x = 0;
 			float y = 0;
 			if (X != 0)
@@ -27,13 +39,19 @@ namespace Chaos
 		}
 		
 		
+		inline Vec2 Cross()
+		{
+			return Vec2(Y, -X);
+		}
+		
+		
 		Vec2 ClampMagnitude(float max)
 		{
 			return this->Normalised() * std::min(this->Magnitude(), max);
 		}
 		
 		
-		Vec2 Abs()
+		inline Vec2 Abs()
 		{
 			return Vec2(abs(X), abs(Y));
 		}
@@ -144,6 +162,19 @@ namespace Chaos
 			return *this;
 		}
 		
+		
+		inline Vec2 operator / (const Vec2& other)
+		{
+			float x = 0;
+			float y = 0;
+			if (abs(X) > MIN_FLOAT_COMPONENT_VALUE && abs(other.X) > MIN_FLOAT_COMPONENT_VALUE)
+				x = X / other.X;
+			if (abs(Y) > MIN_FLOAT_COMPONENT_VALUE && abs(other.Y) > MIN_FLOAT_COMPONENT_VALUE)
+				y = Y / other.Y;
+			return Vec2(x, y);
+		}
+		
+		
 		//division operator with float
 		inline Vec2 operator / (const float& divisor) {
 			float x = 0;
@@ -224,6 +255,12 @@ namespace Chaos
 		}
 		
 #pragma endregion
+		
+		template<typename OStream>
+			friend OStream &operator<<(OStream& os, const Vec2& vec)
+		{
+			return os << "{" << vec.X << ", " << vec.Y << "}";
+		}
 		
 		public:
 		union {

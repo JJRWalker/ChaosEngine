@@ -55,7 +55,19 @@ namespace Chaos
 	
 	bool Collisions::LineCircleIntersection(Vec2 lineStart, Vec2 lineEnd, Vec2 circleOrigin, float radius)
 	{
-		return (lineStart - circleOrigin).Magnitude() < radius + (lineEnd - lineStart).Magnitude();
+		Vec2 lineVec = (lineEnd - lineStart);
+		Vec2 basisVector = (lineEnd - lineStart).Normalised();
+		
+		Vec2 lineStartToCircle = circleOrigin - lineStart;
+		
+		float linePercent = (lineStartToCircle / basisVector).Magnitude() / lineVec.Magnitude();
+		
+		if (linePercent < 0.f || linePercent > 1.0f)
+			return false;
+		
+		Vec2 projectedPoint = lineStart + lineVec * linePercent;
+		
+		return (circleOrigin - projectedPoint).Magnitude() <= radius;
 	}
 	
 	

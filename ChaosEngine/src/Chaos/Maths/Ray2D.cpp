@@ -5,6 +5,8 @@
 #include "Chaos/Nodes/Colliders.h"
 #include "Chaos/DataTypes/QuadTree.h"
 
+#include "Chaos/Debug/Debug.h"
+
 namespace Chaos
 {
 	bool Ray2D::Cast(Vec2& origin, Vec2& direction, float distance)
@@ -73,10 +75,17 @@ namespace Chaos
 					Vec2 pointOfIntersection = origin + (ray * fLow);
 					
 					if ((pointOfIntersection - origin).Magnitude() < shortestDistance)
-					{closestPoint = pointOfIntersection;
+					{
+						closestPoint = pointOfIntersection;
 						shortestDistance = (pointOfIntersection - origin).Magnitude();
 						hit = nodesInRange[node];
 					}
+					
+				}break;
+				
+				case ColliderType::CIRCLE:
+				{
+					
 					
 				}break;
 			}
@@ -86,10 +95,66 @@ namespace Chaos
 		
 		if (hit)
 		{
+			outHitInfo.Hit = true;
 			outHitInfo.HitCollider = hit;
 			outHitInfo.Distance = shortestDistance;
 			outHitInfo.Point = closestPoint;
-			outHitInfo.Hit = true;
+			
+			// normal calculated differently per type
+			switch(hit->Type)
+			{
+				case ColliderType::BOX2D:
+				{
+					Vec2 colliderPosition = hit->GetPosition();
+					BoxCollider2D* boxCollider = (BoxCollider2D*)hit;
+					
+					Vec2 point = closestPoint - hit->GetPosition();
+					point = point / boxCollider->Bounds;
+					
+					
+					Vec2 topLeft = Vec2(colliderPosition.X - boxCollider->Bounds.X, colliderPosition.Y + boxCollider->Bounds.Y);
+					Vec2 topRight = Vec2(colliderPosition.X + boxCollider->Bounds.X, colliderPosition.Y + boxCollider->Bounds.Y);
+					Vec2 bottomLeft = Vec2(colliderPosition.X - boxCollider->Bounds.X, colliderPosition.Y - boxCollider->Bounds.Y);
+					Vec2 bottomRight = Vec2(colliderPosition.X + boxCollider->Bounds.X, colliderPosition.Y - boxCollider->Bounds.Y);
+					
+					// not personally a fan of this part at. Seems there could be a way to simplfiy / not use branching satements
+					// ray hit left or right side
+					if (abs(point.X) > abs(point.Y))
+					{
+						// left
+						if (point.X < 0)
+						{
+							outHitInfo.Normal = (bottomLeft - topLeft).Cross().Normalised();
+						}
+						// right
+						else
+						{
+							outHitInfo.Normal = (topRight - bottomRight).Cross().Normalised();
+						}
+					}
+					// ray hit top or bottom side
+					else
+					{
+						// bottom
+						if (point.Y < 0)
+						{
+							outHitInfo.Normal = (bottomRight - bottomLeft).Cross().Normalised();
+						}
+						// top
+						else
+						{
+							outHitInfo.Normal = (topLeft - topRight).Cross().Normalised();
+						}
+					}
+				}break;
+				
+				default:
+				{
+					// this should work for circle colliders
+					outHitInfo.Normal = (closestPoint - origin).Normalised();
+				}break;
+			}
+			
 			return true;
 		}
 		outHitInfo.Hit = false;
