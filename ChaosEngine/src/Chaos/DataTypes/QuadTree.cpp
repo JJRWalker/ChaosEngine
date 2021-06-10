@@ -6,7 +6,7 @@
 
 //#ifdef CHAOS_DEBUG
 #include "Chaos/Core/Application.h"
-#include "Chaos/Renderer/Renderer.h"
+#include "Chaos/Debug/Debug.h"
 //#endif
 
 namespace Chaos
@@ -146,8 +146,10 @@ namespace Chaos
 	
 	Collider* QuadTree::QueryLine(Vec2 start, Vec2 end, Collider* foundNodes[MAX_NODES], size_t& insert)
 	{
-		if (!Collisions::LineBoxIntersection(start, end, m_origin, m_bounds))
-			return false;
+		//TODO EFFICENCY: find way to discriminate based on line intersection.
+		//if (!Collisions::BoxBoxIntersection(centre, bounds, m_origin, m_bounds))
+		//return false;
+		
 		for (int i = 0; i < m_size; ++i)
 		{
 			switch (m_nodes[i]->Type)
@@ -193,22 +195,15 @@ namespace Chaos
 	
 	void QuadTree::Debug()
 	{
-		Renderer& renderer = Application::Get().GetRenderer();
-		
 		Vec2 bottomLeft = Vec2(m_origin.X - m_bounds.X, m_origin.Y - m_bounds.Y);
 		Vec2 bottomRight = Vec2(m_origin.X + m_bounds.X, m_origin.Y - m_bounds.Y);
 		Vec2 topLeft = Vec2(m_origin.X - m_bounds.X, m_origin.Y + m_bounds.Y);
 		Vec2 topRight = Vec2(m_origin.X + m_bounds.X, m_origin.Y + m_bounds.Y);
 		
-		renderer.DrawLine(bottomLeft, bottomRight, Vec4(1.0f, 0.1f, 1.0f, 1.0f), 0.1f, 1000);
-		renderer.DrawLine(bottomRight, topRight, Vec4(1.0f, 0.1f, 1.0f, 1.0f), 0.1f, 1000);
-		renderer.DrawLine(topRight, topLeft, Vec4(1.0f, 0.1f, 1.0f, 1.0f), 0.1f, 1000);
-		renderer.DrawLine(topLeft, bottomLeft, Vec4(1.0f, 0.1f, 1.0f, 1.0f), 0.1f, 1000);
-		
-		for (size_t i = 0; i < m_size; ++i)
-		{
-			//renderer.DrawQuad(m_nodes[i]->GetPosition3D(), Vec2(0.2f, 0.2f), Vec2::Zero(), Vec4(1.0f, 0.4f, 0.4f, 0.5f), Texture::GetBlank());
-		}
+		Debug::DrawLine(bottomLeft, bottomRight, Vec4(1.0f, 0.1f, 1.0f, 1.0f), 0.1f);
+		Debug::DrawLine(bottomRight, topRight, Vec4(1.0f, 0.1f, 1.0f, 1.0f), 0.1f);
+		Debug::DrawLine(topRight, topLeft, Vec4(1.0f, 0.1f, 1.0f, 1.0f), 0.1f);
+		Debug::DrawLine(topLeft, bottomLeft, Vec4(1.0f, 0.1f, 1.0f, 1.0f), 0.1f);
 		
 		if (m_divided)
 		{

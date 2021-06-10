@@ -18,6 +18,12 @@ namespace Chaos
 	
 	bool Ray2D::Cast(Vec2& origin, Vec2& direction, float distance, Ray2DHitInfo& outHitInfo)
 	{
+		return Cast(origin, direction, distance, outHitInfo, 0);
+	}
+	
+	
+	bool Ray2D::Cast(Vec2& origin, Vec2& direction, float distance, Ray2DHitInfo& outHitInfo, uint32_t mask)
+	{
 		Level* level = Level::Get();
 		
 		Vec2 ray = direction.Normalised() * distance;
@@ -50,6 +56,9 @@ namespace Chaos
 		
 		for (size_t node = 0; node < nodesInRangeSize; ++node)
 		{
+			if (mask != 0 && !HASBIT(mask, nodesInRange[node]->ObjectMask))
+				continue;
+			
 			Vec2 colliderPosition = nodesInRange[node]->GetPosition();
 			
 			switch (nodesInRange[node]->Type)

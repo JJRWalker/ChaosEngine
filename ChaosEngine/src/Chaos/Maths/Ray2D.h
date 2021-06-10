@@ -23,6 +23,8 @@ namespace Chaos
 		public:
 		static bool Cast(Vec2& origin, Vec2& direction, float distance);
 		static bool Cast(Vec2& origin, Vec2& direction, float distance, Ray2DHitInfo& outHitInfo);
+		// if the value '0' is passed in as a mask, the mask will be ignored
+		static bool Cast(Vec2& origin, Vec2& direction, float distance, Ray2DHitInfo& outHitInfo, uint32_t mask);
 		
 		private: 
 		static bool ClipLine(float minBounds, float maxBounds, float origin, float end, float& fLow, float& fHigh);

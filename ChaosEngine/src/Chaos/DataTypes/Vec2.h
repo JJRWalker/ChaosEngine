@@ -135,8 +135,9 @@ namespace Chaos
 			return start + distanceVector;
 		}
 		
-		static Vec2 Zero() { return Vec2(0.0f, 0.0f); }
-		static Vec2 Up() { return Vec2(0.0f, 1.0f); }
+		static inline Vec2 Zero() { return Vec2(0.0f, 0.0f); }
+		static inline Vec2 Up() { return Vec2(0.0f, 1.0f); }
+		static inline Vec2 Right() { return Vec2(1.0f, 0.0f); }
 #pragma endregion
 		
 #pragma region OPERATORS

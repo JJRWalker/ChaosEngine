@@ -19,7 +19,8 @@ layout (set = 0, binding = 0) uniform CameraBuffer{
 
 struct ObjectData{
 	mat4 model;
-	mat4 optionalData;
+	mat4 shaderFloatArray1;
+	mat4 customFloatArray1;
 }; 
 
 layout (location = 4) out ObjectData outObjData; 
