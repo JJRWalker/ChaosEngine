@@ -20,11 +20,11 @@ namespace Chaos
 			}break;
 			case EProjectionType::ORTHAGRAPHIC:
 			{
-				m_view = glm::lookAt(glm::vec3(GetPosition().X, GetPosition().Y, 1.0f), glm::vec3(GetPosition().X, GetPosition().Y, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+				m_view = glm::lookAt(glm::vec3(GetWorldPosition().X, GetWorldPosition().Y, 1.0f), glm::vec3(GetWorldPosition().X,  GetWorldPosition().Y, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 				m_model = glm::rotate(glm::mat4(1.0f), glm::radians(GetRotation()), glm::vec3(0.0f, 0.0f, 1.0f));
 				m_projection = glm::ortho(m_bounds.X * m_aspectRatio,
 										  m_bounds.Y * m_aspectRatio,
-										  m_bounds.Z, m_bounds.W, GetDepth() -200.0f, GetDepth() + 200.0f);
+										  m_bounds.Z, m_bounds.W,  -200.0f,  200.0f);
 			}break;
 		}
 		
@@ -54,8 +54,8 @@ namespace Chaos
 		glm::mat4 transform = m_projection * m_view * m_model;
 		glm::vec2 pos = {screenPoint.X, screenPoint.Y};
 		glm::vec4 multiplied = glm::inverse(transform) * glm::vec4(pos.x, pos.y, 0, 0);
-		multiplied.x += GetPosition().X;
-		multiplied.y += GetPosition().Y;
+		multiplied.x += GetWorldPosition().X;
+		multiplied.y += GetWorldPosition().Y;
 		return Vec2(multiplied.x, multiplied.y);
 	}
 }

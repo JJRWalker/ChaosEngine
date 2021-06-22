@@ -12,7 +12,33 @@ namespace Chaos
 	{
 		Name = "Sprite";
 		
-		p_renderObject = Application::Get().GetRenderer().AddQuad(GetGlobalTransform(), Material::Get("textured-default"));
+		p_renderObject = Application::Get().GetRenderer().AddQuad(GetWorldTransform(), Material::Get("textured-default"));
+		memset(p_renderObject->ShaderData.DataArray1, 0, sizeof(float) * 16);
+		memset(p_renderObject->ShaderData.CustomDataArray1, 0, sizeof(float) * 16);
+		SetColour(Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	}
+	
+	
+	Sprite::Sprite(Vec2 position, bool child) : Node(child)
+	{
+		Name = "Sprite";
+		
+		SetPosition(position);
+		
+		p_renderObject = Application::Get().GetRenderer().AddQuad(GetWorldTransform(), Material::Get("textured-default"));
+		memset(p_renderObject->ShaderData.DataArray1, 0, sizeof(float) * 16);
+		memset(p_renderObject->ShaderData.CustomDataArray1, 0, sizeof(float) * 16);
+		SetColour(Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	}
+	
+	
+	Sprite::Sprite(Vec3 position, bool child) : Node(child)
+	{
+		Name = "Sprite";
+		
+		SetPosition(position);
+		
+		p_renderObject = Application::Get().GetRenderer().AddQuad(GetWorldTransform(), Material::Get("textured-default"));
 		memset(p_renderObject->ShaderData.DataArray1, 0, sizeof(float) * 16);
 		memset(p_renderObject->ShaderData.CustomDataArray1, 0, sizeof(float) * 16);
 		SetColour(Vec4(1.0f, 1.0f, 1.0f, 1.0f));
@@ -27,13 +53,16 @@ namespace Chaos
 	
 	void Sprite::OnUpdate(float delta)
 	{
-		// copy current global transform to the render object
-		memcpy((void*)&p_renderObject->ShaderData.Transform[0], (void*)&GetGlobalTransform()[0], sizeof(float) * 16);
+		if (UpdateType == SpriteUpdateType::DYNAMIC)
+			// copy current global transform to the render object
+			memcpy((void*)&p_renderObject->ShaderData.Transform[0], (void*)&GetWorldTransform()[0], sizeof(float) * 16);
 	}
 	
 	
 	void Sprite::SetEnabled(bool state)
 	{
+		if (Enabled == state)
+			return;
 		Enabled = state;
 		if (!state)
 			Application::Get().GetRenderer().RemoveRenderable(p_renderObject);
@@ -88,6 +117,24 @@ namespace Chaos
 	
 	// SUB SPRITE
 	SubSprite::SubSprite(bool child) : Sprite(child)
+	{
+		Name = "SubSprite";
+		
+		SetMaterial(Material::Get("subsprite-default"));
+		SetTilingFactor(Vec2(1.0f, 1.0f));
+	}
+	
+	
+	SubSprite::SubSprite(Vec2 position, bool child) : Sprite(position, child)
+	{
+		Name = "SubSprite";
+		
+		SetMaterial(Material::Get("subsprite-default"));
+		SetTilingFactor(Vec2(1.0f, 1.0f));
+	}
+	
+	
+	SubSprite::SubSprite(Vec3 position, bool child) : Sprite(position, child)
 	{
 		Name = "SubSprite";
 		

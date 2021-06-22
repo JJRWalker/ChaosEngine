@@ -68,7 +68,8 @@ namespace Chaos
 	
 	void Application::Run()
 	{
-		StartFixedUpdateThread();
+		// NOTE: seemed to cause issues at lower framerates. for now single threaded updates
+		//StartFixedUpdateThread();
 		while (m_running)
 		{
 			PROFILED_FUNC();
@@ -76,16 +77,37 @@ namespace Chaos
 			//Update time class
 			Time::m_time = m_window->GetWindowTime();
 			Time::m_deltaTime = (float)(Time::m_time - Time::m_timeLastFrame);
+			Time::m_timeSinceLastFixedUpdate += Time::m_deltaTime;
 			Time::m_timeLastFrame = Time::m_time;
 			
-			//m_mainCamera->Translate(Vec2(Input::GetButton("horizontal"), Input::GetButton("vertical")) * Time::m_deltaTime * 10);
+			
+			if (Time::m_timeSinceLastFixedUpdate >= Time::m_fixedDeltaTime)
+			{
+				float stepsToSimulate = Time::m_timeSinceLastFixedUpdate / Time::m_fixedDeltaTime;
+				for(int i = 0; i < (int)stepsToSimulate; ++i)
+				{
+					for (Layer* layer : m_layerStack)
+					{
+						layer->OnFixedUpdate(Time::m_fixedDeltaTime);
+					}
+					
+					
+					if (Level::Get())
+					{
+						Level::Get()->OnFixedUpdate(Time::m_fixedDeltaTime);
+					}
+				}
+				
+				Time::m_timeSinceLastFixedUpdate = (stepsToSimulate - (int)stepsToSimulate) * Time::m_fixedDeltaTime;
+			}
 			
 			//NOTE: this should be done when changing the resolution
 			//m_mainCamera->SetAspectRatio(m_window->GetAspectRatio());
 			
+			
 			//itterate through layers
 			for (Layer* layer : m_layerStack)
-				layer->OnUpdate(Time::m_deltaTime);			
+				layer->OnUpdate(Time::m_deltaTime);
 			
 			if (m_renderingImGui)
 			{
@@ -125,7 +147,7 @@ namespace Chaos
 			float fixedDelta = Time::GetFixedDeltaTime();
 			
 			//NOTE: not sure why but this needs to be multiplied by 500 instead of 1000
-			std::chrono::milliseconds sleepTime(static_cast<int>(fixedDelta * 500));
+			std::chrono::milliseconds sleepTime(static_cast<int>(fixedDelta * 1000));
 			
 			if (m_pauseFixedUpdate)
 			{

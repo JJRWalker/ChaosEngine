@@ -29,7 +29,7 @@ namespace Chaos
 	
 	bool QuadTree::Insert(Collider* node)
 	{
-		if (!Collisions::PointInRectangle(node->GetPosition(),m_origin, m_bounds))
+		if (!Collisions::PointInRectangle(node->GetWorldPosition(),m_origin, m_bounds))
 			return false;
 		
 		if (m_size < QUAD_TREE_CAPACITY)
@@ -63,7 +63,7 @@ namespace Chaos
 					BoxCollider2D* collider = dynamic_cast<BoxCollider2D*>(m_nodes[i]);
 					if(collider)
 					{
-						if (Collisions::BoxBoxIntersection(centre, bounds, collider->GetPosition(), collider->Bounds))
+						if (Collisions::BoxBoxIntersection(centre, bounds, collider->GetWorldPosition(), collider->Bounds))
 						{
 							foundNodes[insert] = collider;
 							++insert;
@@ -75,7 +75,7 @@ namespace Chaos
 					CircleCollider* collider = dynamic_cast<CircleCollider*>(m_nodes[i]);
 					if (collider)
 					{
-						if (Collisions::CircleBoxIntersection(collider->GetPosition(), collider->Radius, centre, bounds))
+						if (Collisions::CircleBoxIntersection(collider->GetWorldPosition(), collider->Radius, centre, bounds))
 						{
 							foundNodes[insert] = collider;
 							++insert;
@@ -110,7 +110,7 @@ namespace Chaos
 					BoxCollider2D* collider = dynamic_cast<BoxCollider2D*>(m_nodes[i]);
 					if (collider)
 					{
-						if (Collisions::CircleBoxIntersection(centre, radius, collider->GetPosition(), collider->Bounds))
+						if (Collisions::CircleBoxIntersection(centre, radius, collider->GetWorldPosition(), collider->Bounds))
 						{
 							foundNodes[insert] = collider;
 							++insert;
@@ -122,7 +122,7 @@ namespace Chaos
 					CircleCollider* collider = dynamic_cast<CircleCollider*>(m_nodes[i]);
 					if (collider)
 					{
-						if (Collisions::CircleCircleIntersection(collider->GetPosition(), collider->Radius, centre, radius))
+						if (Collisions::CircleCircleIntersection(collider->GetWorldPosition(), collider->Radius, centre, radius))
 						{
 							foundNodes[insert] = collider;
 							++insert;
@@ -159,7 +159,7 @@ namespace Chaos
 					BoxCollider2D* collider = dynamic_cast<BoxCollider2D*>(m_nodes[i]);
 					if (collider)
 					{
-						if (Collisions::LineBoxIntersection(start, end, collider->GetPosition(), collider->Bounds))
+						if (Collisions::LineBoxIntersection(start, end, collider->GetWorldPosition(), collider->Bounds))
 						{
 							foundNodes[insert] = collider;
 							++insert;
@@ -171,7 +171,7 @@ namespace Chaos
 					CircleCollider* collider = dynamic_cast<CircleCollider*>(m_nodes[i]);
 					if (collider)
 					{
-						if (Collisions::LineCircleIntersection(start, end, collider->GetPosition(), collider->Radius))
+						if (Collisions::LineCircleIntersection(start, end, collider->GetWorldPosition(), collider->Radius))
 						{
 							foundNodes[insert] = collider;
 							++insert;

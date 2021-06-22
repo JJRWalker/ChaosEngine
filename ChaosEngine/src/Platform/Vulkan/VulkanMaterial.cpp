@@ -25,18 +25,6 @@ namespace Chaos
 	}
 	
 	
-	Vec4 VulkanMaterial::GetColour() 
-	{ 
-		return Colour;
-	}
-	
-	
-	void VulkanMaterial::SetColour(Vec4 colour) 
-	{ 
-		Colour = colour;
-	}
-	
-	
 	std::string VulkanMaterial::GetName()
 	{ 
 		return Name;

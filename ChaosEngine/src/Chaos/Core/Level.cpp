@@ -38,6 +38,8 @@ namespace Chaos
 		size_t collidableCount = 0;
 		for (int node = 0; node < NodeCount; ++node)
 		{
+			if (!Nodes[node][0]->IsEnabled())
+				continue;
 			for (int child = 0; child <= Nodes[node][0]->ChildCount; ++child)
 			{
 				if (Nodes[node][child]->IsEnabled())
@@ -49,7 +51,7 @@ namespace Chaos
 					if (collider)
 					{
 						quadTree.Insert(collider);
-						if (collider->PhysicsUpdateType == PhysicsType::CONTINUOUS)
+						if (collider->UpdateType == PhysicsUpdateType::PER_FRAME)
 						{
 							colliders[collidableCount] = collider;
 							collidableCount++;
@@ -82,6 +84,8 @@ namespace Chaos
 		size_t collidableCount = 0;
 		for (int node = 0; node < NodeCount; ++node)
 		{
+			if (!Nodes[node][0]->IsEnabled())
+				continue;
 			for (int child = 0; child <= Nodes[node][0]->ChildCount; ++child)
 			{
 				if (Nodes[node][child]->IsEnabled())
@@ -91,7 +95,7 @@ namespace Chaos
 					if (collider)
 					{
 						quadTree.Insert(collider);
-						if (collider->PhysicsUpdateType == PhysicsType::DISCREET)
+						if (collider->UpdateType == PhysicsUpdateType::FIXED_STEP)
 						{
 							colliders[collidableCount] = collider;
 							collidableCount++;

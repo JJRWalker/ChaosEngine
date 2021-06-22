@@ -61,13 +61,13 @@ namespace Chaos
 	
 	
 	// recursively translates the local local matrix by the parent matrix to get global transform matrix
-	float* Node::GetGlobalTransform()
+	float* Node::GetWorldTransform()
 	{
 		memcpy((void*)&m_globalTransform[0], (void*)&Transform[0], sizeof(float) * 16);
 		
 		if (p_parent)
 		{
-			float* parentTransform = p_parent->GetGlobalTransform();
+			float* parentTransform = p_parent->GetWorldTransform();
 			
 			m_globalTransform[0] *= parentTransform[0];
 			m_globalTransform[1] *= parentTransform[1];
@@ -93,16 +93,32 @@ namespace Chaos
 	Vec2 Node::GetPosition()
 	{
 		Vec2 pos =  Vec2(Transform[12], Transform[13]);
+		return pos;
+	}
+	
+	
+	Vec2 Node::GetWorldPosition()
+	{
+		Vec2 pos =  Vec2(Transform[12], Transform[13]);
 		if (p_parent)
-			pos = pos + p_parent->GetPosition();
+			pos = pos + p_parent->GetWorldPosition();
 		return pos;
 	}
 	
 	
 	void Node::SetPosition(Vec2 position)
 	{
+		Transform[12] = position.X;
+		Transform[13] = position.Y;
+	}
+	
+	
+	void Node::SetWorldPosition(Vec2 position)
+	{
+		Vec2 worldPosition = GetWorldPosition();
 		if (p_parent)
-			position = position + p_parent->GetPosition();
+			position = position + p_parent->GetWorldPosition();
+		
 		Transform[12] = position.X;
 		Transform[13] = position.Y;
 	}
@@ -111,16 +127,31 @@ namespace Chaos
 	Vec3 Node::GetPosition3D()
 	{
 		Vec3 pos = Vec3(Transform[12], Transform[13], Transform[14]);
+		return pos;
+	}
+	
+	
+	Vec3 Node::GetWorldPosition3D()
+	{
+		Vec3 pos = Vec3(Transform[12], Transform[13], Transform[14]);
 		if (p_parent)
-			pos = pos + p_parent->GetPosition3D();
+			pos = pos + p_parent->GetWorldPosition3D();
 		return pos;
 	}
 	
 	
 	void Node::SetPosition(Vec3 position)
 	{
+		Transform[12] = position.X;
+		Transform[13] = position.Y;
+		Transform[14] = position.Z;
+	}
+	
+	
+	void Node::SetWorldPosition(Vec3 position)
+	{
 		if (p_parent)
-			position = position + p_parent->GetPosition3D();
+			position = position + p_parent->GetWorldPosition3D();
 		Transform[12] = position.X;
 		Transform[13] = position.Y;
 		Transform[14] = position.Z;
@@ -133,8 +164,25 @@ namespace Chaos
 	}
 	
 	
+	float Node::GetWorldDepth()
+	{
+		float depth = Transform[14];
+		if (p_parent)
+			depth += GetWorldDepth();
+		return Transform[14];
+	}
+	
+	
 	void Node::SetDepth(float depth)
 	{
+		Transform[14] = depth;
+	}
+	
+	
+	void Node::SetWorldDepth(float depth)
+	{
+		if (p_parent)
+			depth += p_parent->GetWorldDepth();
 		Transform[14] = depth;
 	}
 	
@@ -155,7 +203,32 @@ namespace Chaos
 	}
 	
 	
+	float Node::GetWorldRotation()
+	{
+		float theta = atan2(Transform[4], Transform[0]);
+		if (p_parent)
+			theta += p_parent->GetRotation();
+		return theta;
+	}
+	
+	
 	void Node::SetRotation(float rotation)
+	{
+		Vec2 scale = GetScale();
+		
+		float offset = 0;
+		
+		rotation += offset;
+		//rotation = rotation - (int)(rotation / PI) * PI;
+		
+		Transform[0] = cosf(rotation) * scale.X;
+		Transform[1] = -sinf(rotation) * scale.X;
+		Transform[4] = sinf(rotation) * scale.Y;
+		Transform[5] = cosf(rotation) * scale.Y;
+	}
+	
+	
+	void Node::SetWorldRotation(float rotation)
 	{
 		Vec2 scale = GetScale();
 		
@@ -192,6 +265,20 @@ namespace Chaos
 		
 		Vec2 scale = Vec2(right.Magnitude(), up.Magnitude());
 		
+		return scale;
+	}
+	
+	
+	Vec2 Node::GetWorldScale()
+	{
+		Vec2 right = Vec2(Transform[0], Transform[1]);
+		Vec2 up = Vec2(Transform[4], Transform[5]);
+		
+		int rightMod = right.X + right.Y < 0 ? -1 : 1;
+		int upMod = up.X + up.Y < 0 ? -1 : 1;
+		
+		Vec2 scale = Vec2(right.Magnitude(), up.Magnitude());
+		
 		if (p_parent)
 			scale = scale * p_parent->GetScale();
 		
@@ -205,6 +292,19 @@ namespace Chaos
 		
 		float rotation = GetRotation();
 		
+		Transform[0] = cosf(rotation) * scale.X;
+		Transform[1] = -sinf(rotation) * scale.X;
+		Transform[4] = sinf(rotation) * scale.Y;
+		Transform[5] = cosf(rotation) * scale.Y;
+	}
+	
+	
+	void Node::SetWorldScale(Vec2 scale)
+	{
+		Vec2 offset = Vec2();
+		
+		float rotation = GetRotation();
+		
 		if (p_parent)
 			offset = p_parent->GetScale();
 		
@@ -213,6 +313,7 @@ namespace Chaos
 		Transform[4] = sinf(rotation) * scale.Y;
 		Transform[5] = cosf(rotation) * scale.Y;
 	}
+	
 	
 	size_t Node::GetSize()
 	{

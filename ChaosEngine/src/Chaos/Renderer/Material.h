@@ -11,9 +11,6 @@ namespace Chaos
 	class Material
 	{
 		public:
-		virtual Vec4 GetColour() = 0;
-		virtual void SetColour(Vec4 colour) = 0;
-		
 		virtual std::string GetName() = 0;
 		virtual void SetName(std::string name) = 0;
 		

@@ -15,15 +15,26 @@ namespace Chaos
 {
 	struct RenderObject;
 	class Material;
+	
+	enum SpriteUpdateType
+	{
+		DYNAMIC      = 0,
+		STATIC       = 1
+	};
+	
 	class Sprite : public Node
 	{
 		public:
 		Sprite(bool child = false);
+		Sprite(Vec2 position, bool child = false);
+		Sprite(Vec3 position, bool child = false);
 		~Sprite();
 		
+		// Node overrides
 		void OnUpdate(float delta) override;
 		void SetEnabled(bool state) override;
 		
+		// Actual sprite stuff
 		void SetMaterial(Material* mat);
 		Material* GetMaterial();
 		
@@ -35,8 +46,10 @@ namespace Chaos
 		
 		void SetShaderFloatData(size_t index, float value);
 		
+		
 		public:
-		Vec4 Colour = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
+		SpriteUpdateType UpdateType = SpriteUpdateType::DYNAMIC;
+		
 		protected:
 		RenderObject* p_renderObject = nullptr;
 	};
@@ -45,6 +58,8 @@ namespace Chaos
 	{
 		public:
 		SubSprite(bool child = false);
+		SubSprite(Vec2 position, bool child = false);
+		SubSprite(Vec3 position, bool child = false);
 		
 		void SetCoords(Vec2 coords);
 		void SetTotalCells(Vec2 dimensions); // total number of cells in x and y. NOT pixel size of grid

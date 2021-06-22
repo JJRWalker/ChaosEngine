@@ -82,7 +82,10 @@ namespace Chaos
 	
 	void VulkanRenderer::RemoveRenderable(RenderObject* toRemove)
 	{
-		Renderables.Remove(toRemove);
+		if (!Renderables.Remove(toRemove))
+		{
+			LOGCORE_WARN("VULKAN RENDERER: Cannot remove render object ID: {0} it might not exist in the renderables queue", toRemove->RenderID);
+		}
 	}
 	
 	
@@ -167,8 +170,10 @@ namespace Chaos
 		
 		VK_CHECK(vkBeginCommandBuffer(cmd, &cmdBeginInfo));
 		
+		Camera* mainCamera = Level::Get()->MainCamera();
+		
 		VkClearValue clearValue;
-		clearValue.color = { { 0.0f, 0.0f, 0.1f, 1.0f } };
+		clearValue.color = { { mainCamera->BackgroundColour.X, mainCamera->BackgroundColour.Y, mainCamera->BackgroundColour.Z, mainCamera->BackgroundColour.W } };
 		
 		VkClearValue depthClear;
 		depthClear.depthStencil.depth = 1.0f;
@@ -254,7 +259,7 @@ namespace Chaos
 		
 		ShaderObjectData* sobjectSSBO = (ShaderObjectData*)objectData;
 		
-		for (int i = 0; i < renderObjData.Size; ++i)
+		for (int i = 0; i < renderObjData.Size(); ++i)
 		{
 			if (!renderObjData.Data[i])
 				continue;
@@ -270,7 +275,7 @@ namespace Chaos
 		Material* lastMaterial = nullptr;
 		Texture* lastTexture = nullptr;
 		
-		for (int i = 0; i < renderObjData.Size; ++i)
+		for (int i = 0; i < renderObjData.Size(); ++i)
 		{
 			if (!renderObjData.Data[i])
 				continue;
@@ -1079,6 +1084,8 @@ namespace Chaos
 			objectBufferInfo.buffer = Frames[i].ObjectBuffer.Buffer;
 			objectBufferInfo.offset = 0;
 			objectBufferInfo.range = sizeof(ShaderObjectData) * MAX_OBJECTS;
+			
+			
 			
 			VkWriteDescriptorSet camWrite = VkInit::WriteDescriptorBuffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, Frames[i].GlobalDescriptor, &camInfo, 0);
 			

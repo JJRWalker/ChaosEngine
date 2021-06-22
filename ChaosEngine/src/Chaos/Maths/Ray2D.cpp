@@ -59,7 +59,7 @@ namespace Chaos
 			if (mask != 0 && !HASBIT(mask, nodesInRange[node]->ObjectMask))
 				continue;
 			
-			Vec2 colliderPosition = nodesInRange[node]->GetPosition();
+			Vec2 colliderPosition = nodesInRange[node]->GetWorldPosition();
 			
 			switch (nodesInRange[node]->Type)
 			{
@@ -114,10 +114,10 @@ namespace Chaos
 			{
 				case ColliderType::BOX2D:
 				{
-					Vec2 colliderPosition = hit->GetPosition();
+					Vec2 colliderPosition = hit->GetWorldPosition();
 					BoxCollider2D* boxCollider = (BoxCollider2D*)hit;
 					
-					Vec2 point = closestPoint - hit->GetPosition();
+					Vec2 point = closestPoint - hit->GetWorldPosition();
 					point = point / boxCollider->Bounds;
 					
 					

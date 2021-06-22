@@ -194,7 +194,7 @@ namespace Chaos
 	{
 		Renderer& renderer = Application::Get().GetRenderer();
 		
-		Vec2 pos = GetPosition();
+		Vec2 pos = GetWorldPosition();
 		
 		Vec2 topLeft = Vec2(pos.X - Bounds.X, pos.Y + Bounds.Y);
 		Vec2 topRight = Vec2(pos.X + Bounds.X , pos.Y + Bounds.Y );
@@ -223,7 +223,7 @@ namespace Chaos
 		
 		Collider** nodesInRange = (Collider**)malloc(MAX_COLLIDER_OVERLAPS * sizeof(Collider*));
 		size_t nodesInRangesize = 0;
-		tree->QueryRange(GetPosition(), Bounds, nodesInRange, nodesInRangesize);
+		tree->QueryRange(GetWorldPosition(), Bounds, nodesInRange, nodesInRangesize);
 		
 		for (size_t i = 0; i < nodesInRangesize; ++i)
 		{
@@ -257,7 +257,7 @@ namespace Chaos
 		// not really optimal, but these are only for debugging so it shouldn't matter too much
 		Renderer& renderer = Application::Get().GetRenderer();
 		
-		Vec2 pos = GetPosition();
+		Vec2 pos = GetWorldPosition();
 		int steps = 60;
 		
 		float stepIncrement = (2 * PI) / steps;
@@ -287,7 +287,7 @@ namespace Chaos
 		
 		Collider** nodesInRange = (Collider**)malloc(MAX_COLLIDER_OVERLAPS * sizeof(Collider*));
 		size_t nodesInRangesize = 0;
-		tree->QueryRadius(GetPosition(), Radius, nodesInRange, nodesInRangesize);
+		tree->QueryRadius(GetWorldPosition(), Radius, nodesInRange, nodesInRangesize);
 		
 		for (size_t i = 0; i < nodesInRangesize; ++i)
 		{

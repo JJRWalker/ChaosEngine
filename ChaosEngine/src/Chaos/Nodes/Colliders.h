@@ -20,13 +20,13 @@ namespace Chaos
 	};
 	
 	
-	enum class PhysicsType
+	enum class PhysicsUpdateType
 	{
-		DISCREET = 0,
-		CONTINUOUS = 1
+		FIXED_STEP = 0,
+		PER_FRAME = 1
 	};
 	
-
+	
 	struct CollisionInfo
 	{
 		Collider* pCollider = nullptr;
@@ -48,16 +48,16 @@ namespace Chaos
 		virtual bool OverlapsWith(Collider* other);
 		virtual void ClearOverlaps();
 		virtual void InsertHitNode(Collider* collider);
-
+		
 		public:
 		bool Trigger = false;
 		ColliderType Type;
-		PhysicsType PhysicsUpdateType = PhysicsType::DISCREET;
+		PhysicsUpdateType UpdateType = PhysicsUpdateType::FIXED_STEP;
 		uint32_t CollisionMask = 1; // bitmask for what it objectmasks it will collide with
 		uint32_t ObjectMask = 1;  // seperate bitmask for the type it is
 		Collider* Overlaps[MAX_COLLIDER_OVERLAPS];
 		size_t OverlapsSize = 0;
-
+		
 		protected:
 		Collider* m_hitNodes[MAX_COLLIDER_OVERLAPS];
 		size_t m_hitNodesSize = 0;
@@ -70,7 +70,7 @@ namespace Chaos
 		BoxCollider2D(bool child = false);
 		
 		void Debug() override;
-
+		
 		bool CollideWith(Collider* other) override;
 		void CheckCollisions(QuadTree* tree) override;
 		
@@ -82,7 +82,7 @@ namespace Chaos
 	{
 		public:
 		CircleCollider(bool child = false);
-
+		
 		void Debug() override;
 		
 		bool CollideWith(Collider* other) override;

@@ -29,20 +29,32 @@ namespace Chaos
 		
 		
 		// returns a 16 float array of all transforms added up through heirarchy
-		virtual float* GetGlobalTransform();
+		virtual float* GetWorldTransform();
 		virtual Vec2 GetPosition();
+		virtual Vec2 GetWorldPosition();
 		virtual void SetPosition(Vec2 position);
+		virtual void SetWorldPosition(Vec2 position);
 		virtual Vec3 GetPosition3D();
+		virtual Vec3 GetWorldPosition3D();
 		virtual void SetPosition(Vec3 position);
+		virtual void SetWorldPosition(Vec3 position);
 		virtual float GetDepth(); // refers to render depth / order, basically the z comp of pos
+		virtual float GetWorldDepth();
 		virtual void SetDepth(float depth);
+		virtual void SetWorldDepth(float depth);
 		virtual void Translate(Vec2 translation);
 		// only one rotation value we're concerned about in 2D, z
 		virtual float GetRotation();
+		virtual float GetWorldRotation();
 		virtual void SetRotation(float rotation);
-		void Rotate(float theta);
+		virtual void SetWorldRotation(float rotation);
+		virtual void Rotate(float theta);
 		virtual Vec2 GetScale();
+		virtual Vec2 GetWorldScale();
 		virtual void SetScale(Vec2 scale);
+		virtual void SetWorldScale(Vec2 scale);
+		
+		virtual Node* GetParent() {return p_parent;}
 		
 		// for seralization
 		size_t GetSize();
@@ -55,11 +67,11 @@ namespace Chaos
 		virtual void TriggerEnter(Collider* self, Collider* other);
 		virtual void TriggerExit(Collider* self, Collider* other);
 		
-		template <typename T> T* AddChild()
+		template <typename T, typename... Args> T* AddChild(Args... args)
 		{
 			if(std::is_base_of<Node, T>::value)
 			{
-				T* node = new T(true);
+				T* node = new T(args..., true);
 				node->ID = ID;
 				node->SubID = (uint32_t)ChildCount + 1;
 				Level::Get()->Nodes[ID][ChildCount + 1] = node;

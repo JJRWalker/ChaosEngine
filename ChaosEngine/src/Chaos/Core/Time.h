@@ -16,6 +16,7 @@ namespace Chaos
 			m_time = 0.0f;
 			m_timeLastFrame = 0.0f;
 			m_fixedDeltaTime = 0.016f;
+			m_timeSinceLastFixedUpdate = 0.0f;
 		}
 		
 		inline static float GetDeltaTime() { return m_deltaTime * m_timeScale; }
@@ -29,6 +30,7 @@ namespace Chaos
 		private:
 		static float m_deltaTime;
 		static float m_fixedDeltaTime;
+		static float m_timeSinceLastFixedUpdate;
 		static float m_timeScale;
 		static double m_time;
 		static double m_timeLastFrame;

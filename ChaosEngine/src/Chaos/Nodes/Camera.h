@@ -49,6 +49,9 @@ namespace Chaos
 		private:
 		void Recalculate();
 		
+		public:
+		Vec4 BackgroundColour = Vec4(0.0f, 0.0f, 0.1f, 1.0f);
+		
 		private:
 		EProjectionType m_projectionType = EProjectionType::ORTHAGRAPHIC;
 		Vec4 m_bounds = Vec4(-5.0f, 5.0f, -5.0f, 5.0f);

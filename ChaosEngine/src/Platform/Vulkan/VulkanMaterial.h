@@ -20,9 +20,6 @@ namespace Chaos
 		void CleanUp();
 		
 		
-		Vec4 GetColour() override;
-		void SetColour(Vec4 colour) override;
-		
 		std::string GetName() override;
 		void SetName(std::string name) override;
 		

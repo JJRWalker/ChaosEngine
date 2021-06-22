@@ -22,10 +22,15 @@ namespace Chaos
 			memset(Data, 0, size * sizeof(T));
 			
 			FreeSlots = (int*)malloc(size * sizeof(int));
-			memset(FreeSlots, 0, size * sizeof(int));
+			//memset(FreeSlots, 0, size * sizeof(int));
 			
-			FreeSlotsSize = size;
-			Size = size;
+			for (size_t i = 0; i < size; ++i)
+			{
+				FreeSlots[i] = i;
+			}
+			
+			m_freeSlotsSize = size;
+			m_size = size;
 		}
 		
 		~ChaoticArray() 
@@ -37,27 +42,27 @@ namespace Chaos
 		
 		bool Push(T value)
 		{
-			if (!FreeSlotsSize)
+			if (!m_freeSlotsSize)
 			{
-				LOGCORE_ERROR("Chaotic Array: no more free slots. Array size: {0}", Size);
+				LOGCORE_ERROR("Chaotic Array: no more free slots. Array size: {0}", m_size);
 				return false;
 			}
 			
-			--FreeSlotsSize;
-			Data[FreeSlotsSize] = value;
+			--m_freeSlotsSize;
+			Data[FreeSlots[m_freeSlotsSize]] = value;
 			return true;
 		}
 		
 		
 		bool Remove(T value)
 		{
-			for (int i = 0; i < Size; ++i)
+			for (int i = 0; i < m_size; ++i)
 			{
 				if (Data[i] == value)
 				{
 					Data[i] = nullptr;
-					FreeSlots[FreeSlotsSize] = i;
-					++FreeSlotsSize;
+					FreeSlots[m_freeSlotsSize] = i;
+					++m_freeSlotsSize;
 					return true;
 				}
 			}
@@ -68,14 +73,14 @@ namespace Chaos
 		// removes from the array, doesn't free or destroy pointer
 		bool Remove(size_t index)
 		{
-			if (index >= Size)
+			if (index >= m_size)
 			{
-				LOGCORE_ERROR("Chaotic Array index out of range: Trying to remove element {0} of array size {1}", index, Size);
+				LOGCORE_ERROR("Chaotic Array index out of range: Trying to remove element {0} of array size {1}", index, m_size);
 				return false;
 			}
 			Data[index] = nullptr;
-			FreeSlots[FreeSlotsSize] = (int)index;
-			++FreeSlotsSize;
+			FreeSlots[m_freeSlotsSize] = (int)index;
+			++m_freeSlotsSize;
 			return true;
 		}
 		
@@ -93,25 +98,29 @@ namespace Chaos
 		
 		bool IsValid(size_t index)
 		{
-			return index < Size && Data[index];
+			return index < m_size && Data[index];
 		}
 		
 		
 		T& operator[](size_t index) const 
 		{
-			if (index >= Size)
+			if (index >= m_size)
 			{
-				LOGCORE_ERROR("Chaotic Array index out of range: Trying to access element {0} of array size {1}", index, Size);
+				LOGCORE_ERROR("Chaotic Array index out of range: Trying to access element {0} of array size {1}", index, m_size);
 			}
 			return Data[index];
 		}
 		
 		
-		size_t Size = 0;
-		size_t FreeSlotsSize = 0;
+		size_t Size() { return m_size; }
+		size_t FreeSlotsSize() { return m_freeSlotsSize; }
 		
 		T* Data = nullptr;
 		int* FreeSlots = nullptr;
+		
+		private:
+		size_t m_size = 0;
+		size_t m_freeSlotsSize = 0;
 	};
 }
 
