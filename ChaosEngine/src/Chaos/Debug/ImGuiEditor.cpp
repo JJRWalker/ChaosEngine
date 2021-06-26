@@ -9,21 +9,26 @@
 #include <Chaos/Core/Application.h>
 #include <Chaos/Input/Input.h>
 #include <Chaos/Maths/Collisions.h>
-#include <Platform/Vulkan/VulkanRenderer.h>
-#include <ImGUI/examples/imgui_impl_vulkan.h>
-#include <ImGUI/examples/imgui_impl_glfw.h>
+#include <Chaos/Renderer/Renderer.h>
 
 namespace Chaos
 {
 	ImGuiEditor::ImGuiEditor()
 	{
 		Console::AddCommand("ed", [&](){ m_showEditor ? m_showEditor = false : m_showEditor = true;});
+		Console::AddCommand("demogui", [&](){ m_showDemo ? m_showDemo = false : m_showDemo = true;});
 		m_cameraController = Level::Get()->MainCamera()->AddChild<EditorCameraController>();
-		m_cameraController->SetEnabled(false);		
+		m_cameraController->SetEnabled(false);
+		
+		m_selectedEntTextureID = Application::Get().GetRenderer().GetImguiEditorPanelTextureID();
 	}
 	
 	void ImGuiEditor::OnImGuiUpdate() 
 	{
+		if (m_showDemo)
+		{
+			ImGui::ShowDemoWindow();
+		}
 		if (m_showEditor)
 		{
 			//show the main body of the editor (level heirarchy)
@@ -42,7 +47,7 @@ namespace Chaos
 	{
 		if (!m_cameraController->IsEnabled())
 		{
-			m_cameraController->SetEnabled(true);
+			//m_cameraController->SetEnabled(true);
 		}
 		ImGuiWindowFlags window_flags =  ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoBringToFrontOnFocus;
 		
@@ -61,16 +66,10 @@ namespace Chaos
 				if(ImGui::MenuItem("Sprite"))
 				{
 					Node* node = new Sprite();
-					node->SetScale(Vec2(2.0f, 2.0f));
-					node->AddChild<BoxCollider2D>();
-					node->AddChild<BoxCollider2D>()->Trigger = true;
 				}
 				if(ImGui::MenuItem("Sub-Sprite"))
 				{
 					Node* node = new SubSprite();
-					node->SetScale(Vec2(2.0f, 2.0f));
-					node->AddChild<BoxCollider2D>();
-					node->AddChild<BoxCollider2D>()->Trigger = true;
 				}
 				ImGui::EndMenu();
 			}
@@ -94,37 +93,73 @@ namespace Chaos
 			
 			ImGui::BeginChild("ScrollingRegion", ImVec2(0, -30), false, ImGuiWindowFlags_HorizontalScrollbar);
 			
-			static ImGuiTreeNodeFlags baseFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
+			static ImGuiTreeNodeFlags baseFlags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+			
+			int nodeSelected = -1;
+			int childSelected = 0;
 			
 			for(int i = 0; i < Level::Get()->NodeCount; ++i)
 			{
-				for (int j = 0; j < Level::Get()->Nodes[i][0]->ChildCount; ++j)
+				
+				bool nodeClicked = false;
+				Node* node = Level::Get()->Nodes[i][0];
+				ImGuiTreeNodeFlags nodeFlags = baseFlags;
+				if(IsSelected(node))
 				{
-					bool nodeClicked = false;
-					Node* entity = Level::Get()->Nodes[i][j];
-					ImGuiTreeNodeFlags nodeFlags = baseFlags;
-					if(IsSelected(entity))
+					nodeFlags |= ImGuiTreeNodeFlags_Selected;
+				}
+				
+				bool openTree = ImGui::TreeNodeEx((void*)(intptr_t)i, nodeFlags, "%s", node->Name);
+				
+				if (ImGui::IsItemClicked())
+					nodeSelected = i;
+				
+				if (openTree)
+				{
+					for (int j = 1; j <= Level::Get()->Nodes[i][0]->ChildCount; ++j)
 					{
-						nodeFlags |= ImGuiTreeNodeFlags_Selected;
+						ImGuiTreeNodeFlags childFlags = baseFlags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+						
+						Node* child = Level::Get()->Nodes[i][j];
+						
+						if(IsSelected(child))
+						{
+							childFlags |= ImGuiTreeNodeFlags_Selected;
+						}
+						
+						ImGui::TreeNodeEx((void*)(intptr_t)j, childFlags, "%s", Level::Get()->Nodes[i][j]->Name);
+						
+						
+						
+						if (ImGui::IsItemClicked())
+						{
+							nodeSelected = i;
+							childSelected = j;
+						}
+						
 					}
 					
-					nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-					ImGui::TreeNodeEx((void*)(intptr_t)i, nodeFlags, "%s", entity->Name);
-					if (ImGui::IsItemClicked())
-						nodeClicked = true;
-					
-					if (nodeClicked)
+					ImGui::TreePop();
+				}
+				
+				
+				
+				if (nodeSelected != -1)
+				{
+					if (ImGui::GetIO().KeyCtrl)
 					{
-						if (ImGui::GetIO().KeyCtrl)
-						{
-							m_selectedEntities.push_back(entity);         // CTRL+click to toggle
-						}
-						else //if (!(selection_mask & (1 << node_clicked))) // Depending on selection behavior you want, this commented bit preserve selection when clicking on item that is part of the selection
-						{
-							m_selectedEntities.clear();
-							m_selectedEntities.push_back(entity);	// Click to single-select
-						}
+						m_selectedEntities.push_back(Level::Get()->Nodes[nodeSelected][childSelected]);         // CTRL+click to toggle
 					}
+					else //if (!(selection_mask & (1 << node_clicked))) // Depending on selection behavior you want, this commented bit preserve selection when clicking on item that is part of the selection
+					{
+						for (Node* selected : m_selectedEntities)
+						{
+							selected->DebugEnabled = false;
+						}
+						m_selectedEntities.clear();
+						m_selectedEntities.push_back(Level::Get()->Nodes[nodeSelected][childSelected]);	// Click to single-select
+					}
+					
 				}
 			}
 			ImGui::EndChild();
@@ -136,144 +171,37 @@ namespace Chaos
 	{
 		Node* node = m_selectedEntities[m_selectedEntities.size() - 1];
 		
-		node->Debug();
+		node->DebugEnabled = true;
 		
 		ImGui::SetNextWindowSize(ImVec2(DETAILS_WINDOW_SIZE.X + DETAILS_WINDOW_PADDING.X, DETAILS_WINDOW_SIZE.Y + DETAILS_WINDOW_PADDING.Y));
 		ImGui::SetNextWindowPos(ImVec2(m_editorWindowPos.x + (m_editorWindowSize.x), m_editorWindowPos.y));
 		ImGui::Begin("Details");
-		//put detail information here...
+		//generic node data...
 		
-		float* pos[2] = { &node->Transform[3], &node->Transform[7] };
+		float pos[3] = { node->GetPosition().X, node->GetPosition().Y, node->GetDepth() };
+		float scale[2] = { node->GetScale().X, node->GetScale().Y };
+		float rot = node->GetRotation();
 		
-		// hack scale. will not modify scale when adjusted. TODO: change this to a different method that uses getters and setters rather than a pointer
-		Vec2 nodeScale = node->GetScale();
-		float* scale[2] = { &nodeScale.X, &nodeScale.Y };
-		
-		ImGui::DragFloat2("Position", *pos, 0.01f);
-		
-		ImGui::DragFloat2("Scale", *scale, 0.01f);
-		
-		// same hacky impl for rotation as we need to extract
-		
-		float rotation = node->GetRotation();
-		
-		ImGui::DragFloat("Rotation", &rotation, 1.0f, -180, 180);
+		if (ImGui::DragFloat3("Position", pos, 0.01f))
+		{
+			node->SetPosition(Vec3(pos[0], pos[1], pos[2]));
+		}
+		if (ImGui::DragFloat2("Scale", scale, 0.01f))
+		{
+			node->SetScale(Vec2(scale[0], scale[1]));
+		}
+		if (ImGui::DragFloat("Rotation", &rot, 0.01f))
+		{
+			node->SetRotation(rot);
+		}
 		
 		ImGui::Separator();
 		
 		//Render component..
 		//currently hard coded inputs in future should be automatic depending on the variable type
 		
-		if(node->HasChild<Sprite>())
-		{
-			std::string path = node->GetChild<Sprite>()->GetTexture()->GetFilePath();
-			if (ImGui::Button("Change texture"))
-			{
-				
-				if(path != "")
-					m_filePath = path;
-				
-				Application::Get().AddPostUpdateCallback([&]() { Application::Get().PushOverlay(new ImGuiFileExplorer(
-																													  m_filePath, [&](){
-																														  m_selectedEntities[m_selectedEntities.size() - 1]->GetChild<Sprite>()->GetTexture()->Load(m_filePath);
-																													  } ));});
-				
-			}
-			
-			ImGui::Text(m_filePath.c_str());
-			
-			//Displaying texture on UI
-			
-			if (m_selectedEntTexture->GetFilePath() != path && std::filesystem::exists(path))
-			{
-				m_selectedEntTexture->Load(path);
-			}
-			
-			
-			//determine correct aspect ration for the width given
-			float aspectRatio = (float)m_selectedEntTexture->GetWidth() / (float)m_selectedEntTexture->GetHeight();
-			
-			if (m_selectedEntTextureID != nullptr)
-			{
-				ImGui::Image(m_selectedEntTextureID, { DETAILS_WINDOW_SIZE.X, DETAILS_WINDOW_SIZE.X * aspectRatio }, ImVec2{ 0, -1 }, ImVec2{ 1, 0 });
-			}
-		}
-		if (node->HasChild<SubSprite>())
-		{
-			std::string path = node->GetChild<SubSprite>()->GetTexture()->GetFilePath();
-			
-			SubSprite* subSprite = node->GetChild<SubSprite>();
-			float* coord[2] = { };
-			
-			float* size[2] = { };
-			
-			ImGui::DragFloat2("Sprite Coordinate", *coord, 1);
-			
-			ImGui::DragFloat2("Cell Size", *size, 1);
-			
-			if (ImGui::Button("Change texture"))
-			{
-				std::string path = node->GetChild<SubSprite>()->GetTexture()->GetFilePath();
-				if(path != "")
-					m_filePath = path;
-				//kinda messy, but need to modify this layer stack after we finish itterating over them
-				Application::Get().AddPostUpdateCallback([&](){Application::Get().PushOverlay(new ImGuiFileExplorer(m_filePath, [&](){m_selectedEntities
-																															[m_selectedEntities.size() - 1]->GetChild<SubSprite>()->SetTexture(Texture::Create(m_filePath));} ));});
-				
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("Set Coords"))
-			{
-				
-			}
-			
-			//storing start cursor pos before drawing the image, used to overlay buttons ontop of it later
-			ImVec2 startCursorPos = ImGui::GetCursorPos();
-			
-			//Display tex as UI image
-			if (m_selectedEntTexture->GetFilePath() != path && std::filesystem::exists(path))
-			{
-				m_selectedEntTexture->Load(path);
-			}
-			
-			
-			
-			
-			//determine correct aspect ration for the width given
-			float aspectRatio = (float)m_selectedEntTexture->GetWidth() / (float)m_selectedEntTexture->GetHeight();
-			
-			if (m_selectedEntTextureID != nullptr)
-			{
-				ImGui::Image(m_selectedEntTextureID, { DETAILS_WINDOW_SIZE.X, DETAILS_WINDOW_SIZE.X * aspectRatio }, ImVec2{ 0, -1 }, ImVec2{ 1, 0 });
-			}
-			
-			/*
-			//Overlaying buttons ontop of the image to select the cell we want
-			ImVec2 buttonSize = ImVec2 (DETAILS_WINDOW_SIZE.X / subSprite->GetSubTexture()->GetTotalCells().X, (DETAILS_WINDOW_SIZE.X * aspectRatio) / subSprite->GetSubTexture()->GetTotalCells().Y);
-			
-			int buttonID = 0;
-			
-			for (int x = 0; x < subSprite->GetSubTexture()->GetTotalCells().X; ++x)
-			{
-				for (int y = 0; y < subSprite->().Y; ++y)
-				{
-					ImGui::SetCursorPos(ImVec2(startCursorPos.x + (x * buttonSize.x), startCursorPos.y + (y * buttonSize.y)));
-					char buttonName[10];
-					sprintf(buttonName, "%d Y:%d", x, y);
-					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.1f, 0.1f, 0.1f, 0.1f));
-					ImGui::PushID(buttonID);
-					if (ImGui::Button("", buttonSize))
-					{
-						subSprite->SetCoords(Vec2((float)x,(float)y));
-					}
-					ImGui::PopStyleColor();
-					ImGui::PopID();
-					buttonID++;
-				}
-			}
-			*/
-			
-		}
+		node->OnShowEditorDetails(m_selectedEntTexture, m_selectedEntTextureID);
+		
 		ImGui::End();
 	}
 	
@@ -294,7 +222,7 @@ namespace Chaos
 			for (int i = 0; i < Level::Get()->NodeCount; ++i)
 			{
 				Node* node = Level::Get()->Nodes[i][0];
-				if (node->GetChild<BoxCollider2D>())
+				if (node->HasChild<BoxCollider2D>())
 				{
 					BoxCollider2D* collider = node->GetChild<BoxCollider2D>();
 					if (Collisions::PointInRectangle(mouseWorldPoint, collider->GetPosition(), collider->Bounds))
@@ -334,7 +262,7 @@ namespace Chaos
 			for (int i = 0; i < Level::Get()->NodeCount; ++i)
 			{
 				Node* node = Level::Get()->Nodes[i][0];
-				if (node->GetChild<BoxCollider2D>())
+				if (node->HasChild<BoxCollider2D>())
 				{
 					BoxCollider2D* collider = node->GetChild<BoxCollider2D>();
 					if (Collisions::PointInRectangle(mouseWorldPoint, collider->GetPosition(), collider->Bounds))
@@ -368,7 +296,7 @@ namespace Chaos
 	{
 		for (auto e : m_selectedEntities)
 		{
-			if (e->ID == entity->ID)
+			if (e->ID == entity->ID && e->SubID == entity->SubID)
 				return true;
 		}
 		return false;

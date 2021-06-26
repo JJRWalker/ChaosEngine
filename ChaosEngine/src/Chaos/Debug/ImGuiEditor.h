@@ -8,6 +8,9 @@
 
 namespace Chaos
 {
+	const Vec2 DETAILS_WINDOW_SIZE = Vec2(300,400);
+	const Vec2 DETAILS_WINDOW_PADDING = Vec2(50,80);
+	
 	class Node;
 	class EditorCameraController;
 	
@@ -26,15 +29,13 @@ namespace Chaos
 		bool IsSelected(Node* entity);
 		
 		private:
+		bool m_showDemo = false;
 		bool m_showEditor = false;
 		bool m_clicked = false;
 		bool m_dragging = false;
 		
 		char* m_filePathInput = "";
 		std::string m_filePath = "";
-		
-		const Vec2 DETAILS_WINDOW_SIZE = Vec2(300,400);
-		const Vec2 DETAILS_WINDOW_PADDING = Vec2(50,80);
 		
 		Vec2 m_draggingEntPositionOffset = Vec2::Zero();
 		std::vector<Node*> m_selectedEntities;

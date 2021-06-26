@@ -69,7 +69,7 @@ namespace Chaos
 		public:
 		BoxCollider2D(bool child = false);
 		
-		void Debug() override;
+		void OnDebug() override;
 		
 		bool CollideWith(Collider* other) override;
 		void CheckCollisions(QuadTree* tree) override;
@@ -83,7 +83,7 @@ namespace Chaos
 		public:
 		CircleCollider(bool child = false);
 		
-		void Debug() override;
+		void OnDebug() override;
 		
 		bool CollideWith(Collider* other) override;
 		void CheckCollisions(QuadTree* tree) override;

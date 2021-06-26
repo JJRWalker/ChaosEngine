@@ -37,6 +37,7 @@
 #include <Chaos/Nodes/Colliders.cpp>
 #include <Chaos/Nodes/EditorCameraController.cpp>
 #include <Chaos/Nodes/Animator.cpp>
+#include <Chaos/Nodes/Lights.cpp>
 
 //===RENDERER===================================
 #include <Chaos/Renderer/RendererAPI.cpp>
@@ -46,9 +47,14 @@
 #include <Chaos/Renderer/Texture.cpp>
 #include <Chaos/Renderer/SubTexture.cpp>
 
+
+#ifdef CHAOS_PLATFORM_WINDOWS
 //===PLATFORM==================================
 #include <Platform/Windows/WindowsWindow.cpp>
 #include <Platform/Windows/WindowsInput.cpp>
+#include <Platform/Windows/WindowsFileUtils.cpp>
+#endif
+
 //===VULKAN====================================
 #include <Platform/Vulkan/VulkanInitalizers.cpp>
 #include <Platform/Vulkan/VulkanTexture.cpp>

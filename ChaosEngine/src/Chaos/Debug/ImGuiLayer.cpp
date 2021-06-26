@@ -5,7 +5,6 @@
 #include "ImGUI/examples/imgui_impl_vulkan.h"
 #include "ImGUI/examples/imgui_impl_glfw.h"
 
-
 namespace Chaos
 {
 	bool ImGuiLayer::s_ImGuiInited = false;

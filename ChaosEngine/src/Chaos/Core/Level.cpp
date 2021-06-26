@@ -46,7 +46,7 @@ namespace Chaos
 				{
 					Nodes[node][child]->OnUpdate(delta);
 					if (Nodes[node][child]->DebugEnabled) 
-						Nodes[node][child]->Debug();
+						Nodes[node][child]->OnDebug();
 					Collider* collider = dynamic_cast<Collider*>(Nodes[node][child]);
 					if (collider)
 					{

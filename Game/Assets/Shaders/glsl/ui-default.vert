@@ -30,18 +30,11 @@ layout(std140, set = 1, binding = 0) readonly buffer ObjectBuffer
 	ObjectData objects[];
 } objectBuffer;
 
-//push constants block
-layout( push_constant ) uniform constants
-{
-	vec4 data;
-	mat4 render_matrix;
-} PushConstants;
-
 void main()
 {	
 	mat4 modelMatrix = objectBuffer.objects[gl_BaseInstance].model;
 	gl_Position = modelMatrix * vec4(vPosition, 1.0f);
-	outFragPos = vec3(objectBuffer.objects[gl_BaseInstance].model * vec4(vPosition, 1.0f));
+	outFragPos = vec3(modelMatrix * vec4(vPosition, 1.0f));
 	outColor = vColor;
 	outNormal = vNormal;
 	outTexCoord = vTexCoord;

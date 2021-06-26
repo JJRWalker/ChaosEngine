@@ -5,6 +5,11 @@
 #include "Chaos/Renderer/Renderer.h"
 #include "Chaos/Renderer/Material.h"
 
+// debug GUI
+#include "Chaos/Serialisation/FileUtils.h"
+#include "Chaos/Debug/ImGuiEditor.h"
+#include <filesystem>
+
 namespace Chaos
 {
 	// SPRITE
@@ -68,6 +73,46 @@ namespace Chaos
 			Application::Get().GetRenderer().RemoveRenderable(p_renderObject);
 		else
 			Application::Get().GetRenderer().AddRenderable(p_renderObject);
+	}
+	
+	
+	void Sprite::OnShowEditorDetails(Texture* editorTexture, void* editorImageHandle)
+	{
+		ImTextureID* imguiEditorTextureID = nullptr;
+		if (editorImageHandle != nullptr)
+			imguiEditorTextureID = (ImTextureID*)editorImageHandle;
+		
+		std::string path = p_renderObject->pTexture->GetFilePath();
+		
+		ImGui::Text(path.c_str());
+		
+		if (ImGui::Button("Change texture"))
+		{
+			std::string out;
+			if (FileUtils::OpenFileDialogue(out))
+			{
+				if (out != path)
+				{
+					p_renderObject->pTexture->Load(out);
+				}
+			}
+		}
+		
+		
+		//Displaying texture on UI
+		
+		if (editorTexture->GetFilePath() != path && std::filesystem::exists(path))
+		{
+			editorTexture->Load(path);
+		}
+		
+		//determine correct aspect ration for the width given
+		float aspectRatio = (float)editorTexture->GetWidth() / (float)editorTexture->GetHeight();
+		
+		if (imguiEditorTextureID != nullptr)
+		{
+			ImGui::Image(imguiEditorTextureID, { DETAILS_WINDOW_SIZE.X, DETAILS_WINDOW_SIZE.X * aspectRatio }, ImVec2{ 0, -1 }, ImVec2{ 1, 0 });
+		}
 	}
 	
 	
@@ -140,6 +185,80 @@ namespace Chaos
 		
 		SetMaterial(Material::Get("subsprite-default"));
 		SetTilingFactor(Vec2(1.0f, 1.0f));
+	}
+	
+	
+	void SubSprite::OnShowEditorDetails(Texture* editorTexture, void* editorImageHandle)
+	{
+		ImTextureID* imguiEditorTextureID = nullptr;
+		if (editorImageHandle != nullptr)
+			imguiEditorTextureID = (ImTextureID*)editorImageHandle;
+		
+		std::string path = p_renderObject->pTexture->GetFilePath();
+		
+		ImGui::Text(path.c_str());
+		
+		if (ImGui::Button("Change texture"))
+		{
+			std::string out;
+			if (FileUtils::OpenFileDialogue(out))
+			{
+				if (out != path)
+				{
+					p_renderObject->pTexture->Load(out);
+				}
+			}
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Set Coords"))
+		{
+			
+		}
+		
+		//storing start cursor pos before drawing the image, used to overlay buttons ontop of it later
+		ImVec2 startCursorPos = ImGui::GetCursorPos();
+		
+		//Display tex as UI image
+		if (editorTexture->GetFilePath() != path && std::filesystem::exists(path))
+		{
+			editorTexture->Load(path);
+		}
+		
+		
+		//determine correct aspect ration for the width given
+		float aspectRatio = (float)editorTexture->GetWidth() / (float)editorTexture->GetHeight();
+		
+		if (imguiEditorTextureID != nullptr)
+		{
+			ImGui::Image(imguiEditorTextureID, { DETAILS_WINDOW_SIZE.X, DETAILS_WINDOW_SIZE.X * aspectRatio }, ImVec2{ 0, -1 }, ImVec2{ 1, 0 });
+		}
+		
+		
+		//Overlaying buttons ontop of the image to select the cell we want
+		ImVec2 buttonSize = ImVec2 (DETAILS_WINDOW_SIZE.X / GetTotalCells().X, (DETAILS_WINDOW_SIZE.X * aspectRatio) / GetTotalCells().Y);
+		
+		int buttonID = 0;
+		
+		for (int x = 0; x < GetTotalCells().X; ++x)
+		{
+			for (int y = 0; y < GetTotalCells().Y; ++y)
+			{
+				ImGui::SetCursorPos(ImVec2(startCursorPos.x + (x * buttonSize.x), startCursorPos.y + (y * buttonSize.y)));
+				char buttonName[10];
+				sprintf(buttonName, "%d Y:%d", x, y);
+				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.1f, 0.1f, 0.1f, 0.1f));
+				ImGui::PushID(buttonID);
+				if (ImGui::Button("", buttonSize))
+				{
+					SetCoords(Vec2((float)x,(float)y));
+				}
+				ImGui::PopStyleColor();
+				ImGui::PopID();
+				buttonID++;
+			}
+		}
+		
+		
 	}
 	
 	

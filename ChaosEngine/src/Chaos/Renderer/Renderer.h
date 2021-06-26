@@ -36,6 +36,13 @@ namespace Chaos
 	};
 	
 	
+	struct LightingObjectData
+	{
+		float Transform[16];
+		float DataArray1[16];
+	};
+	
+	
 	class Renderer							
 	{
 		friend class ImGuiLayer;
@@ -52,6 +59,8 @@ namespace Chaos
 		virtual RenderObject* AddRenderable(RenderObject* toAdd) = 0;
 		virtual void RemoveRenderable(RenderObject* toRemove) = 0;
 		
+		virtual LightingObjectData* AddLight(float transform[16]) = 0;
+		
 		virtual void DrawLine(Vec2& startPoint, Vec2& endPoint, Vec4& colour, float weight, float renderOrder) = 0;
 		
 		
@@ -65,6 +74,8 @@ namespace Chaos
 		
 		virtual void SetVSync(bool state) = 0;
 		virtual bool GetVSync() = 0;
+		
+		virtual void* GetImguiEditorPanelTextureID() = 0;
 		
 		private:
 		static RendererAPI s_rendererAPI;

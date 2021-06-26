@@ -34,6 +34,8 @@ namespace Chaos
 		void OnUpdate(float delta) override;
 		void SetEnabled(bool state) override;
 		
+		virtual void OnShowEditorDetails(Texture* editorTexture, void* editorImageHandle);
+		
 		// Actual sprite stuff
 		void SetMaterial(Material* mat);
 		Material* GetMaterial();
@@ -60,6 +62,8 @@ namespace Chaos
 		SubSprite(bool child = false);
 		SubSprite(Vec2 position, bool child = false);
 		SubSprite(Vec3 position, bool child = false);
+		
+		virtual void OnShowEditorDetails(Texture* editorTexture, void* editorImageHandle);
 		
 		void SetCoords(Vec2 coords);
 		void SetTotalCells(Vec2 dimensions); // total number of cells in x and y. NOT pixel size of grid

@@ -38,11 +38,18 @@ namespace Chaos
 	{
 	}
 	
+	
 	void Node::OnDestroy()
 	{
 	}
 	
-	void Node::Debug()
+	
+	void Node::OnShowEditorDetails(Texture* editorTexture, void* editorImageHandle)
+	{
+	}
+	
+	
+	void Node::OnDebug()
 	{
 	}
 	

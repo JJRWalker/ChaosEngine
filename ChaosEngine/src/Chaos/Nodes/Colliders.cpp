@@ -55,7 +55,7 @@ namespace Chaos
 	
 	
 	// inserts single node into overlaps, calls enter and stay methods for nodes.
-	void Chaos::Collider::InsertOverlap(Collider* collider)
+	void Collider::InsertOverlap(Collider* collider)
 	{
 		Level* level = Level::Get();
 		Node* root = level->Nodes[ID][0];
@@ -190,7 +190,7 @@ namespace Chaos
 		Type = ColliderType::BOX2D;
 	}
 	
-	void BoxCollider2D::Debug()
+	void BoxCollider2D::OnDebug()
 	{
 		Renderer& renderer = Application::Get().GetRenderer();
 		
@@ -252,7 +252,7 @@ namespace Chaos
 		Type = ColliderType::CIRCLE;
 	}
 	
-	void CircleCollider::Debug()
+	void CircleCollider::OnDebug()
 	{
 		// not really optimal, but these are only for debugging so it shouldn't matter too much
 		Renderer& renderer = Application::Get().GetRenderer();

@@ -13,6 +13,7 @@
 namespace Chaos
 {
 	class Collider;
+	class Texture;
 	class Node 
 	{
 		public:
@@ -23,10 +24,11 @@ namespace Chaos
 		virtual void OnUpdate(float delta);      // called every frame
 		virtual void OnFixedUpdate(float delta); // called on specified fixed step
 		virtual void OnDestroy();                // called when node is destroyed
-		virtual void Debug();
 		virtual void SetEnabled(bool state);
 		virtual bool IsEnabled();
 		
+		virtual void OnDebug();
+		virtual void OnShowEditorDetails(Texture* editorTexture, void* editorImageHandle); // NOTE: void* because I'm not sure we want to be tied to imgui on this side of things
 		
 		// returns a 16 float array of all transforms added up through heirarchy
 		virtual float* GetWorldTransform();

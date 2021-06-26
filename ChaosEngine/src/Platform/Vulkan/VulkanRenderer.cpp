@@ -89,6 +89,20 @@ namespace Chaos
 	}
 	
 	
+	LightingObjectData* VulkanRenderer::AddLight(float transform[16])
+	{
+		LightingObjectData* light = new LightingObjectData();
+		memcpy((void*)&light->Transform[0], (void*)&transform[0], sizeof(float) * 16);
+		
+		if (!Lights.Push(light))
+		{
+			LOGCORE_ERROR("VULKAN RENDERER: Ran out of room in the light object array, some lights may not be added");
+		}
+		
+		return light;
+	}
+	
+	
 	void VulkanRenderer::DrawLine(Vec2& startPoint, Vec2& endPoint, Vec4& colour, float weight, float renderOrder)
 	{
 		
@@ -188,7 +202,7 @@ namespace Chaos
 		
 		vkCmdBeginRenderPass(cmd, &rpInfo, VK_SUBPASS_CONTENTS_INLINE);
 		
-		DrawObjects(cmd, Renderables);
+		DrawObjects(cmd, Renderables, Lights);
 		
 		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
 		
@@ -225,7 +239,7 @@ namespace Chaos
 	}
 	
 	
-	void VulkanRenderer::DrawObjects(VkCommandBuffer cmd, ChaoticArray<RenderObject*>& renderObjData)
+	void VulkanRenderer::DrawObjects(VkCommandBuffer cmd, ChaoticArray<RenderObject*>& renderObjData, ChaoticArray<LightingObjectData*>& lightingData)
 	{
 		GPUCameraData camData;
 		if (pCamera)
@@ -259,6 +273,12 @@ namespace Chaos
 		
 		ShaderObjectData* sobjectSSBO = (ShaderObjectData*)objectData;
 		
+		void* lightData;
+		vmaMapMemory(m_allocator, GetCurrentFrame().LightingBuffer.Allocation, &lightData);
+		
+		LightingObjectData* sLightSSBO = (LightingObjectData*)lightData;
+		
+		
 		for (int i = 0; i < renderObjData.Size(); ++i)
 		{
 			if (!renderObjData.Data[i])
@@ -269,7 +289,18 @@ namespace Chaos
 			memcpy((void*)&sobjectSSBO[i], (void*)&obj.ShaderData, sizeof(ShaderObjectData));
 		}
 		
+		for (int i = 0; i < lightingData.Size(); ++i)
+		{
+			if (!lightingData.Data[i])
+				continue;
+			
+			LightingObjectData& obj = *lightingData.Data[i];
+			
+			memcpy((void*)&sLightSSBO[i], (void*)&obj, sizeof(LightingObjectData));
+		}
+		
 		vmaUnmapMemory(m_allocator, GetCurrentFrame().ObjectBuffer.Allocation);
+		vmaUnmapMemory(m_allocator, GetCurrentFrame().LightingBuffer.Allocation);
 		
 		Mesh* lastMesh = nullptr;
 		Material* lastMaterial = nullptr;
@@ -291,8 +322,7 @@ namespace Chaos
 				
 				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, ((VulkanMaterial*)obj.pMaterial)->PipelineLayout, 0, 1, &GetCurrentFrame().GlobalDescriptor, 1, &uniformOffset);
 				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, ((VulkanMaterial*)obj.pMaterial)->PipelineLayout, 1, 1, &GetCurrentFrame().ObjectDescriptor, 0, nullptr);
-				
-				
+				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, ((VulkanMaterial*)obj.pMaterial)->PipelineLayout, 3, 1, &GetCurrentFrame().LightingDescriptor, 0, nullptr);
 			}
 			
 			if (obj.pTexture != lastTexture)
@@ -304,11 +334,6 @@ namespace Chaos
 				
 				lastTexture = obj.pTexture;
 			}
-			
-			
-			MeshPushConstants constants;
-			
-			vkCmdPushConstants(cmd, ((VulkanMaterial*)obj.pMaterial)->PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(MeshPushConstants), &constants);
 			
 			if (obj.pMesh != lastMesh)
 			{
@@ -354,6 +379,18 @@ namespace Chaos
 	bool VulkanRenderer::GetVSync()
 	{
 		return m_vsync;
+	}
+	
+	
+	void* VulkanRenderer::GetImguiEditorPanelTextureID()
+	{
+		if (Textures.find("Debug_SelectedEnt") == Textures.end())
+			CreateBlankTexture("Debug_SelectedEnt");
+		
+		
+		ImTextureID id = (ImTextureID)ImGui_ImplVulkan_AddTexture(m_nearestNeighbourSampler, Textures["Debug_SelectedEnt"].ImageView, VK_IMAGE_LAYOUT_UNDEFINED);
+		
+		return (void*)id;
 	}
 	
 	
@@ -420,17 +457,10 @@ namespace Chaos
 		
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo = VkInit::PipelineLayoutCreateInfo();
 		
-		VkPushConstantRange pushConstant;
-		pushConstant.offset = 0;
-		pushConstant.size = sizeof(MeshPushConstants);
-		pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 		
-		pipelineLayoutInfo.pPushConstantRanges = &pushConstant;
-		pipelineLayoutInfo.pushConstantRangeCount = 1;
+		VkDescriptorSetLayout setLayouts[] = { m_globalSetLayout, m_objectSetLayout, m_singleTextureSetLayout, m_lightingSetLayout };
 		
-		VkDescriptorSetLayout setLayouts[] = { m_globalSetLayout, m_objectSetLayout, m_singleTextureSetLayout };
-		
-		pipelineLayoutInfo.setLayoutCount = 3;
+		pipelineLayoutInfo.setLayoutCount = 4;
 		pipelineLayoutInfo.pSetLayouts = setLayouts;
 		
 		VkPipelineLayout pipelineLayout;
@@ -541,17 +571,9 @@ namespace Chaos
 		
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo = VkInit::PipelineLayoutCreateInfo();
 		
-		VkPushConstantRange pushConstant;
-		pushConstant.offset = 0;
-		pushConstant.size = sizeof(MeshPushConstants);
-		pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+		VkDescriptorSetLayout setLayouts[] = { m_globalSetLayout, m_objectSetLayout, m_singleTextureSetLayout, m_lightingSetLayout };
 		
-		pipelineLayoutInfo.pPushConstantRanges = &pushConstant;
-		pipelineLayoutInfo.pushConstantRangeCount = 1;
-		
-		VkDescriptorSetLayout setLayouts[] = { m_globalSetLayout, m_objectSetLayout, m_singleTextureSetLayout };
-		
-		pipelineLayoutInfo.setLayoutCount = 3;
+		pipelineLayoutInfo.setLayoutCount = 4;
 		pipelineLayoutInfo.pSetLayouts = setLayouts;
 		
 		VkPipelineLayout pipelineLayout;
@@ -1042,6 +1064,17 @@ namespace Chaos
 		
 		vkCreateDescriptorSetLayout(m_device, &set3Info, nullptr, &m_singleTextureSetLayout);
 		
+		VkDescriptorSetLayoutBinding lightingBind = VkInit::DescriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT, 0);
+		
+		VkDescriptorSetLayoutCreateInfo set4Info = {};
+		set4Info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		set4Info.bindingCount = 1;
+		set4Info.flags = 0;
+		set4Info.pNext = nullptr;
+		set4Info.pBindings = &lightingBind;
+		
+		vkCreateDescriptorSetLayout(m_device, &set4Info, nullptr, &m_lightingSetLayout);
+		
 		const size_t sceneParamBufferSize = FRAME_OVERLAP * PadUniformBufferSize(sizeof(GPUSceneData));
 		
 		m_sceneParameterBuffer = CreateBuffer(sceneParamBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
@@ -1051,6 +1084,8 @@ namespace Chaos
 			Frames[i].CameraBuffer = CreateBuffer(sizeof(GPUCameraData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 			
 			Frames[i].ObjectBuffer = CreateBuffer(sizeof(ShaderObjectData) * MAX_OBJECTS, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+			
+			Frames[i].LightingBuffer = CreateBuffer(sizeof(LightingObjectData) * MAX_LIGHTS, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 			
 			VkDescriptorSetAllocateInfo allocInfo = {};
 			allocInfo.pNext = nullptr;
@@ -1070,6 +1105,16 @@ namespace Chaos
 			
 			vkAllocateDescriptorSets(m_device, &objectSetAlloc, &Frames[i].ObjectDescriptor);
 			
+			VkDescriptorSetAllocateInfo lightingSetAlloc = {};
+			lightingSetAlloc.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+			lightingSetAlloc.pNext = nullptr;
+			lightingSetAlloc.descriptorPool = m_descriptorPool;
+			lightingSetAlloc.descriptorSetCount = 1;
+			lightingSetAlloc.pSetLayouts = &m_lightingSetLayout;
+			
+			vkAllocateDescriptorSets(m_device, &lightingSetAlloc, &Frames[i].LightingDescriptor);
+			
+			
 			VkDescriptorBufferInfo camInfo;
 			camInfo.buffer = Frames[i].CameraBuffer.Buffer;
 			camInfo.offset = 0;
@@ -1086,6 +1131,11 @@ namespace Chaos
 			objectBufferInfo.range = sizeof(ShaderObjectData) * MAX_OBJECTS;
 			
 			
+			VkDescriptorBufferInfo lightingBufferInfo;
+			lightingBufferInfo.buffer = Frames[i].LightingBuffer.Buffer;
+			lightingBufferInfo.offset = 0;
+			lightingBufferInfo.range = sizeof(LightingObjectData) * MAX_LIGHTS;
+			
 			
 			VkWriteDescriptorSet camWrite = VkInit::WriteDescriptorBuffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, Frames[i].GlobalDescriptor, &camInfo, 0);
 			
@@ -1093,9 +1143,11 @@ namespace Chaos
 			
 			VkWriteDescriptorSet objectWrite = VkInit::WriteDescriptorBuffer(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, Frames[i].ObjectDescriptor, &objectBufferInfo, 0);
 			
-			VkWriteDescriptorSet setWrites[] = { camWrite, sceneWrite, objectWrite };
+			VkWriteDescriptorSet lightingWrite = VkInit::WriteDescriptorBuffer(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, Frames[i].LightingDescriptor, &lightingBufferInfo, 0);
 			
-			vkUpdateDescriptorSets(m_device, 3, setWrites, 0, nullptr);
+			VkWriteDescriptorSet setWrites[] = { camWrite, sceneWrite, objectWrite, lightingWrite };
+			
+			vkUpdateDescriptorSets(m_device, 4, setWrites, 0, nullptr);
 		}
 		
 		MainDeletionQueue.push_function([&]()
@@ -1104,6 +1156,7 @@ namespace Chaos
 											vkDestroyDescriptorSetLayout(m_device, m_globalSetLayout, nullptr);
 											vkDestroyDescriptorSetLayout(m_device, m_objectSetLayout, nullptr);
 											vkDestroyDescriptorSetLayout(m_device, m_singleTextureSetLayout, nullptr);
+											vkDestroyDescriptorSetLayout(m_device, m_lightingSetLayout, nullptr);
 											
 											vkDestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
 											
@@ -1111,6 +1164,7 @@ namespace Chaos
 											{
 												vmaDestroyBuffer(m_allocator, Frames[i].CameraBuffer.Buffer, Frames[i].CameraBuffer.Allocation);
 												vmaDestroyBuffer(m_allocator, Frames[i].ObjectBuffer.Buffer, Frames[i].ObjectBuffer.Allocation);
+												vmaDestroyBuffer(m_allocator, Frames[i].LightingBuffer.Buffer, Frames[i].LightingBuffer.Allocation);
 											}
 										});
 	}
@@ -1137,13 +1191,6 @@ namespace Chaos
 		
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo = VkInit::PipelineLayoutCreateInfo();
 		
-		VkPushConstantRange pushConstant;
-		pushConstant.offset = 0;
-		pushConstant.size = sizeof(MeshPushConstants);
-		pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-		
-		pipelineLayoutInfo.pPushConstantRanges = &pushConstant;
-		pipelineLayoutInfo.pushConstantRangeCount = 1;
 		
 		VkDescriptorSetLayout setLayouts[] = { m_globalSetLayout, m_objectSetLayout };
 		

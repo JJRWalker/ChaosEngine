@@ -20,7 +20,7 @@ popd
 mkdir "build/bin"
 pushd "build/bin"
 
-link ..\int\game.obj Chaos.lib ..\..\ChaosEngine\vendor\GLFW\glfw.lib ..\..\ChaosEngine\vendor\Vulkan\Lib\vulkan-1.lib ..\..\ChaosEngine\vendor\ImGUI\imgui.lib gdi32.lib shell32.lib msvcrtd.lib /NODEFAULTLIB:LIBCMTD /NODEFAULTLIB:LIBCMT
+link ..\int\game.obj Chaos.lib ..\..\ChaosEngine\vendor\GLFW\glfw.lib ..\..\ChaosEngine\vendor\Vulkan\Lib\vulkan-1.lib ..\..\ChaosEngine\vendor\ImGUI\imgui.lib gdi32.lib shell32.lib msvcrtd.lib ole32.lib /NODEFAULTLIB:LIBCMTD /NODEFAULTLIB:LIBCMT
 
 if errorLevel 1 echo GAME LINKING FAILED
 if errorLevel 1 EXIT

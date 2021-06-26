@@ -56,9 +56,9 @@ namespace Chaos
 		return "";
 	}
 	
-	std::map<std::string, std::string> TextFileReader::GetKeyValuePairs(const char* path)
+	std::vector<std::pair<std::string, std::string>> TextFileReader::GetKeyValuePairs(const char* path)
 	{
-		std::map<std::string, std::string> keyValuePairs;
+		std::vector<std::pair<std::string, std::string>> keyValuePairs;
 		
 		std::ifstream file(path);
 		
@@ -92,7 +92,7 @@ namespace Chaos
 						}
 						else
 						{
-							keyValuePairs.insert(std::make_pair(lineKey, value));
+							keyValuePairs.push_back(std::make_pair(lineKey, value));
 						}
 					}
 					

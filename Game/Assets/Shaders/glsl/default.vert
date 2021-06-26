@@ -11,13 +11,6 @@ layout (location = 1) out vec3 outNormal;
 layout (location = 2) out vec3 outFragPos;
 layout (location = 3) out vec2 outTexCoord;
 
-
-layout (set = 0, binding = 0) uniform CameraBuffer{
-	mat4 view;
-	mat4 proj;
-	mat4 viewProj;
-} cameraData;
-
 struct ObjectData{
 	mat4 model;
 	mat4 shaderFloatArray1;
@@ -26,17 +19,16 @@ struct ObjectData{
 
 layout (location = 4) out ObjectData outObjData;
 
+layout (set = 0, binding = 0) uniform CameraBuffer{
+	mat4 view;
+	mat4 proj;
+	mat4 viewProj;
+} cameraData;
+
 layout(std140, set = 1, binding = 0) readonly buffer ObjectBuffer
 {
 	ObjectData objects[];
 } objectBuffer;
-
-//push constants block
-layout( push_constant ) uniform constants
-{
-	vec4 data;
-	mat4 render_matrix;
-} PushConstants;
 
 void main()
 {	

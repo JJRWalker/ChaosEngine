@@ -78,9 +78,9 @@ namespace Chaos
 	{
 		Vec4 FogColour = { 0.2f, 0.2f, 0.2f, 0.1f };
 		Vec4 FogDistances = { 0.1f,  0.5f, 1.0f, 2.0f};
-		Vec4 AmbiantColour = { 0.5f, 0.5f, 0.5f, 0.2f };
+		Vec4 AmbiantColour = { 0.5f, 0.5f, 0.5f, 0.3f };
 		Vec4 SunlightDirection = { 0.0f, 0.0f, 1.0f, 1.0f };
-		Vec4 SunlightColour = { 1.0f, 1.0f, 1.0f, 1.0f };
+		Vec4 SunlightColour = { 1.0f, 1.0f, 1.0f, 0.0f };
 	};
 	
 	
@@ -93,6 +93,8 @@ namespace Chaos
 		VkCommandBuffer MainCommandBuffer;
 		
 		AllocatedBuffer CameraBuffer;
+		AllocatedBuffer LightingBuffer;
+		VkDescriptorSet LightingDescriptor;
 		AllocatedBuffer ObjectBuffer;
 		VkDescriptorSet ObjectDescriptor;
 		
@@ -109,12 +111,14 @@ namespace Chaos
 	
 	constexpr unsigned int FRAME_OVERLAP = 2;
 	const unsigned int MAX_OBJECTS = 100000;
+	const unsigned int MAX_LIGHTS = 100;
 	const size_t MAX_DESCRIPTOR_SETS = 1000;
 	
 	class VulkanRenderer : public Renderer
 	{
 		friend class VulkanTexture;
 		friend class VulkanMaterial;
+		friend class ImGuiEditor;
 		
 		public:
 		VulkanRenderer(Window* window);
@@ -123,9 +127,11 @@ namespace Chaos
 		// Renderer interface
 		RenderObject* AddQuad(float transform[16], Material* mat) override;
 		RenderObject* AddRenderable(RenderObject* toAdd) override;
-		void RemoveRenderable(RenderObject* toRemove);
+		void RemoveRenderable(RenderObject* toRemove) override;
 		
-		void DrawLine(Vec2& startPoint, Vec2& endPoint, Vec4& colour, float weight, float renderOrder);
+		LightingObjectData* AddLight(float transform[16]) override;
+		
+		void DrawLine(Vec2& startPoint, Vec2& endPoint, Vec4& colour, float weight, float renderOrder) override;
 		
 		void DrawFrame();
 		bool OnWindowResized(WindowResizeEvent& e) {  return false; };
@@ -139,11 +145,13 @@ namespace Chaos
 		void SetVSync(bool state) override;
 		bool GetVSync() override;
 		
+		void* GetImguiEditorPanelTextureID() override;
+		
 		void UploadMesh(VulkanMesh& mesh);
 		void UploadMaterial(VulkanMaterial& mat);
 		void UploadTexture(VulkanTexture& tex);
 		
-		void DrawObjects(VkCommandBuffer cmd, ChaoticArray<RenderObject*>& renderObjData);
+		void DrawObjects(VkCommandBuffer cmd, ChaoticArray<RenderObject*>& renderObjData, ChaoticArray<LightingObjectData*>& lightingData);
 		
 		void Init() override;
 		void Cleanup();
@@ -201,6 +209,7 @@ namespace Chaos
 		//TODO OPTIMISATION: Multi thread recording of renderables. Currently has a big overhead here. Divide and conquer!
 		//NOTE: Should be stable frame rate when inserting and removing, but has to itterate over it's max capacity every time.
 		ChaoticArray<RenderObject*> Renderables = ChaoticArray<RenderObject*>(MAX_OBJECTS);
+		ChaoticArray<LightingObjectData*> Lights = ChaoticArray<LightingObjectData*>(MAX_LIGHTS);
 		std::unordered_map<std::string, VulkanMaterial> Materials;
 		std::unordered_map<std::string, VulkanMesh> Meshes;
 		std::unordered_map<std::string, VulkanTexture> Textures;
@@ -245,6 +254,7 @@ namespace Chaos
 		
 		VkDescriptorSetLayout m_globalSetLayout;
 		VkDescriptorSetLayout m_objectSetLayout;
+		VkDescriptorSetLayout m_lightingSetLayout;
 		VkDescriptorSetLayout m_singleTextureSetLayout;
 		VkDescriptorPool m_descriptorPool;
 		VkFence m_descriptorFence;

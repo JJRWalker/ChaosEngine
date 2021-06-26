@@ -1,18 +1,16 @@
 //glsl version 4.5
 #version 450
 
-struct ObjectData{
-	mat4 model;
-	mat4 shaderFloatArray1;
-	mat4 customFloatArray1;
-}; 
-
 //shader input
 layout (location = 0) in vec3 inColor;
 layout (location = 1) in vec3 inNormal;
 layout (location = 2) in vec3 inFragPos;
 layout (location = 3) in vec2 inTexCoord;
-layout (location = 4) in ObjectData inObjData; 
+layout (location = 4) in ObjectData{
+	mat4 model;
+	mat4 shaderFloatArray1;
+	mat4 customFloatArray1;
+} inObjData; 
 
 //output write
 layout (location = 0) out vec4 outFragColor;
@@ -26,6 +24,17 @@ layout(set = 0, binding = 1) uniform  SceneData{
 } sceneData;
 
 layout(set = 2, binding = 0) uniform sampler2D tex1;
+
+struct LightingData
+{
+	mat4 transform;
+	mat4 shaderFloatArray1;
+};
+
+layout(std140, set = 3, binding = 0) readonly buffer LightingBuffer
+{
+	LightingData lights[];
+} lightingBuffer;
 
 void main()
 {	

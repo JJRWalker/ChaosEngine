@@ -27,10 +27,19 @@ namespace Chaos
 		
 		static void UpdateMouseEndFramePosition();
 		
+		//GAMEPAD
+		static bool IsGamepadButtonPressed(KeyCode button, int controllerID = 0);
+		static bool IsGamepadButtonReleased(KeyCode button, int controllerID = 0);
+		
+		static float GetGamepadAxis(KeyCode button, int controllerID = 0);
+		
 		//BUTTONS
 		static float GetButton(const char* buttonName);
 		static bool GetButtonDown(const char* buttonName);
 		static bool GetButtonUp(const char* buttonName);
+		
+		public:
+		static float GamepadStickDeadzone;
 		
 		private:
 		static Vec2 m_mouseEndFramePosition;
