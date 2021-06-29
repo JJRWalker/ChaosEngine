@@ -7,6 +7,7 @@
 // debug
 #include "Chaos/Core/Application.h"
 #include "Chaos/Renderer/Renderer.h"
+#include "Chaos/Debug/ImGuiLayer.h"
 
 const float DEBUG_LINE_WEIGHT = 0.025f;
 const float DEBUG_RENDER_ORDER = 1.0f;
@@ -16,6 +17,44 @@ namespace Chaos
 	Collider::Collider(bool child) : Node(child), Type(ColliderType::NONE)
 	{
 		Name = "Collider";
+	}
+	
+	
+	Collider::~Collider()
+	{
+		for (int i = 0; i < OverlapsSize; ++i)
+		{
+			Overlaps[i]->RemoveOverlap(this);
+		}
+	}
+	
+	
+	void Collider::OnShowEditorDetails(Texture* editorTexture, void* editorImageHandle)
+	{
+		int objectMask = 0;
+		int collisionMask = 0;
+		
+		const char* updateTypeOptions[] = { "Per Frame", "Fixed Step" };
+		int selectedUpdateType = (int)UpdateType;
+		
+		if (ImGui::DragInt("Object Mask", &(int)ObjectMask))
+		{
+			
+		}
+		
+		if (ImGui::DragInt("Collsion Mask", &(int)CollisionMask))
+		{
+		}
+		
+		
+		if (ImGui::Combo("Update Type", &selectedUpdateType, updateTypeOptions, IM_ARRAYSIZE(updateTypeOptions)))
+		{
+			UpdateType = (PhysicsUpdateType)selectedUpdateType;
+		}
+		
+		ImGui::Checkbox("Trigger", &Trigger);
+		
+		ImGui::Separator();
 	}
 	
 	
@@ -39,14 +78,6 @@ namespace Chaos
 			
 			if (!foundHitNodeInOverlaps)
 			{
-				for (size_t j = 0; j < root->ChildCount; ++j)
-				{
-					if (Overlaps[i]->Trigger)
-						level->Nodes[ID][j]->TriggerExit(this, Overlaps[i]);
-					else
-						level->Nodes[ID][j]->ColliderExit(this, Overlaps[i]);
-				}
-				
 				RemoveOverlap(Overlaps[i]);
 				--i;
 			}
@@ -135,6 +166,17 @@ namespace Chaos
 	
 	void Chaos::Collider::RemoveOverlap(Collider* collider)
 	{
+		Level* level = Level::Get();
+		Node* root = level->Nodes[ID][0];
+		
+		for (size_t j = 0; j < root->ChildCount; ++j)
+		{
+			if (collider->Trigger)
+				level->Nodes[ID][j]->TriggerExit(this, collider);
+			else
+				level->Nodes[ID][j]->ColliderExit(this, collider);
+		}
+		
 		for (size_t i = 0; i < OverlapsSize; ++i)
 		{
 			if (Overlaps[i] == collider)
@@ -189,6 +231,14 @@ namespace Chaos
 		Name = "BoxCollider2D";
 		Type = ColliderType::BOX2D;
 	}
+	
+	
+	void BoxCollider2D::OnShowEditorDetails(Texture* editorTexture, void* editorImageHandle)
+	{
+		Collider::OnShowEditorDetails(editorTexture, editorImageHandle);
+		ImGui::DragFloat2("Bounds", &Bounds.X, 0.01f);
+	}
+	
 	
 	void BoxCollider2D::OnDebug()
 	{
@@ -251,6 +301,14 @@ namespace Chaos
 		Name = "CircleCollider";
 		Type = ColliderType::CIRCLE;
 	}
+	
+	
+	void CircleCollider::OnShowEditorDetails(Texture* editorTexture, void* editorImageHandle)
+	{
+		Collider::OnShowEditorDetails(editorTexture, editorImageHandle);
+		ImGui::DragFloat("Radius", &Radius, 0.01f);
+	}
+	
 	
 	void CircleCollider::OnDebug()
 	{

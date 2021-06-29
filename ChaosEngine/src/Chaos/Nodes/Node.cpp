@@ -4,6 +4,8 @@
 #include "Math.h"
 #include "Colliders.h"
 
+#include "Chaos/Core/Application.h"
+
 namespace Chaos
 {
 	Node::Node(bool child)
@@ -20,7 +22,54 @@ namespace Chaos
 	
 	Node::~Node()
 	{
-		OnDestroy();
+		Level* level = Level::Get();
+		
+		if (p_parent)
+		{
+			for (int i = SubID; i < p_parent->ChildCount; ++i)
+			{
+				Node* temp = level->Nodes[ID][i];
+				level->Nodes[ID][i] = level->Nodes[ID][i + 1];
+				level->Nodes[ID][i + 1] = temp;
+				
+				--level->Nodes[ID][i]->SubID;
+			}
+			
+			level->Nodes[ID][p_parent->ChildCount] = nullptr;
+			--p_parent->ChildCount;
+		}
+		else
+		{
+			while(level->Nodes[ID][1])
+			{
+				delete level->Nodes[ID][1];
+			}
+			
+			for (int node = ID; node < level->NodeCount - 1; ++node)
+			{
+				Node** temp = level->Nodes[node];
+				memcpy((void*)level->Nodes[node], (void*)level->Nodes[node + 1], sizeof(Node*) * MAX_CHILD_NODES);
+				memcpy((void*)level->Nodes[node + 1], (void*)temp, sizeof(Node*) * MAX_CHILD_NODES);
+				
+				int nodeChildCount = level->Nodes[node][0]->ChildCount;
+				
+				for (int child = 0; child <= nodeChildCount; ++child)
+				{
+					--level->Nodes[node][child]->ID;
+				}
+			}
+			
+			int lastNodeIndex = level->NodeCount - 1;
+			
+			for (int child = 0; child < MAX_CHILD_NODES; ++child)
+			{
+				level->Nodes[lastNodeIndex][child] = nullptr;
+			}
+			
+			--level->NodeCount;
+		}
+		
+		LOGCORE_INFO("Deleting node ID: {0} SubID: {1} Name: {2}", ID, SubID, Name);
 	}
 	
 	
@@ -35,11 +84,6 @@ namespace Chaos
 	
 	
 	void Node::OnFixedUpdate(float delta)
-	{
-	}
-	
-	
-	void Node::OnDestroy()
 	{
 	}
 	
@@ -66,6 +110,11 @@ namespace Chaos
 	}
 	
 	
+	// Really only sets the pending destruction flag to true. Kinda makes it less clear what's going on but reads better in code.
+	void Node::Destroy()
+	{
+		PendingDestruction = true;
+	}
 	
 	// recursively translates the local local matrix by the parent matrix to get global transform matrix
 	float* Node::GetWorldTransform()
@@ -254,11 +303,11 @@ namespace Chaos
 	}
 	
 	
-	void Node::Rotate(float theta)
+	void Node::Rotate(float rotation)
 	{
-		float rotation = GetRotation();
+		float currentRotation = GetRotation();
 		
-		SetRotation(rotation + theta);
+		SetRotation(currentRotation + rotation);
 	}
 	
 	
@@ -325,6 +374,12 @@ namespace Chaos
 	size_t Node::GetSize()
 	{
 		return sizeof(*this);
+	}
+	
+	
+	const char* Node::GetType()
+	{
+		return typeid(*this).name();
 	}
 	
 	

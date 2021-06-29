@@ -183,7 +183,6 @@
     <ClInclude Include="src\Chaos\Nodes\Animator.h" />
     <ClInclude Include="src\Chaos\Nodes\Camera.h" />
     <ClInclude Include="src\Chaos\Nodes\Colliders.h" />
-    <ClInclude Include="src\Chaos\Nodes\EditorCameraController.h" />
     <ClInclude Include="src\Chaos\Nodes\Lights.h" />
     <ClInclude Include="src\Chaos\Nodes\Node.h" />
     <ClInclude Include="src\Chaos\Nodes\Sprite.h" />
@@ -191,7 +190,6 @@
     <ClInclude Include="src\Chaos\Renderer\Mesh.h" />
     <ClInclude Include="src\Chaos\Renderer\Renderer.h" />
     <ClInclude Include="src\Chaos\Renderer\RendererAPI.h" />
-    <ClInclude Include="src\Chaos\Renderer\SubTexture.h" />
     <ClInclude Include="src\Chaos\Renderer\Texture.h" />
     <ClInclude Include="src\Chaos\Serialisation\FileUtils.h" />
     <ClInclude Include="src\Chaos\Serialisation\TextFileReader.h" />
@@ -608,7 +606,6 @@
     <ClCompile Include="src\Chaos\Nodes\Animator.cpp" />
     <ClCompile Include="src\Chaos\Nodes\Camera.cpp" />
     <ClCompile Include="src\Chaos\Nodes\Colliders.cpp" />
-    <ClCompile Include="src\Chaos\Nodes\EditorCameraController.cpp" />
     <ClCompile Include="src\Chaos\Nodes\Lights.cpp" />
     <ClCompile Include="src\Chaos\Nodes\Node.cpp" />
     <ClCompile Include="src\Chaos\Nodes\Sprite.cpp" />
@@ -616,7 +613,6 @@
     <ClCompile Include="src\Chaos\Renderer\Mesh.cpp" />
     <ClCompile Include="src\Chaos\Renderer\Renderer.cpp" />
     <ClCompile Include="src\Chaos\Renderer\RendererAPI.cpp" />
-    <ClCompile Include="src\Chaos\Renderer\SubTexture.cpp" />
     <ClCompile Include="src\Chaos\Renderer\Texture.cpp" />
     <ClCompile Include="src\Chaos\Serialisation\FileUtils.cpp" />
     <ClCompile Include="src\Chaos\Serialisation\TextFileReader.cpp" />

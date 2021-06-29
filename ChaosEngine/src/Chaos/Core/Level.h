@@ -13,24 +13,30 @@ namespace Chaos
 	{
 		public:
 		Level();
-		void Start();
+		~Level();
+		void Destroy();
+		void OnStart();
+		void OnEnd();
 		void OnUpdate(float delta);
 		void OnFixedUpdate(float delta);
 		
 		void Save(const char* filepath);
 		void Load(const char* filepath);
 		
-		Camera* MainCamera();
 		
 		static Level* Get();
 		
 		public:
 		Node* Nodes[MAX_NODES][MAX_CHILD_NODES];
 		size_t NodeCount = 0;
+		Camera* MainCamera = nullptr;
+		
+		bool PendingDestroy = false;
+		
+		static Level* s_instance;
 		
 		private:
 		Camera* p_mainCamera = nullptr;
-		static Level* s_instance;
 	};
 }
 

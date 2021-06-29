@@ -103,6 +103,15 @@ namespace Chaos
 	}
 	
 	
+	void VulkanRenderer::RemoveLight(LightingObjectData* light)
+	{
+		if (!Lights.Remove(light))
+		{
+			LOGCORE_WARN("VULKAN RENDERER: Cannot remove light: it might not exist in the light queue");
+		}
+	}
+	
+	
 	void VulkanRenderer::DrawLine(Vec2& startPoint, Vec2& endPoint, Vec4& colour, float weight, float renderOrder)
 	{
 		
@@ -184,10 +193,15 @@ namespace Chaos
 		
 		VK_CHECK(vkBeginCommandBuffer(cmd, &cmdBeginInfo));
 		
-		Camera* mainCamera = Level::Get()->MainCamera();
+		Camera* mainCamera = Level::Get()->MainCamera;
 		
 		VkClearValue clearValue;
-		clearValue.color = { { mainCamera->BackgroundColour.X, mainCamera->BackgroundColour.Y, mainCamera->BackgroundColour.Z, mainCamera->BackgroundColour.W } };
+		
+		if (mainCamera)
+			clearValue.color = { { mainCamera->BackgroundColour.X, mainCamera->BackgroundColour.Y, mainCamera->BackgroundColour.Z, mainCamera->BackgroundColour.W } };
+		else
+			clearValue.color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
+		
 		
 		VkClearValue depthClear;
 		depthClear.depthStencil.depth = 1.0f;
@@ -241,13 +255,16 @@ namespace Chaos
 	
 	void VulkanRenderer::DrawObjects(VkCommandBuffer cmd, ChaoticArray<RenderObject*>& renderObjData, ChaoticArray<LightingObjectData*>& lightingData)
 	{
+		Camera* mainCamera = Level::Get()->MainCamera;
+		
+		if (!mainCamera)
+			return;
+		
 		GPUCameraData camData;
-		if (pCamera)
-		{
-			camData.projection = pCamera->GetProjection();
-			camData.view = pCamera->GetView();
-			camData.viewProj = camData.projection * camData.view;
-		}
+		
+		camData.projection = mainCamera->GetProjection();
+		camData.view = mainCamera->GetView();
+		camData.viewProj = camData.projection * camData.view;
 		
 		void* data;
 		vmaMapMemory(m_allocator, GetCurrentFrame().CameraBuffer.Allocation, &data);
@@ -347,12 +364,6 @@ namespace Chaos
 			if (obj.RenderOneTime)
 				Renderables.Destroy(i);
 		}
-	}
-	
-	
-	void VulkanRenderer::SetCamera(Camera* camera)
-	{
-		pCamera = camera;
 	}
 	
 	

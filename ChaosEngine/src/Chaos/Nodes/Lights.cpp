@@ -8,13 +8,20 @@
 
 namespace Chaos
 {
-	PointLight2D::PointLight2D(bool child)
+	PointLight2D::PointLight2D(bool child) : Node(child)
 	{
 		Name = "Point-light-2D";
 		
 		p_lightObject = Application::Get().GetRenderer().AddLight(GetWorldTransform());
 		
 		memcpy((void*)&p_lightObject->DataArray1[0], (void*)&DEFAULT_SHADER_VALUES_1[0], sizeof(float) * 16);
+	}
+	
+	
+	PointLight2D::~PointLight2D()
+	{
+		Application::Get().GetRenderer().RemoveLight(p_lightObject);
+		delete p_lightObject;
 	}
 	
 	

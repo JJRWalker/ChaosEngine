@@ -160,7 +160,7 @@ namespace Chaos
 		
 		
 		VkResult result = vkAllocateDescriptorSets(p_owningRenderer->m_device, &allocInfo, &TextureSet);
-
+		
 		if (result != VK_SUCCESS)
 		{
 			LOGCORE_ERROR("VULKAN: TEXTURE: Cannot allocate descriptor: {0}", result);
@@ -220,7 +220,7 @@ namespace Chaos
 		
 		
 		VkResult result = vkAllocateDescriptorSets(p_owningRenderer->m_device, &allocInfo, &TextureSet);
-
+		
 		if (result != VK_SUCCESS)
 		{
 			LOGCORE_ERROR("VULKAN: TEXTURE (BLANK): Cannot allocate descriptor: {0}", result);

@@ -21,6 +21,7 @@ namespace Chaos
 			m_consoleKeyReleased = false;
 			
 			m_showConsole ? m_showConsole = false : m_showConsole = true;
+			m_showConsole ? Input::ButtonsEnabled = false : Input::ButtonsEnabled = true;
 			
 			m_resetFocus = true;
 		}
@@ -31,7 +32,6 @@ namespace Chaos
 		
 		if (m_showConsole)
 		{
-			
 			ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus;
 			
 			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.01f, 0.01f, 0.01f, 0.5f));
@@ -51,14 +51,14 @@ namespace Chaos
 			
 			ImGui::EndChild();
 			ImGui::Separator();
-
+			
 			if (ImGui::InputText("Input", m_inputBuffer, 256, ImGuiInputTextFlags_EnterReturnsTrue|ImGuiInputTextFlags_CallbackCompletion|ImGuiInputTextFlags_CallbackHistory, &ConsoleEditTextCallbackStub, (void*)this))
 			{
 				Console::ParseCommand(m_inputBuffer);
 				strcpy(m_inputBuffer, "");
 				m_resetFocus = true;
 			}
-
+			
 			if (m_resetFocus)
 			{
 				ImGui::SetKeyboardFocusHere(-1);

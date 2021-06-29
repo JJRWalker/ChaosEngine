@@ -16,10 +16,30 @@ namespace Chaos
 	
 	Level::Level()
 	{
+		memset(Nodes, 0, sizeof(Node*) * MAX_NODES * MAX_CHILD_NODES);
+	}
+	
+	Level::~Level()
+	{
+		// Deleting a node shuffles the current level node array, so there will always be a [0][0] so long as the level has nodes
+		while (Nodes[0][0])
+		{
+			delete Nodes[0][0];
+		}
+		
+		s_instance = nullptr;
 	}
 	
 	
-	void Level::Start()
+	// similar to the Node::Destroy function, simply flags the level for deletion
+	// this is to avoid deleting a level mid update
+	void Level::Destroy()
+	{
+		PendingDestroy = true;
+	}
+	
+	
+	void Level::OnStart()
 	{
 		for (int node = 0; node < NodeCount; ++node)
 		{
@@ -28,6 +48,12 @@ namespace Chaos
 				Nodes[node][child]->OnStart(); 
 			}
 		}
+	}
+	
+	
+	void Level::OnEnd()
+	{
+		LOGCORE_INFO("LEVEL ENDED");
 	}
 	
 	
@@ -181,18 +207,10 @@ namespace Chaos
 		memcpy(this, buffer, sizeof(*buffer));
 		free(buffer);
 		
-		Start();
+		OnStart();
 		
 		Application::Get().ResumeFixedUpdateThread();
-	}
-	
-	
-	Camera* Level::MainCamera()
-	{
-		if (!p_mainCamera)
-			p_mainCamera = new Camera();
 		
-		return p_mainCamera;
 	}
 	
 	

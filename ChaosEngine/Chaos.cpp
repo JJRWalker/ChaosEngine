@@ -35,7 +35,6 @@
 #include <Chaos/Nodes/Camera.cpp>
 #include <Chaos/Nodes/Sprite.cpp>
 #include <Chaos/Nodes/Colliders.cpp>
-#include <Chaos/Nodes/EditorCameraController.cpp>
 #include <Chaos/Nodes/Animator.cpp>
 #include <Chaos/Nodes/Lights.cpp>
 
@@ -45,7 +44,6 @@
 #include <Chaos/Renderer/Mesh.cpp>
 #include <Chaos/Renderer/Material.cpp>
 #include <Chaos/Renderer/Texture.cpp>
-#include <Chaos/Renderer/SubTexture.cpp>
 
 
 #ifdef CHAOS_PLATFORM_WINDOWS

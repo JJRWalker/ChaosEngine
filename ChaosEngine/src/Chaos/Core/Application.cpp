@@ -36,23 +36,17 @@ namespace Chaos
 		m_window = std::unique_ptr<Window>(Window::Create());
 		m_window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 		
-		m_mainCamera = Level::Get()->MainCamera();
-		
 		//Creating renderer
 		m_renderer = std::unique_ptr<Renderer>(Renderer::Create(m_window.get()));
 		m_renderer->Init();
 		m_renderer->InitImgui();
-		m_renderer->SetCamera(m_mainCamera);
 		
 		//creating input manager layer
 		m_inputManager = new InputManager("./Assets/Config/Inputs.ini");
-		PushLayer(m_inputManager);
-		
-		//Creating test overlay layer
-		m_guiLayer = new ImGuiConsole();
+		PushLayer(m_inputManager);;
 		
 		//Push test overlay layer
-		PushOverlay(m_guiLayer);
+		PushOverlay(new ImGuiConsole());
 		PushOverlay(new ImGuiEditor());
 		PushOverlay(new ImGuiDebugInfo());
 		PushOverlay(new ImGuiProfiler());
@@ -74,12 +68,14 @@ namespace Chaos
 		{
 			PROFILED_FUNC();
 			
-			//Update time class
+			// Update time class
 			Time::m_time = m_window->GetWindowTime();
-			Time::m_deltaTime = (float)(Time::m_time - Time::m_timeLastFrame);
+			Time::m_unscaledDeltaTime = (float)(Time::m_time - Time::m_timeLastFrame);
+			Time::m_deltaTime = Time::m_unscaledDeltaTime * Time::m_timeScale;
 			Time::m_timeSinceLastFixedUpdate += Time::m_deltaTime;
 			Time::m_timeLastFrame = Time::m_time;
 			
+			Level* level = Level::Get();
 			
 			if (Time::m_timeSinceLastFixedUpdate >= Time::m_fixedDeltaTime)
 			{
@@ -92,9 +88,9 @@ namespace Chaos
 					}
 					
 					
-					if (Level::Get())
+					if (level)
 					{
-						Level::Get()->OnFixedUpdate(Time::m_fixedDeltaTime);
+						level->OnFixedUpdate(Time::m_fixedDeltaTime);
 					}
 				}
 				
@@ -105,36 +101,72 @@ namespace Chaos
 			//m_mainCamera->SetAspectRatio(m_window->GetAspectRatio());
 			
 			
-			//itterate through layers
+			// itterate through layers
 			for (Layer* layer : m_layerStack)
 				layer->OnUpdate(Time::m_deltaTime);
 			
 			if (m_renderingImGui)
 			{
-				//Currently causes black screen to be rendered over the top of the main render if not in release mode
 				ImGuiLayer::Begin();
 				for (Layer* layer : m_layerStack)
 					layer->OnImGuiUpdate();
 				ImGuiLayer::End();
 			}
 			
-			//Do post update steps
+			// update the current scene after all the layers have been processed
+			if (level)
+				level->OnUpdate(Time::m_deltaTime);
+			
+			m_window->OnUpdate();
+			
+			m_renderer->DrawFrame();
+			
+			
+			// Do post update steps
 			//Needed to modify the layer stack without causing itteration issues
 			for (auto func : m_postUpdateSteps)
 			{
 				func();
 			}
-			//clear once finished
+			// clear once finished
 			m_postUpdateSteps.clear();
 			
-			//update the current scene after all the layers have been processed
-			Level::Get()->OnUpdate(Time::m_deltaTime);
-			m_window->OnUpdate();
-			m_renderer->DrawFrame();
+			
+			// NOTE: here lies some rudementary garbage collection. Not a huge fan of anything more complex than this
+			// Needed as deleting a node mid way through an update loop isn't the best idea
+			// if the level needs to be destroyed, skip the rest of the loop
+			if (level->PendingDestroy)
+			{
+				level->OnEnd();
+				delete Level::Get();
+				continue;
+			}
+			
+			// delete any nodes pending destruction
+			for (int node = 0; node < level->NodeCount; ++node)
+			{
+				if (level->Nodes[node][0]->PendingDestruction)
+				{
+					delete level->Nodes[node][0];
+					--node;
+				}
+				else
+				{
+					for (int child = 1; child < level->Nodes[node][0]->ChildCount; ++child)
+					{
+						if (level->Nodes[node][child]->PendingDestruction)
+						{
+							delete level->Nodes[node][child];
+							--child;
+						}
+					}
+				}
+			}
+			
 			Input::UpdateMouseEndFramePosition();
 		}
 		
-		while(m_runningFixedUpdate); // wait for last fixed update to finish
+		//while(m_runningFixedUpdate); // wait for last fixed update to finish
 	}
 	
 	//gets whatever level is active and calls the fixed update function on that level at the fixed update delta time interval
@@ -146,7 +178,6 @@ namespace Chaos
 			m_runningFixedUpdate = true;
 			float fixedDelta = Time::GetFixedDeltaTime();
 			
-			//NOTE: not sure why but this needs to be multiplied by 500 instead of 1000
 			std::chrono::milliseconds sleepTime(static_cast<int>(fixedDelta * 1000));
 			
 			if (m_pauseFixedUpdate)

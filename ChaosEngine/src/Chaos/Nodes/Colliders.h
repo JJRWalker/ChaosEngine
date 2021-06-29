@@ -37,6 +37,9 @@ namespace Chaos
 	{
 		public:
 		Collider(bool child = false);
+		~Collider();
+		
+		virtual void OnShowEditorDetails(Texture* editorTexture, void* editorImageHandle);
 		
 		virtual bool CollideWith(Collider* other) = 0;
 		// checks all collisions with quad tree, searches based on the type of colliders involved
@@ -69,6 +72,8 @@ namespace Chaos
 		public:
 		BoxCollider2D(bool child = false);
 		
+		virtual void OnShowEditorDetails(Texture* editorTexture, void* editorImageHandle);
+		
 		void OnDebug() override;
 		
 		bool CollideWith(Collider* other) override;
@@ -82,6 +87,8 @@ namespace Chaos
 	{
 		public:
 		CircleCollider(bool child = false);
+		
+		virtual void OnShowEditorDetails(Texture* editorTexture, void* editorImageHandle);
 		
 		void OnDebug() override;
 		

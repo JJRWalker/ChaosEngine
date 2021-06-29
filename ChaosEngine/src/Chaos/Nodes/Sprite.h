@@ -8,7 +8,6 @@
 
 #include "Chaos/DataTypes/Vec4.h"
 #include "Chaos/Renderer/Texture.h"
-#include "Chaos/Renderer/SubTexture.h"
 #include "Chaos/Nodes/Node.h"
 
 namespace Chaos

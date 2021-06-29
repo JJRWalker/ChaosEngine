@@ -86,13 +86,33 @@ namespace Chaos
 		
 		
 		// frees and removes the data from the array.
-		void Destroy(size_t index)
+		bool Destroy(size_t index)
 		{
 			if (Data[index])
 			{
 				free(Data[index]);
 				Remove(index);
+				return true;
 			}
+			return false;
+		}
+		
+		
+		// frees and removes the data from the array.
+		bool Destroy(T value)
+		{
+			for (int i = 0; i < m_size; ++i)
+			{
+				if (Data[i] == value)
+				{
+					free(Data[i]);
+					Data[i] = nullptr;
+					FreeSlots[m_freeSlotsSize] = i;
+					++m_freeSlotsSize;
+					return true;
+				}
+			}
+			return false;
 		}
 		
 		

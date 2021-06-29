@@ -52,7 +52,10 @@ namespace Chaos
 	
 	Sprite::~Sprite()
 	{
-		Application::Get().GetRenderer().RemoveRenderable(p_renderObject);
+		if (Enabled)
+			Application::Get().GetRenderer().RemoveRenderable(p_renderObject);
+		
+		delete p_renderObject;
 	}
 	
 	
@@ -76,6 +79,7 @@ namespace Chaos
 	}
 	
 	
+	
 	void Sprite::OnShowEditorDetails(Texture* editorTexture, void* editorImageHandle)
 	{
 		ImTextureID* imguiEditorTextureID = nullptr;
@@ -84,7 +88,15 @@ namespace Chaos
 		
 		std::string path = p_renderObject->pTexture->GetFilePath();
 		
-		ImGui::Text(path.c_str());
+		ImGui::Text("Filepath: %s", path.c_str());
+		
+		float colour[4] = { GetColour().X, GetColour().Y, GetColour().Z, GetColour().W };
+		
+		if (ImGui::ColorEdit4("Colour", colour, 0.01f))
+		{
+			SetColour(Vec4(colour[0], colour[1], colour[2], colour[3]));
+		}
+		
 		
 		if (ImGui::Button("Change texture"))
 		{
@@ -93,7 +105,7 @@ namespace Chaos
 			{
 				if (out != path)
 				{
-					p_renderObject->pTexture->Load(out);
+					p_renderObject->pTexture = Texture::Create(out);
 				}
 			}
 		}
@@ -196,7 +208,26 @@ namespace Chaos
 		
 		std::string path = p_renderObject->pTexture->GetFilePath();
 		
-		ImGui::Text(path.c_str());
+		ImGui::Text("Filepath: %s", path.c_str());
+		
+		float totalCells[2] = { GetTotalCells().X, GetTotalCells().Y };
+		float coords[2] = { GetCoords().X, GetCoords().Y };
+		float colour[4] = { GetColour().X, GetColour().Y, GetColour().Z, GetColour().W };
+		
+		if (ImGui::ColorEdit4("Colour", colour, 0.01f))
+		{
+			SetColour(Vec4(colour[0], colour[1], colour[2], colour[3]));
+		}
+		
+		if (ImGui::DragFloat2("Total Cells", totalCells, 1.0f))
+		{
+			SetTotalCells(Vec2(totalCells[0], totalCells[1]));
+		}
+		
+		if (ImGui::DragFloat2("Cell Coords", coords, 1.0f))
+		{
+			SetCoords(Vec2(coords[0], coords[1]));
+		}
 		
 		if (ImGui::Button("Change texture"))
 		{
@@ -205,14 +236,9 @@ namespace Chaos
 			{
 				if (out != path)
 				{
-					p_renderObject->pTexture->Load(out);
+					p_renderObject->pTexture = Texture::Create(out);
 				}
 			}
-		}
-		ImGui::SameLine();
-		if (ImGui::Button("Set Coords"))
-		{
-			
 		}
 		
 		//storing start cursor pos before drawing the image, used to overlay buttons ontop of it later

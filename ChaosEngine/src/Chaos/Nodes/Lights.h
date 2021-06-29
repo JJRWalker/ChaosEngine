@@ -12,6 +12,7 @@ namespace Chaos
 	{
 		public:
 		PointLight2D(bool child = false);
+		~PointLight2D();
 		
 		void OnUpdate(float delta) override;
 		void SetEnabled(bool state) override;

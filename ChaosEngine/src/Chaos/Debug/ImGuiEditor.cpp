@@ -4,21 +4,35 @@
 #include <Chaos/Nodes/Camera.h>
 #include <Chaos/Nodes/Colliders.h>
 #include <Chaos/Nodes/Sprite.h>
-#include <Chaos/Nodes/EditorCameraController.h>
 #include <Chaos/Debug/ImGuiFileExplorer.h>
 #include <Chaos/Core/Application.h>
+#include <Chaos/Core/Time.h>
 #include <Chaos/Input/Input.h>
 #include <Chaos/Maths/Collisions.h>
 #include <Chaos/Renderer/Renderer.h>
+
 
 namespace Chaos
 {
 	ImGuiEditor::ImGuiEditor()
 	{
-		Console::AddCommand("ed", [&](){ m_showEditor ? m_showEditor = false : m_showEditor = true;});
+		Console::AddCommand("ed", [&](){ 
+								if (m_showEditor)
+								{
+									Time::SetTimeScale(m_timeScaleBeforePause);
+									m_showEditor = false;
+								}
+								else
+								{
+									m_timeScaleBeforePause = Time::GetTimeScale();
+									Time::SetTimeScale(0.0f);
+									m_showEditor = true;
+								}
+							});
+		
 		Console::AddCommand("demogui", [&](){ m_showDemo ? m_showDemo = false : m_showDemo = true;});
-		m_cameraController = Level::Get()->MainCamera()->AddChild<EditorCameraController>();
-		m_cameraController->SetEnabled(false);
+		
+		Console::AddCommand("clear_level", [&](){ Level::Get()->Destroy(); });
 		
 		m_selectedEntTextureID = Application::Get().GetRenderer().GetImguiEditorPanelTextureID();
 	}
@@ -31,6 +45,10 @@ namespace Chaos
 		}
 		if (m_showEditor)
 		{
+			
+			Input::ButtonsEnabled = false;
+			
+			MoveCamera(Time::GetUnscaledDeltaTime());
 			//show the main body of the editor (level heirarchy)
 			ShowEditor();
 			//update inputs and then determine if an entity was clicked
@@ -45,10 +63,8 @@ namespace Chaos
 	
 	void ImGuiEditor::ShowEditor()
 	{
-		if (!m_cameraController->IsEnabled())
-		{
-			//m_cameraController->SetEnabled(true);
-		}
+		Level* level = Level::Get();
+		
 		ImGuiWindowFlags window_flags =  ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoBringToFrontOnFocus;
 		
 		//ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.1f, 0.1f, 0.1f, 0.1f));
@@ -71,6 +87,14 @@ namespace Chaos
 				{
 					Node* node = new SubSprite();
 				}
+				if(ImGui::MenuItem("Box-Colldier-2D"))
+				{
+					Node* node = new BoxCollider2D();
+				}
+				if(ImGui::MenuItem("Camera"))
+				{
+					Node* node = new Camera();
+				}
 				ImGui::EndMenu();
 			}
 			if(ImGui::Button("save.."))
@@ -86,7 +110,8 @@ namespace Chaos
 			if(ImGui::Button("close"))
 			{
 				m_showEditor = false;
-				m_cameraController = false;
+				Input::ButtonsEnabled = true;
+				Time::SetTimeScale(m_timeScaleBeforePause);
 			}
 			
 			ImGui::EndMenuBar();
@@ -109,7 +134,7 @@ namespace Chaos
 					nodeFlags |= ImGuiTreeNodeFlags_Selected;
 				}
 				
-				bool openTree = ImGui::TreeNodeEx((void*)(intptr_t)i, nodeFlags, "%s", node->Name);
+				bool openTree = ImGui::TreeNodeEx((void*)(intptr_t)i, nodeFlags, "%s", node->Name.c_str());
 				
 				if (ImGui::IsItemClicked())
 					nodeSelected = i;
@@ -127,7 +152,7 @@ namespace Chaos
 							childFlags |= ImGuiTreeNodeFlags_Selected;
 						}
 						
-						ImGui::TreeNodeEx((void*)(intptr_t)j, childFlags, "%s", Level::Get()->Nodes[i][j]->Name);
+						ImGui::TreeNodeEx((void*)(intptr_t)j, childFlags, "%s", Level::Get()->Nodes[i][j]->Name.c_str());
 						
 						
 						
@@ -146,18 +171,58 @@ namespace Chaos
 				
 				if (nodeSelected != -1)
 				{
+					Node* newSelected = level->Nodes[nodeSelected][childSelected];
 					if (ImGui::GetIO().KeyCtrl)
 					{
-						m_selectedEntities.push_back(Level::Get()->Nodes[nodeSelected][childSelected]);         // CTRL+click to toggle
+						for (int child = 0; child <= newSelected->ChildCount; ++child)
+						{
+							level->Nodes[nodeSelected][child]->DebugEnabled = true;
+						}
+						m_selectedEntities.push_back(newSelected);         // CTRL+click to toggle
+					}
+					else if (ImGui::GetIO().KeyShift)
+					{
+						int selectionStartIndex = m_selectedEntities[m_selectedEntities.size() - 1]->ID;
+						
+						int selectionEndIndex = nodeSelected;
+						
+						if (nodeSelected < selectionStartIndex)
+						{
+							int temp = selectionEndIndex;
+							selectionEndIndex = selectionStartIndex;
+							selectionStartIndex = temp;
+						}
+						
+						for (int node = selectionStartIndex; node <= selectionEndIndex; ++node)
+						{
+							m_selectedEntities.push_back(level->Nodes[node][0]);
+							
+							for (int child = 0; child <= level->Nodes[node][0]->ChildCount; ++child)
+							{
+								level->Nodes[node][child]->DebugEnabled = true;
+							}
+						}
+						
 					}
 					else //if (!(selection_mask & (1 << node_clicked))) // Depending on selection behavior you want, this commented bit preserve selection when clicking on item that is part of the selection
 					{
 						for (Node* selected : m_selectedEntities)
 						{
-							selected->DebugEnabled = false;
+							for (int child = 0; child <= selected->ChildCount; ++child)
+							{
+								Level::Get()->Nodes[selected->ID][child]->DebugEnabled = false;
+							}
 						}
 						m_selectedEntities.clear();
-						m_selectedEntities.push_back(Level::Get()->Nodes[nodeSelected][childSelected]);	// Click to single-select
+						
+						level->Nodes[nodeSelected][childSelected]->DebugEnabled = true;
+						
+						for (int child = 0; child <= newSelected->ChildCount; ++child)
+						{
+							level->Nodes[nodeSelected][child]->DebugEnabled = true;
+						}
+						
+						m_selectedEntities.push_back(newSelected);	// Click to single-select
 					}
 					
 				}
@@ -171,16 +236,40 @@ namespace Chaos
 	{
 		Node* node = m_selectedEntities[m_selectedEntities.size() - 1];
 		
-		node->DebugEnabled = true;
+		Level* level = Level::Get();
 		
 		ImGui::SetNextWindowSize(ImVec2(DETAILS_WINDOW_SIZE.X + DETAILS_WINDOW_PADDING.X, DETAILS_WINDOW_SIZE.Y + DETAILS_WINDOW_PADDING.Y));
 		ImGui::SetNextWindowPos(ImVec2(m_editorWindowPos.x + (m_editorWindowSize.x), m_editorWindowPos.y));
 		ImGui::Begin("Details");
-		//generic node data...
 		
+		//generic node data...
 		float pos[3] = { node->GetPosition().X, node->GetPosition().Y, node->GetDepth() };
 		float scale[2] = { node->GetScale().X, node->GetScale().Y };
 		float rot = node->GetRotation();
+		
+		bool enabled = node->IsEnabled();
+		
+		
+		if (ImGui::Checkbox("", &enabled))
+		{
+			node->SetEnabled(enabled);
+			if (node->ChildCount)
+			{
+				for (int child = 1; child <= node->ChildCount; ++child)
+				{
+					level->Nodes[node->ID][child]->SetEnabled(enabled);
+				}
+			}
+		}
+		ImGui::SameLine();
+		
+		ImGui::Text("%s", node->Name.c_str()); 
+		
+		ImGui::SameLine();
+		
+		ImGui::Text("\t ID: %d SubID: %d", node->ID, node->SubID); 
+		
+		ImGui::Text("%s", node->GetType());
 		
 		if (ImGui::DragFloat3("Position", pos, 0.01f))
 		{
@@ -194,13 +283,18 @@ namespace Chaos
 		{
 			node->SetRotation(rot);
 		}
+		if (ImGui::Button("Delete") || Input::IsKeyPressed(KEY_DELETE))
+		{
+			for (Node* toDelete : m_selectedEntities)
+				toDelete->Destroy();
+			
+			m_selectedEntities.clear();
+		}
 		
 		ImGui::Separator();
 		
-		//Render component..
-		//currently hard coded inputs in future should be automatic depending on the variable type
-		
-		node->OnShowEditorDetails(m_selectedEntTexture, m_selectedEntTextureID);
+		if(node)
+			node->OnShowEditorDetails(m_selectedEntTexture, m_selectedEntTextureID);
 		
 		ImGui::End();
 	}
@@ -209,10 +303,10 @@ namespace Chaos
 	
 	void ImGuiEditor::UpdateSelectedEntity()
 	{
-		if (ImGui::IsAnyWindowHovered())
+		if (ImGui::IsAnyWindowHovered() || !Level::Get()->MainCamera)
 			return;
 		
-		Vec2 mouseWorldPoint =  Level::Get()->MainCamera()->ScreenToWorld(Input::GetMousePosition());
+		Vec2 mouseWorldPoint =  Level::Get()->MainCamera->ScreenToWorld(Input::GetMousePosition());
 		
 		if(Input::IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !m_clicked)
 		{
@@ -291,6 +385,42 @@ namespace Chaos
 			
 		}
 	}
+	
+	
+	void ImGuiEditor::MoveCamera(float delta)
+	{
+		Vec2 dir = Vec2::Zero();
+		if(Input::IsKeyPressed(KEY_W))
+		{
+			dir.Y = 1;
+		}
+		else if (Input::IsKeyPressed(KEY_S))
+		{
+			dir.Y = -1;
+		}
+		else
+		{
+			dir.Y = 0;
+		}
+		
+		if(Input::IsKeyPressed(KEY_A))
+		{
+			dir.X = -1;
+		}
+		else if (Input::IsKeyPressed(KEY_D))
+		{
+			dir.X = 1;
+		}
+		else
+		{
+			dir.X = 0;
+		}
+		
+		Vec2 position = Level::Get()->MainCamera->GetPosition() + (dir * (m_cameraSpeed * delta));
+		
+		Level::Get()->MainCamera->SetPosition(position);
+	}
+	
 	
 	bool ImGuiEditor::IsSelected(Node* entity)
 	{

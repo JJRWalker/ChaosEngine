@@ -130,6 +130,7 @@ namespace Chaos
 		void RemoveRenderable(RenderObject* toRemove) override;
 		
 		LightingObjectData* AddLight(float transform[16]) override;
+		void RemoveLight(LightingObjectData* light) override;
 		
 		void DrawLine(Vec2& startPoint, Vec2& endPoint, Vec4& colour, float weight, float renderOrder) override;
 		
@@ -140,7 +141,6 @@ namespace Chaos
 		bool HasTexture(std::string name, VulkanTexture** outTexture = nullptr);
 		
 		void InitImgui() override;
-		void SetCamera(Camera* camera) override;
 		
 		void SetVSync(bool state) override;
 		bool GetVSync() override;
@@ -200,7 +200,6 @@ namespace Chaos
 		bool IsInitialized = false;
 		int FrameNumber = 0;
 		
-		Camera* pCamera;
 		Window* pWindow;
 		VkExtent2D WindowExtent;
 		DeletionQueue MainDeletionQueue;

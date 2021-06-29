@@ -1,6 +1,7 @@
 #include <chaospch.h>
 #include <Chaos/Debug/ImGuiDebugInfo.h>
 #include <Chaos/Debug/Console.h>
+#include <Chaos/Core/Time.h>
 
 namespace Chaos
 {
@@ -56,6 +57,8 @@ namespace Chaos
 				ImGui::Text("fps: %d", m_fps);
 				ImGui::Text("avg fps: %f", m_averageFPS);
 				ImGui::Text("fixed fps: %d", m_fixedFPS);
+				ImGui::Text("Time scale: %f", Time::GetTimeScale());
+				ImGui::Text("FixedTime: %f", Time::GetFixedDeltaTime());
 				
 				if (ImGui::BeginPopupContextWindow())
 				{

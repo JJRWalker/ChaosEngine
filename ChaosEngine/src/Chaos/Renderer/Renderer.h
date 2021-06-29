@@ -8,7 +8,6 @@
 #include "Mesh.h"
 #include "Texture.h"
 #include "Material.h"
-#include "SubTexture.h"
 
 namespace Chaos
 {
@@ -60,6 +59,7 @@ namespace Chaos
 		virtual void RemoveRenderable(RenderObject* toRemove) = 0;
 		
 		virtual LightingObjectData* AddLight(float transform[16]) = 0;
+		virtual void RemoveLight(LightingObjectData* light) = 0;
 		
 		virtual void DrawLine(Vec2& startPoint, Vec2& endPoint, Vec4& colour, float weight, float renderOrder) = 0;
 		
@@ -70,7 +70,6 @@ namespace Chaos
 		virtual bool HasTexture(std::string name, Texture** outTexture = nullptr) = 0;
 		
 		virtual void InitImgui() = 0;
-		virtual void SetCamera(Camera* camera) = 0;
 		
 		virtual void SetVSync(bool state) = 0;
 		virtual bool GetVSync() = 0;

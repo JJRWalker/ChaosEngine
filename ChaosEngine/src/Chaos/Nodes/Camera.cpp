@@ -3,11 +3,28 @@
 #include "Camera.h"
 
 #include "Chaos/Core/Application.h"
-
+#include "Chaos/Core/Level.h"
 #include <GLM/glm/gtc/matrix_transform.hpp>
 
 namespace Chaos
 {
+	Camera::Camera(bool child): Node(child)
+	{
+		Name = "Camera"; 
+		Recalculate();
+		
+		if (!Level::Get()->MainCamera)
+			Level::Get()->MainCamera = this;
+	}
+	
+	
+	Camera::~Camera()
+	{
+		if (Level::Get()->MainCamera == this)
+			Level::Get()->MainCamera = nullptr;
+	}
+	
+	
 	void Camera::Recalculate()
 	{
 		switch (m_projectionType)
@@ -41,11 +58,6 @@ namespace Chaos
 	{
 		
 		Recalculate();
-	}
-	
-	
-	void Camera::OnDestroy() 
-	{
 	}
 	
 	

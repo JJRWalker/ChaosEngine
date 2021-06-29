@@ -39,6 +39,7 @@ namespace Chaos
 		static bool GetButtonUp(const char* buttonName);
 		
 		public:
+		static bool ButtonsEnabled;
 		static float GamepadStickDeadzone;
 		
 		private:

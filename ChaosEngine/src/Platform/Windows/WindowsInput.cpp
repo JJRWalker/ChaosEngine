@@ -11,6 +11,7 @@ namespace Chaos
 	Vec2 Input::m_mouseEndFramePosition = Vec2(0,0);
 	Vec2 Input::m_mouseDelta = Vec2(0,0);
 	float Input::GamepadStickDeadzone = 0.001f;
+	bool Input::ButtonsEnabled = true;
 	
 	bool Input::IsKeyPressed(KeyCode key)
 	{
@@ -133,6 +134,9 @@ namespace Chaos
 	
 	float Input::GetButton(const char* buttonName)
 	{
+		if (!ButtonsEnabled)
+			return 0.0f;
+		
 		std::map<std::string, Button>::iterator it = InputManager::Get()->GetButtonMap().find(buttonName);
 		
 		if (it != InputManager::Get()->GetButtonMap().end())
@@ -145,6 +149,9 @@ namespace Chaos
 	
 	bool Input::GetButtonDown(const char* buttonName)
 	{
+		if (!ButtonsEnabled)
+			return false;
+		
 		std::map<std::string, Button>::iterator it = InputManager::Get()->GetButtonMap().find(buttonName);
 		
 		if (it != InputManager::Get()->GetButtonMap().end())
@@ -155,6 +162,9 @@ namespace Chaos
 	
 	bool Input::GetButtonUp(const char* buttonName)
 	{
+		if (!ButtonsEnabled)
+			return false;
+		
 		std::map<std::string, Button>::iterator it = InputManager::Get()->GetButtonMap().find(buttonName);
 		
 		if (it != InputManager::Get()->GetButtonMap().end())

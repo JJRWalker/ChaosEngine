@@ -174,9 +174,6 @@
     <ClInclude Include="src\Chaos\Nodes\Colliders.h">
       <Filter>src\Chaos\Nodes</Filter>
     </ClInclude>
-    <ClInclude Include="src\Chaos\Nodes\EditorCameraController.h">
-      <Filter>src\Chaos\Nodes</Filter>
-    </ClInclude>
     <ClInclude Include="src\Chaos\Nodes\Node.h">
       <Filter>src\Chaos\Nodes</Filter>
     </ClInclude>
@@ -187,9 +184,6 @@
       <Filter>src\Chaos\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Chaos\Renderer\RendererAPI.h">
-      <Filter>src\Chaos\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Chaos\Renderer\SubTexture.h">
       <Filter>src\Chaos\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Chaos\Renderer\Texture.h">
@@ -1429,9 +1423,6 @@
     <ClCompile Include="src\Chaos\Nodes\Colliders.cpp">
       <Filter>src\Chaos\Nodes</Filter>
     </ClCompile>
-    <ClCompile Include="src\Chaos\Nodes\EditorCameraController.cpp">
-      <Filter>src\Chaos\Nodes</Filter>
-    </ClCompile>
     <ClCompile Include="src\Chaos\Nodes\Node.cpp">
       <Filter>src\Chaos\Nodes</Filter>
     </ClCompile>
@@ -1442,9 +1433,6 @@
       <Filter>src\Chaos\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Chaos\Renderer\RendererAPI.cpp">
-      <Filter>src\Chaos\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Chaos\Renderer\SubTexture.cpp">
       <Filter>src\Chaos\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Chaos\Renderer\Texture.cpp">

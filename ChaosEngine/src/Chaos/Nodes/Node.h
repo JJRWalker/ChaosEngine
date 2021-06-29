@@ -18,14 +18,14 @@ namespace Chaos
 	{
 		public:
 		Node(bool child = false);
-		~Node();
+		virtual ~Node();
 		
 		virtual void OnStart();                  // called on start of level
 		virtual void OnUpdate(float delta);      // called every frame
 		virtual void OnFixedUpdate(float delta); // called on specified fixed step
-		virtual void OnDestroy();                // called when node is destroyed
 		virtual void SetEnabled(bool state);
 		virtual bool IsEnabled();
+		void Destroy();
 		
 		virtual void OnDebug();
 		virtual void OnShowEditorDetails(Texture* editorTexture, void* editorImageHandle); // NOTE: void* because I'm not sure we want to be tied to imgui on this side of things
@@ -50,7 +50,7 @@ namespace Chaos
 		virtual float GetWorldRotation();
 		virtual void SetRotation(float rotation);
 		virtual void SetWorldRotation(float rotation);
-		virtual void Rotate(float theta);
+		virtual void Rotate(float rotation);
 		virtual Vec2 GetScale();
 		virtual Vec2 GetWorldScale();
 		virtual void SetScale(Vec2 scale);
@@ -60,6 +60,7 @@ namespace Chaos
 		
 		// for seralization
 		size_t GetSize();
+		virtual const char* GetType();
 		
 		// collision funcs called when a child collider node triggers any conditions
 		virtual void ColliderStay(Collider* self, Collider* other);
@@ -172,6 +173,9 @@ namespace Chaos
 		uint32_t SubID = 0; // if it's a child this sub ID will be it's index in the 2nd dimension of the level array
 		size_t ChildCount = 0;
 		bool DebugEnabled = false;
+		
+		bool PendingDestruction = false;
+		
 		float Transform[16] = 
 		{1, 0, 0, 0,
 			0, 1, 0, 0,

@@ -39,9 +39,7 @@ namespace Chaos
 		inline static Application& Get() { return *s_instance; }
 		inline Window& GetWindow() { return *m_window; }
 		inline class Renderer& GetRenderer() { return *m_renderer; }
-		inline Camera* GetMainCamera() { return m_mainCamera; }
 		
-		inline void SetMainCamera(Camera* cam) { m_mainCamera = cam; }
 		inline void SetRenderingImGui(bool state) { m_renderingImGui = state; }
 		
 		//post update callback
@@ -58,8 +56,6 @@ namespace Chaos
 		bool m_renderingImGui = true;
 		std::unique_ptr<Window> m_window;
 		std::unique_ptr<Renderer> m_renderer;
-		Camera* m_mainCamera;
-		Entity* m_mainCameraEntity;
 		
 		//threads
 		std::thread m_fixedUpdateThread;

@@ -25,6 +25,8 @@ namespace Chaos
 		void ShowDetails();
 		void UpdateSelectedEntity();
 		
+		void MoveCamera(float delta);
+		
 		private:
 		bool IsSelected(Node* entity);
 		
@@ -33,6 +35,9 @@ namespace Chaos
 		bool m_showEditor = false;
 		bool m_clicked = false;
 		bool m_dragging = false;
+		
+		float m_timeScaleBeforePause = 1.0f;
+		float m_cameraSpeed = 10.0f;
 		
 		char* m_filePathInput = "";
 		std::string m_filePath = "";
