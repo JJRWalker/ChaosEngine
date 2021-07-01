@@ -10,6 +10,7 @@
 #include <Chaos/Input/Input.h>
 #include <Chaos/Maths/Collisions.h>
 #include <Chaos/Renderer/Renderer.h>
+#include <Chaos/Nodes/MeshRenderer.h>
 
 
 namespace Chaos
@@ -79,6 +80,10 @@ namespace Chaos
 		{
 			if(ImGui::BeginMenu("add.."))
 			{
+				if(ImGui::MenuItem("Node"))
+				{
+					Node* node = new Node();
+				}
 				if(ImGui::MenuItem("Sprite"))
 				{
 					Node* node = new Sprite();
@@ -95,17 +100,22 @@ namespace Chaos
 				{
 					Node* node = new Camera();
 				}
+				if(ImGui::MenuItem("Mesh-Renderer"))
+				{
+					Node* node = new MeshRenderer();
+				}
 				ImGui::EndMenu();
 			}
 			if(ImGui::Button("save.."))
 			{
 				LOGINFO("Save...");
-				Level::Get()->Save("./test-level.lvl");  //TODO: Pass in path through file dialog
+				Level::Save("./test-level.lvl");  //TODO: Pass in path through file dialog
 			}
 			if(ImGui::Button("load..."))
 			{
 				LOGINFO("Load...");
-				Level::Get()->Load("./test-level.lvl");  //TODO: Pass in path through file dialog
+				Level::Load("./test-level.lvl");  //TODO: Pass in path through file dialog
+				m_selectedEntities.clear();
 			}
 			if(ImGui::Button("close"))
 			{
@@ -132,6 +142,11 @@ namespace Chaos
 				if(IsSelected(node))
 				{
 					nodeFlags |= ImGuiTreeNodeFlags_Selected;
+				}
+				
+				if (node->ChildCount < 1)
+				{
+					nodeFlags |= ImGuiTreeNodeFlags_Leaf;
 				}
 				
 				bool openTree = ImGui::TreeNodeEx((void*)(intptr_t)i, nodeFlags, "%s", node->Name.c_str());

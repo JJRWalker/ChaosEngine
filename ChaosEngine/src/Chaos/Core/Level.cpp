@@ -1,14 +1,18 @@
 #include "chaospch.h"
 #include "Level.h"
 
+#include "Application.h"
 #include "Chaos/Nodes/Node.h"
 #include "Chaos/Nodes/Camera.h"
 #include "Chaos/Nodes/Colliders.h"
 #include "Chaos/DataTypes/QuadTree.h"
-#include "Application.h"
+#include "Chaos/Serialisation/Binary.h"
+#include "Chaos/Core/Types.h"
 
 #include <iostream>
 #include <fstream>
+#include <iterator>
+#include <algorithm>
 
 namespace Chaos
 {
@@ -77,7 +81,7 @@ namespace Chaos
 					if (collider)
 					{
 						quadTree.Insert(collider);
-						if (collider->UpdateType == PhysicsUpdateType::PER_FRAME)
+						if (collider->UpdateType == EPhysicsUpdateType::PER_FRAME)
 						{
 							colliders[collidableCount] = collider;
 							collidableCount++;
@@ -121,7 +125,7 @@ namespace Chaos
 					if (collider)
 					{
 						quadTree.Insert(collider);
-						if (collider->UpdateType == PhysicsUpdateType::FIXED_STEP)
+						if (collider->UpdateType == EPhysicsUpdateType::FIXED_STEP)
 						{
 							colliders[collidableCount] = collider;
 							collidableCount++;
@@ -148,69 +152,106 @@ namespace Chaos
 	
 	void Level::Save(const char* filePath)
 	{
+		size_t finalBinarySize = 0;
+		
 		std::fstream out(filePath, std::ios::out | std::ios::binary);
 		
 		if (!out)
 			LOGCORE_ERROR("SAVE LEVEL: could not create output file!");
 		
-		out.write((char*)&NodeCount, sizeof(size_t));
+		out.write((char*)&s_instance->NodeCount, sizeof(size_t));
 		
-		for (int node = 0; node < NodeCount; ++node)
+		for (int node = 0; node < s_instance->NodeCount; ++node)
 		{
-			out.write((char*)&Nodes[node][0]->ChildCount, sizeof(size_t));
-			for (int child = 0; child <= Nodes[node][0]->ChildCount; ++child)
+			out.write((char*)&s_instance->Nodes[node][0]->ChildCount, sizeof(size_t));
+			for (int child = 0; child <= s_instance->Nodes[node][0]->ChildCount; ++child)
 			{
-				size_t nodeSize = Nodes[node][child]->GetSize();
-				out.write((char*)&nodeSize, sizeof(size_t));
-				out.write((char*)&(*Nodes[node][child]), Nodes[node][child]->GetSize());
+				Binary nodeBinary = s_instance->Nodes[node][child]->SaveToBinary();
+				size_t size = nodeBinary.Capacity();
+				out.write((char*)&size, sizeof(size_t));
+				out.write(nodeBinary.Data, size);
 			}
 		}
 		
 		out.close();
-		//out.write((char*)this, sizeof(*this));
 	}
 	
-	void Level::Load(const char* filePath)
+	
+	void Level::Load(const char* filepath)
 	{
-		Application::Get().PauseFixedUpdateThread();
-		std::fstream in(filePath, std::ios::in | std::ios::binary);
-		
+		s_instance->m_filepathToLoad = std::string(filepath);
+		Application::Get().AddPostUpdateCallback([&](){
+													 Level::InternalLoad();
+												 });
+	}
+	
+	
+	void Level::InternalLoad()
+	{
+		std::fstream in(s_instance->m_filepathToLoad.c_str(), std::ios::in | std::ios::binary);
 		
 		if (!in)
 		{
-			LOGCORE_WARN("LOAD LEVEL: file path not found ({0})", filePath);
+			LOGCORE_WARN("LOAD LEVEL: file path not found ({0})", s_instance->m_filepathToLoad);
 			return;
 		}
 		
-		Level* buffer = (Level*)malloc(sizeof(Level));
+		in.seekg(0, in.end);
 		
-		in.read((char*)&buffer->NodeCount, sizeof(size_t));
+		size_t fileSize = in.tellg();
+		char* rawData = (char*)malloc(fileSize);
+		in.seekg(0, in.beg);
+		in.read(&rawData[0], fileSize);
 		
-		for (int node = 0; node < buffer->NodeCount; ++node)
+		in.close();
+		
+		size_t location = 0;
+		
+		delete s_instance;
+		
+		Level* buffer = new Level();
+		
+		s_instance = buffer;
+		
+		size_t nodeCount;
+		
+		memcpy((void*)&nodeCount, (void*)&rawData[location], sizeof(size_t));
+		location += sizeof(size_t);
+		
+		for (int node = 0; node < nodeCount; ++node)
 		{
 			size_t childCount = 0;
-			in.read((char*)&childCount, sizeof(size_t));
+			memcpy((void*)&childCount, (void*)&rawData[location], sizeof(size_t));
+			location += sizeof(size_t);
 			for (int child = 0; child <= childCount; ++child)
 			{
-				size_t nodeSize = 0;
-				in.read((char*)&nodeSize, sizeof(size_t));
-				std::vector<char> data;
-				data.resize(nodeSize);
-				in.read(data.data(), nodeSize);
-				buffer->Nodes[node][child] = (Node*)malloc(nodeSize);
-				memcpy(buffer->Nodes[node][child], data.data(), nodeSize);
+				size_t nodeSize;
+				memcpy((void*)&nodeSize, (void*)&rawData[location], sizeof(size_t));
+				location += sizeof(size_t);
+				
+				char* nodeData = (char*)malloc(nodeSize);
+				memcpy((void*)nodeData, (void*)&rawData[location], nodeSize);
+				location += nodeSize;
+				
+				uint32_t nodeType;
+				// skip over the version number to get the type
+				memcpy((void*)&nodeType, (void*)&nodeData[sizeof(uint32_t)], sizeof(uint32_t));
+				
+				Node* spawnedNode = Node::Create(nodeType, child);
+				if (child)
+				{
+					buffer->Nodes[node][child] = spawnedNode;
+					buffer->Nodes[node][child]->p_parent = buffer->Nodes[node][0]; 
+				}
+				buffer->Nodes[node][child]->LoadFromBinary(nodeData);
+				
+				free(nodeData);
 			}
 		}
 		
-		//in.read((char*)buffer, sizeof(Level));
-		in.close();
-		memcpy(this, buffer, sizeof(*buffer));
-		free(buffer);
+		free(rawData);
 		
-		OnStart();
-		
-		Application::Get().ResumeFixedUpdateThread();
-		
+		buffer->OnStart();
 	}
 	
 	

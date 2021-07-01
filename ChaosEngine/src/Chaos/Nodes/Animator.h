@@ -24,8 +24,8 @@ namespace Chaos
     class Animator : public SubSprite
     {
         public:
-        Animator(bool child = false) : SubSprite(child) {Name = "Animator";}
-		Animator(Animation animation) { SetAnimation(animation); Name = "Animator"; }
+        Animator(bool child = false) : SubSprite(child) {Name = "Animator"; Type = NodeType::ANIMATOR; }
+		Animator(Animation animation) { SetAnimation(animation); Name = "Animator"; Type = NodeType::ANIMATOR; }
         void OnFixedUpdate(float delta) override;
         void Play();
         void Stop();

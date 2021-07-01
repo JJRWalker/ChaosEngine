@@ -6,11 +6,14 @@
 #include "Chaos/Core/Level.h"
 #include <GLM/glm/gtc/matrix_transform.hpp>
 
+#include "Chaos/Debug/ImGuiLayer.h"
+
 namespace Chaos
 {
 	Camera::Camera(bool child): Node(child)
 	{
 		Name = "Camera"; 
+		Type = NodeType::CAMERA;
 		Recalculate();
 		
 		if (!Level::Get()->MainCamera)
@@ -58,6 +61,17 @@ namespace Chaos
 	{
 		
 		Recalculate();
+	}
+	
+	
+	void Camera::OnShowEditorDetails(Texture* editorTexture, void* editorImageHandle)
+	{
+		int selectedProjectionType = (int)m_projectionType;
+		const char* projectionTypeOptions[] = { "Perspective", "Orthagraphic" };
+		if (ImGui::Combo("Projection Type", &selectedProjectionType, projectionTypeOptions, IM_ARRAYSIZE(projectionTypeOptions)))
+		{
+			m_projectionType = (EProjectionType)selectedProjectionType;
+		}
 	}
 	
 	

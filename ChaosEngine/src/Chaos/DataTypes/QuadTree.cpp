@@ -56,9 +56,9 @@ namespace Chaos
 			return false;
 		for (int i = 0; i < m_size; ++i)
 		{
-			switch (m_nodes[i]->Type)
+			switch (m_nodes[i]->ColliderType)
 			{
-				case ColliderType::BOX2D:
+				case EColliderType::BOX2D:
 				{
 					BoxCollider2D* collider = dynamic_cast<BoxCollider2D*>(m_nodes[i]);
 					if(collider)
@@ -70,7 +70,7 @@ namespace Chaos
 						}
 					}
 				}break;
-				case ColliderType::CIRCLE:
+				case EColliderType::CIRCLE:
 				{
 					CircleCollider* collider = dynamic_cast<CircleCollider*>(m_nodes[i]);
 					if (collider)
@@ -103,9 +103,9 @@ namespace Chaos
 			return false;
 		for (int i = 0; i < m_size; ++i)
 		{
-			switch (m_nodes[i]->Type)
+			switch (m_nodes[i]->ColliderType)
 			{
-				case ColliderType::BOX2D:
+				case EColliderType::BOX2D:
 				{
 					BoxCollider2D* collider = dynamic_cast<BoxCollider2D*>(m_nodes[i]);
 					if (collider)
@@ -117,7 +117,7 @@ namespace Chaos
 						}
 					}
 				}break;
-				case ColliderType::CIRCLE:
+				case EColliderType::CIRCLE:
 				{
 					CircleCollider* collider = dynamic_cast<CircleCollider*>(m_nodes[i]);
 					if (collider)
@@ -152,9 +152,9 @@ namespace Chaos
 		
 		for (int i = 0; i < m_size; ++i)
 		{
-			switch (m_nodes[i]->Type)
+			switch (m_nodes[i]->ColliderType)
 			{
-				case ColliderType::BOX2D:
+				case EColliderType::BOX2D:
 				{
 					BoxCollider2D* collider = dynamic_cast<BoxCollider2D*>(m_nodes[i]);
 					if (collider)
@@ -166,7 +166,7 @@ namespace Chaos
 						}
 					}
 				}break;
-				case ColliderType::CIRCLE:
+				case EColliderType::CIRCLE:
 				{
 					CircleCollider* collider = dynamic_cast<CircleCollider*>(m_nodes[i]);
 					if (collider)

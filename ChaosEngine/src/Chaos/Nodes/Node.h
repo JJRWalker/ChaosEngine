@@ -7,18 +7,26 @@
 #include "Chaos/DataTypes/Vec3.h"
 #include "Chaos/Core/Core.h"
 #include "Chaos/Core/Level.h"
+#include "Chaos/Core/Types.h"
+#include "Chaos/Serialisation/Binary.h"
 
 #include <string>
 
 namespace Chaos
 {
+	const uint32_t NODE_VERSION_0 = 0;
+	
 	class Collider;
 	class Texture;
 	class Node 
 	{
+		friend class Level;
+		
 		public:
 		Node(bool child = false);
 		virtual ~Node();
+		
+		static Node* Node::Create(uint32_t type, bool child); // defined in Game/TypeRegistry.h
 		
 		virtual void OnStart();                  // called on start of level
 		virtual void OnUpdate(float delta);      // called every frame
@@ -59,8 +67,10 @@ namespace Chaos
 		virtual Node* GetParent() {return p_parent;}
 		
 		// for seralization
+		virtual Binary SaveToBinary();
+		virtual void LoadFromBinary(char* data);
 		size_t GetSize();
-		virtual const char* GetType();
+		const char* GetType();
 		
 		// collision funcs called when a child collider node triggers any conditions
 		virtual void ColliderStay(Collider* self, Collider* other);
@@ -169,6 +179,7 @@ namespace Chaos
 		
 		public:
 		std::string Name = "Node";  // available for when there is simply no other way to get a node
+		uint32_t Type = NodeType::NODE;
 		uint32_t ID = 0;  // designates it's index on the level array
 		uint32_t SubID = 0; // if it's a child this sub ID will be it's index in the 2nd dimension of the level array
 		size_t ChildCount = 0;
@@ -194,7 +205,11 @@ namespace Chaos
 		Node* p_parent = nullptr;
 		
 		bool Enabled = true;  // same as can tick, disabled nodes still exist, just don't update in update
+		
+		uint32_t m_nodeVersion = 0;
 	};
+	
+	extern Node* CreateUserDefinedNode(uint32_t type, bool child);
 }
 
 #endif //_NODE_H

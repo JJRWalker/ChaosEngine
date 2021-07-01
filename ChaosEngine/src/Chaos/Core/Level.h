@@ -20,11 +20,13 @@ namespace Chaos
 		void OnUpdate(float delta);
 		void OnFixedUpdate(float delta);
 		
-		void Save(const char* filepath);
-		void Load(const char* filepath);
-		
+		static void Save(const char* filepath);
+		static void Load(const char* filepath);
 		
 		static Level* Get();
+		
+		private:
+		static void InternalLoad();
 		
 		public:
 		Node* Nodes[MAX_NODES][MAX_CHILD_NODES];
@@ -36,6 +38,8 @@ namespace Chaos
 		static Level* s_instance;
 		
 		private:
+		std::string m_filepathToLoad;
+		
 		Camera* p_mainCamera = nullptr;
 	};
 }

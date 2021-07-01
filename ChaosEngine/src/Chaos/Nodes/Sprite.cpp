@@ -16,6 +16,7 @@ namespace Chaos
 	Sprite::Sprite(bool child) : Node(child)
 	{
 		Name = "Sprite";
+		Type = NodeType::SPRITE;
 		
 		p_renderObject = Application::Get().GetRenderer().AddQuad(GetWorldTransform(), Material::Get("textured-default"));
 		memset(p_renderObject->ShaderData.DataArray1, 0, sizeof(float) * 16);
@@ -92,7 +93,7 @@ namespace Chaos
 		
 		float colour[4] = { GetColour().X, GetColour().Y, GetColour().Z, GetColour().W };
 		
-		if (ImGui::ColorEdit4("Colour", colour, 0.01f))
+		if (ImGui::ColorEdit4("Colour", colour))
 		{
 			SetColour(Vec4(colour[0], colour[1], colour[2], colour[3]));
 		}
@@ -176,6 +177,7 @@ namespace Chaos
 	SubSprite::SubSprite(bool child) : Sprite(child)
 	{
 		Name = "SubSprite";
+		Type = NodeType::SUB_SPRITE;
 		
 		SetMaterial(Material::Get("subsprite-default"));
 		SetTilingFactor(Vec2(1.0f, 1.0f));
@@ -214,7 +216,7 @@ namespace Chaos
 		float coords[2] = { GetCoords().X, GetCoords().Y };
 		float colour[4] = { GetColour().X, GetColour().Y, GetColour().Z, GetColour().W };
 		
-		if (ImGui::ColorEdit4("Colour", colour, 0.01f))
+		if (ImGui::ColorEdit4("Colour", colour))
 		{
 			SetColour(Vec4(colour[0], colour[1], colour[2], colour[3]));
 		}
@@ -334,6 +336,7 @@ namespace Chaos
 	UISprite::UISprite(bool child) : Sprite(child)
 	{
 		Name = "UISprite";
+		Type = NodeType::UI_SPRITE;
 		SetMaterial(Material::Get("ui-default"));
 	}
 }

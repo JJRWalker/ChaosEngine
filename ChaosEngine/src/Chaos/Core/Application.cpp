@@ -121,27 +121,8 @@ namespace Chaos
 			
 			m_renderer->DrawFrame();
 			
-			
-			// Do post update steps
-			//Needed to modify the layer stack without causing itteration issues
-			for (auto func : m_postUpdateSteps)
-			{
-				func();
-			}
-			// clear once finished
-			m_postUpdateSteps.clear();
-			
-			
 			// NOTE: here lies some rudementary garbage collection. Not a huge fan of anything more complex than this
 			// Needed as deleting a node mid way through an update loop isn't the best idea
-			// if the level needs to be destroyed, skip the rest of the loop
-			if (level->PendingDestroy)
-			{
-				level->OnEnd();
-				delete Level::Get();
-				continue;
-			}
-			
 			// delete any nodes pending destruction
 			for (int node = 0; node < level->NodeCount; ++node)
 			{
@@ -164,6 +145,15 @@ namespace Chaos
 			}
 			
 			Input::UpdateMouseEndFramePosition();
+			
+			// Do post update steps
+			//Needed to modify the layer stack without causing itteration issues
+			for (auto func : m_postUpdateSteps)
+			{
+				func();
+			}
+			// clear once finished
+			m_postUpdateSteps.clear();
 		}
 		
 		//while(m_runningFixedUpdate); // wait for last fixed update to finish

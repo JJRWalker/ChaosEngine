@@ -11,6 +11,7 @@ namespace Chaos
 	PointLight2D::PointLight2D(bool child) : Node(child)
 	{
 		Name = "Point-light-2D";
+		Type = NodeType::POINT_LIGHT_2D;
 		
 		p_lightObject = Application::Get().GetRenderer().AddLight(GetWorldTransform());
 		
@@ -50,7 +51,7 @@ namespace Chaos
 		float range = GetRange();
 		float intensity = GetIntensity();
 		
-		if (ImGui::ColorEdit3("Colour", colour, 0.01f))
+		if (ImGui::ColorEdit3("Colour", colour))
 		{
 			SetColour(Vec3(colour[0], colour[1], colour[2]));
 		}

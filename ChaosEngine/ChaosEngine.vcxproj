@@ -154,6 +154,7 @@
     <ClInclude Include="src\Chaos\Core\Log.h" />
     <ClInclude Include="src\Chaos\Core\Math.h" />
     <ClInclude Include="src\Chaos\Core\Time.h" />
+    <ClInclude Include="src\Chaos\Core\Types.h" />
     <ClInclude Include="src\Chaos\Core\Window.h" />
     <ClInclude Include="src\Chaos\DataTypes\ChaoticArray.h" />
     <ClInclude Include="src\Chaos\DataTypes\QuadTree.h" />
@@ -184,6 +185,7 @@
     <ClInclude Include="src\Chaos\Nodes\Camera.h" />
     <ClInclude Include="src\Chaos\Nodes\Colliders.h" />
     <ClInclude Include="src\Chaos\Nodes\Lights.h" />
+    <ClInclude Include="src\Chaos\Nodes\MeshRenderer.h" />
     <ClInclude Include="src\Chaos\Nodes\Node.h" />
     <ClInclude Include="src\Chaos\Nodes\Sprite.h" />
     <ClInclude Include="src\Chaos\Renderer\Material.h" />
@@ -191,6 +193,7 @@
     <ClInclude Include="src\Chaos\Renderer\Renderer.h" />
     <ClInclude Include="src\Chaos\Renderer\RendererAPI.h" />
     <ClInclude Include="src\Chaos\Renderer\Texture.h" />
+    <ClInclude Include="src\Chaos\Serialisation\Binary.h" />
     <ClInclude Include="src\Chaos\Serialisation\FileUtils.h" />
     <ClInclude Include="src\Chaos\Serialisation\TextFileReader.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanInitalizers.h" />
@@ -607,6 +610,7 @@
     <ClCompile Include="src\Chaos\Nodes\Camera.cpp" />
     <ClCompile Include="src\Chaos\Nodes\Colliders.cpp" />
     <ClCompile Include="src\Chaos\Nodes\Lights.cpp" />
+    <ClCompile Include="src\Chaos\Nodes\MeshRenderer.cpp" />
     <ClCompile Include="src\Chaos\Nodes\Node.cpp" />
     <ClCompile Include="src\Chaos\Nodes\Sprite.cpp" />
     <ClCompile Include="src\Chaos\Renderer\Material.cpp" />
@@ -614,6 +618,7 @@
     <ClCompile Include="src\Chaos\Renderer\Renderer.cpp" />
     <ClCompile Include="src\Chaos\Renderer\RendererAPI.cpp" />
     <ClCompile Include="src\Chaos\Renderer\Texture.cpp" />
+    <ClCompile Include="src\Chaos\Serialisation\Binary.cpp" />
     <ClCompile Include="src\Chaos\Serialisation\FileUtils.cpp" />
     <ClCompile Include="src\Chaos\Serialisation\TextFileReader.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanInitalizers.cpp" />

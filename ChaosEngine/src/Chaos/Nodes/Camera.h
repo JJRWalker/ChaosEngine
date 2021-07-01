@@ -30,6 +30,7 @@ namespace Chaos
 		// Inherited via Node
 		virtual void OnStart() override;
 		virtual void OnUpdate(float delta) override;
+		void OnShowEditorDetails(Texture* editorTexture, void* editorImageHandle);
 		
 		void SetBounds(Vec4 bounds) { m_bounds = bounds; Recalculate(); }
 		Vec4 GetBounds() { return m_bounds; }

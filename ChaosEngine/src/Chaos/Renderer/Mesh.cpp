@@ -2,12 +2,40 @@
 
 #include "Mesh.h"
 
+#include "Chaos/Core/Application.h"
+#include "Chaos/Renderer/Renderer.h"
+#include "Platform/Vulkan/VulkanRenderer.h"
+
 #include <iostream>
 #include <TinyObjLoader/tiny_obj_loader.h>
 #include <TinyObjLoader/tiny_obj_loader.cc>
 
+
 namespace Chaos
 {
+	Mesh* Mesh::Create(const char* fileName)
+	{
+		switch (Renderer::GetAPI())
+		{
+			case RendererAPI::API::None: LOGCORE_ERROR("Render API not supported!");
+			return nullptr;
+			case RendererAPI::API::Vulkan:
+			{
+				VulkanRenderer& vkRenderer = (VulkanRenderer&)Application::Get().GetRenderer();
+				
+				VulkanMesh* mesh = new VulkanMesh();
+				mesh->LoadFromOBJ(fileName);
+				vkRenderer.UploadMesh(*mesh);
+				
+				return mesh;
+			}
+		}
+		
+		LOGCORE_ERROR("Render API not found");
+		return nullptr;
+	}
+	
+	
 	bool Mesh::LoadFromOBJ(const char* filename)
 	{
 		tinyobj::attrib_t attrib;

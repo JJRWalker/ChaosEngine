@@ -21,6 +21,8 @@ namespace Chaos
 	class Mesh
 	{
 		public:
+		static Mesh* Create(const char* fileName);
+		
 		bool LoadFromOBJ(const char* filename);
 		
 		public:

@@ -12,7 +12,7 @@ namespace Chaos
 	
 	class QuadTree;
 	
-	enum class ColliderType
+	enum class EColliderType
 	{
 		NONE = 0,  // shouldn't really ever be none, but good to have a value for uninitted
 		BOX2D = 1,
@@ -20,7 +20,7 @@ namespace Chaos
 	};
 	
 	
-	enum class PhysicsUpdateType
+	enum class EPhysicsUpdateType
 	{
 		FIXED_STEP = 0,
 		PER_FRAME = 1
@@ -54,8 +54,8 @@ namespace Chaos
 		
 		public:
 		bool Trigger = false;
-		ColliderType Type;
-		PhysicsUpdateType UpdateType = PhysicsUpdateType::FIXED_STEP;
+		EColliderType ColliderType;
+		EPhysicsUpdateType UpdateType = EPhysicsUpdateType::FIXED_STEP;
 		uint32_t CollisionMask = 1; // bitmask for what it objectmasks it will collide with
 		uint32_t ObjectMask = 1;  // seperate bitmask for the type it is
 		Collider* Overlaps[MAX_COLLIDER_OVERLAPS];

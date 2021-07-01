@@ -21,7 +21,7 @@ namespace Chaos
 			Data = (T*)malloc(size * sizeof(T));
 			memset(Data, 0, size * sizeof(T));
 			
-			FreeSlots = (int*)malloc(size * sizeof(int));
+			FreeSlots = (size_t*)malloc(size * sizeof(size_t));
 			//memset(FreeSlots, 0, size * sizeof(int));
 			
 			for (size_t i = 0; i < size; ++i)
@@ -136,7 +136,7 @@ namespace Chaos
 		size_t FreeSlotsSize() { return m_freeSlotsSize; }
 		
 		T* Data = nullptr;
-		int* FreeSlots = nullptr;
+		size_t* FreeSlots = nullptr;
 		
 		private:
 		size_t m_size = 0;

@@ -14,7 +14,7 @@ const float DEBUG_RENDER_ORDER = 1.0f;
 
 namespace Chaos
 {
-	Collider::Collider(bool child) : Node(child), Type(ColliderType::NONE)
+	Collider::Collider(bool child) : Node(child), ColliderType(EColliderType::NONE)
 	{
 		Name = "Collider";
 	}
@@ -49,7 +49,7 @@ namespace Chaos
 		
 		if (ImGui::Combo("Update Type", &selectedUpdateType, updateTypeOptions, IM_ARRAYSIZE(updateTypeOptions)))
 		{
-			UpdateType = (PhysicsUpdateType)selectedUpdateType;
+			UpdateType = (EPhysicsUpdateType)selectedUpdateType;
 		}
 		
 		ImGui::Checkbox("Trigger", &Trigger);
@@ -229,7 +229,8 @@ namespace Chaos
 	BoxCollider2D::BoxCollider2D(bool child) : Collider(child)
 	{
 		Name = "BoxCollider2D";
-		Type = ColliderType::BOX2D;
+		ColliderType = EColliderType::BOX2D;
+		Type = NodeType::BOX_COLLIDER_2D;
 	}
 	
 	
@@ -299,7 +300,8 @@ namespace Chaos
 	CircleCollider::CircleCollider(bool child) : Collider(child)
 	{
 		Name = "CircleCollider";
-		Type = ColliderType::CIRCLE;
+		ColliderType = EColliderType::CIRCLE;
+		Type = NodeType::CIRCLE_COLLIDER;
 	}
 	
 	

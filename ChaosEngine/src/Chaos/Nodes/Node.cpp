@@ -3,11 +3,42 @@
 #include "Node.h"
 #include "Math.h"
 #include "Colliders.h"
+#include "Chaos/Serialisation/Binary.h"
 
 #include "Chaos/Core/Application.h"
 
+// have to include all node types here in order to serialize them, not ideal but will have to do for the moment
+#include <Chaos/Nodes/Camera.h>
+#include <Chaos/Nodes/Sprite.h>
+#include <Chaos/Nodes/Colliders.h>
+#include <Chaos/Nodes/Animator.h>
+#include <Chaos/Nodes/Lights.h>
+#include <Chaos/Nodes/MeshRenderer.h>
+
 namespace Chaos
 {
+	// Mainly used for serialization, will return a node of the type given via enum, node type must exist in ENodeType enum in Types.h
+	Node* Node::Create(uint32_t type, bool child)
+	{
+		switch (type)
+		{
+			case NodeType::NODE: return new Node(child);
+			case NodeType::CAMERA: return new Camera(child);
+			case NodeType::SPRITE: return new Sprite(child);
+			case NodeType::SUB_SPRITE: return new SubSprite(child);
+			case NodeType::ANIMATOR: return new Animator(child);
+			case NodeType::UI_SPRITE: return new UISprite(child);
+			case NodeType::BOX_COLLIDER_2D: return new BoxCollider2D(child);
+			case NodeType::CIRCLE_COLLIDER: return new CircleCollider(child);
+			case NodeType::POINT_LIGHT_2D: return new PointLight2D(child);
+			case NodeType::MESH_RENDERER: return new MeshRenderer(child);
+		}
+		
+		// defined in user side GameApp, looks for types defined there
+		return CreateUserDefinedNode(type, child);
+	}
+	
+	
 	Node::Node(bool child)
 	{
 		if (!child)
@@ -48,18 +79,18 @@ namespace Chaos
 			for (int node = ID; node < level->NodeCount - 1; ++node)
 			{
 				Node** temp = level->Nodes[node];
-				memcpy((void*)level->Nodes[node], (void*)level->Nodes[node + 1], sizeof(Node*) * MAX_CHILD_NODES);
+				memcpy((void*)level->Nodes[node], (void*)level->Nodes[node + 1], sizeof(Node*) *+ MAX_CHILD_NODES);
 				memcpy((void*)level->Nodes[node + 1], (void*)temp, sizeof(Node*) * MAX_CHILD_NODES);
 				
-				int nodeChildCount = level->Nodes[node][0]->ChildCount;
+				size_t nodeChildCount = level->Nodes[node][0]->ChildCount;
 				
-				for (int child = 0; child <= nodeChildCount; ++child)
+				for (size_t child = 0; child <= nodeChildCount; ++child)
 				{
 					--level->Nodes[node][child]->ID;
 				}
 			}
 			
-			int lastNodeIndex = level->NodeCount - 1;
+			size_t lastNodeIndex = level->NodeCount - 1;
 			
 			for (int child = 0; child < MAX_CHILD_NODES; ++child)
 			{
@@ -68,8 +99,6 @@ namespace Chaos
 			
 			--level->NodeCount;
 		}
-		
-		LOGCORE_INFO("Deleting node ID: {0} SubID: {1} Name: {2}", ID, SubID, Name);
 	}
 	
 	
@@ -368,6 +397,104 @@ namespace Chaos
 		Transform[1] = -sinf(rotation) * scale.X;
 		Transform[4] = sinf(rotation) * scale.Y;
 		Transform[5] = cosf(rotation) * scale.Y;
+	}
+	
+	
+	Binary Node::SaveToBinary()
+	{
+		size_t finalDataSize = 0;
+		
+		Binary version((void*)&m_nodeVersion, sizeof(m_nodeVersion));
+		finalDataSize += sizeof(m_nodeVersion);
+		
+		Binary type((void*)&Type, sizeof(Type));
+		finalDataSize += sizeof(Type);
+		
+		size_t nameLen = Name.size() + 1;
+		Binary nameSize((void*)&nameLen, sizeof(size_t));
+		finalDataSize += sizeof(size_t);
+		
+		Binary name((void*)&Name[0], nameLen);
+		finalDataSize += nameLen; // char is 1 byte so we can just add the length
+		
+		Binary id((void*)&ID, sizeof(ID));
+		Binary subId((void*)&SubID, sizeof(SubID));
+		finalDataSize += sizeof(ID);
+		finalDataSize += sizeof(SubID);
+		
+		Binary childCount((void*)&ChildCount, sizeof(ChildCount));
+		finalDataSize += sizeof(ChildCount);
+		
+		Binary transform((void*)&Transform, sizeof(Transform));
+		Binary globalTransform((void*)&m_globalTransform, sizeof(m_globalTransform));
+		finalDataSize += sizeof(Transform);
+		finalDataSize += sizeof(m_globalTransform);
+		
+		Binary enabled((void*)&Enabled, sizeof(Enabled));
+		finalDataSize += sizeof(Enabled);
+		
+		// need to copy this data as once the Binary object leaves scope it'll take it with it.
+		Binary data(finalDataSize);
+		data.Write(version.Data, version.Capacity());
+		data.Write(type.Data, type.Capacity());
+		data.Write(nameSize.Data, nameSize.Capacity());
+		data.Write(name.Data, name.Capacity());
+		data.Write(id.Data, id.Capacity());
+		data.Write(subId.Data, subId.Capacity());
+		data.Write(childCount.Data, childCount.Capacity());
+		data.Write(transform.Data, transform.Capacity());
+		data.Write(globalTransform.Data, globalTransform.Capacity());
+		data.Write(enabled.Data, enabled.Capacity());
+		
+		return data;
+	}
+	
+	
+	void Node::LoadFromBinary(char* data)
+	{
+		memcpy((void*)&m_nodeVersion, (void*)data, sizeof(uint32_t));
+		size_t location = sizeof(uint32_t);
+		
+		switch (m_nodeVersion)
+		{
+			case NODE_VERSION_0:
+			{
+				memcpy((void*)&Type, (void*)&data[location], sizeof(size_t));
+				location += sizeof(Type);
+				
+				size_t namelen;
+				memcpy((void*)&namelen, (void*)&data[location], sizeof(size_t));
+				location += sizeof(size_t);
+				
+				memcpy((void*)&Name[0], (void*)&data[location], namelen);
+				location += namelen;
+				
+				memcpy((void*)&ID, (void*)&data[location], sizeof(ID));
+				location += sizeof(ID);
+				
+				memcpy((void*)&SubID, (void*)&data[location], sizeof(SubID));
+				location += sizeof(SubID);
+				
+				memcpy((void*)&ChildCount, (void*)&data[location], sizeof(ChildCount));
+				location += sizeof(ChildCount);
+				
+				memcpy((void*)&Transform, (void*)&data[location], sizeof(Transform));
+				location += sizeof(Transform);
+				
+				memcpy((void*)&m_globalTransform, (void*)&data[location], sizeof(m_globalTransform));
+				location += sizeof(m_globalTransform);
+				
+				memcpy((void*)&Enabled, (void*)&data[location], sizeof(Enabled));
+				
+				DebugEnabled = false;
+				PendingDestruction = false;
+			} break;
+			
+			default: 
+			{
+				LOGCORE_ERROR("NODE: LoadFromBinary: Loading from version number {0} not supported in this engine version!", m_nodeVersion);
+			} break;
+		}
 	}
 	
 	

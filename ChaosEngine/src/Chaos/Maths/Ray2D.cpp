@@ -61,9 +61,9 @@ namespace Chaos
 			
 			Vec2 colliderPosition = nodesInRange[node]->GetWorldPosition();
 			
-			switch (nodesInRange[node]->Type)
+			switch (nodesInRange[node]->ColliderType)
 			{
-				case ColliderType::BOX2D:
+				case EColliderType::BOX2D:
 				{
 					BoxCollider2D* boxCollider = (BoxCollider2D*)nodesInRange[node];
 					
@@ -92,7 +92,7 @@ namespace Chaos
 					
 				}break;
 				
-				case ColliderType::CIRCLE:
+				case EColliderType::CIRCLE:
 				{
 					
 					
@@ -110,9 +110,9 @@ namespace Chaos
 			outHitInfo.Point = closestPoint;
 			
 			// normal calculated differently per type
-			switch(hit->Type)
+			switch(hit->ColliderType)
 			{
-				case ColliderType::BOX2D:
+				case EColliderType::BOX2D:
 				{
 					Vec2 colliderPosition = hit->GetWorldPosition();
 					BoxCollider2D* boxCollider = (BoxCollider2D*)hit;

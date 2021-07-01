@@ -7,7 +7,7 @@
 
 namespace Chaos
 {
-	class LightingObjectData;
+	struct LightingObjectData;
 	class PointLight2D : public Node
 	{
 		public:

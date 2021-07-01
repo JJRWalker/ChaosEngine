@@ -37,6 +37,7 @@
 #include <Chaos/Nodes/Colliders.cpp>
 #include <Chaos/Nodes/Animator.cpp>
 #include <Chaos/Nodes/Lights.cpp>
+#include <Chaos/Nodes/MeshRenderer.cpp>
 
 //===RENDERER===================================
 #include <Chaos/Renderer/RendererAPI.cpp>
@@ -66,3 +67,4 @@
 //===SERIALISATION=============================
 #include <Chaos/Serialisation/TextFileReader.cpp>
 #include <Chaos/Serialisation/FileUtils.cpp>
+#include <Chaos/Serialisation/Binary.cpp>
