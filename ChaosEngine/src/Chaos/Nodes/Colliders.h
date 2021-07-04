@@ -36,7 +36,7 @@ namespace Chaos
 	class Collider : public Node
 	{
 		public:
-		Collider(bool child = false);
+		Collider();
 		~Collider();
 		
 		virtual void OnShowEditorDetails(Texture* editorTexture, void* editorImageHandle);
@@ -70,7 +70,7 @@ namespace Chaos
 	class BoxCollider2D : public Collider
 	{
 		public:
-		BoxCollider2D(bool child = false);
+		BoxCollider2D();
 		
 		virtual void OnShowEditorDetails(Texture* editorTexture, void* editorImageHandle);
 		
@@ -86,7 +86,7 @@ namespace Chaos
 	class CircleCollider : public Collider
 	{
 		public:
-		CircleCollider(bool child = false);
+		CircleCollider();
 		
 		virtual void OnShowEditorDetails(Texture* editorTexture, void* editorImageHandle);
 		

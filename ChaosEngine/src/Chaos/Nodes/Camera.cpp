@@ -10,7 +10,7 @@
 
 namespace Chaos
 {
-	Camera::Camera(bool child): Node(child)
+	Camera::Camera()
 	{
 		Name = "Camera"; 
 		Type = NodeType::CAMERA;

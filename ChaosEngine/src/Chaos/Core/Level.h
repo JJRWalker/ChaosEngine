@@ -14,11 +14,11 @@ namespace Chaos
 		public:
 		Level();
 		~Level();
-		void Destroy();
 		void OnStart();
 		void OnEnd();
 		void OnUpdate(float delta);
 		void OnFixedUpdate(float delta);
+		void OnEditorUpdate(float delta);
 		
 		static void Save(const char* filepath);
 		static void Load(const char* filepath);
@@ -29,11 +29,9 @@ namespace Chaos
 		static void InternalLoad();
 		
 		public:
-		Node* Nodes[MAX_NODES][MAX_CHILD_NODES];
+		Node* Nodes[MAX_NODES];
 		size_t NodeCount = 0;
 		Camera* MainCamera = nullptr;
-		
-		bool PendingDestroy = false;
 		
 		static Level* s_instance;
 		

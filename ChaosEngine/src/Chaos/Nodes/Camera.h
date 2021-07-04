@@ -24,7 +24,7 @@ namespace Chaos
 	class Camera : public Node
 	{
 		public:
-		Camera(bool child = false);
+		Camera();
 		~Camera();
 		
 		// Inherited via Node

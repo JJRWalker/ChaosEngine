@@ -8,9 +8,9 @@
 
 namespace Chaos
 {
-	PointLight2D::PointLight2D(bool child) : Node(child)
+	PointLight::PointLight()
 	{
-		Name = "Point-light-2D";
+		Name = "Point-light";
 		Type = NodeType::POINT_LIGHT_2D;
 		
 		p_lightObject = Application::Get().GetRenderer().AddLight(GetWorldTransform());
@@ -19,20 +19,20 @@ namespace Chaos
 	}
 	
 	
-	PointLight2D::~PointLight2D()
+	PointLight::~PointLight()
 	{
 		Application::Get().GetRenderer().RemoveLight(p_lightObject);
 		delete p_lightObject;
 	}
 	
 	
-	void PointLight2D::OnUpdate(float delta)
+	void PointLight::OnUpdate(float delta)
 	{
 		memcpy((void*)&p_lightObject->Transform[0], (void*)&GetWorldTransform()[0], sizeof(float) * 16);
 	}
 	
 	
-	void PointLight2D::SetEnabled(bool state)
+	void PointLight::SetEnabled(bool state)
 	{
 		if (Enabled == state)
 			return;
@@ -45,7 +45,7 @@ namespace Chaos
 	}
 	
 	
-	void PointLight2D::OnShowEditorDetails(Texture* editorTexture, void* editorImageHandle)
+	void PointLight::OnShowEditorDetails(Texture* editorTexture, void* editorImageHandle)
 	{
 		float colour[3] = { GetColour().X, GetColour().Y, GetColour().Z };
 		float range = GetRange();
@@ -66,7 +66,7 @@ namespace Chaos
 	}
 	
 	
-	void PointLight2D::SetColour(Vec3 colour)
+	void PointLight::SetColour(Vec3 colour)
 	{
 		p_lightObject->DataArray1[0] = colour.X;
 		p_lightObject->DataArray1[1] = colour.Y;
@@ -74,7 +74,7 @@ namespace Chaos
 	}
 	
 	
-	Vec3 PointLight2D::GetColour()
+	Vec3 PointLight::GetColour()
 	{
 		return Vec3 (p_lightObject->DataArray1[0],
 					 p_lightObject->DataArray1[1],
@@ -82,25 +82,25 @@ namespace Chaos
 	}
 	
 	
-	void PointLight2D::SetIntensity(float intensity)
+	void PointLight::SetIntensity(float intensity)
 	{
 		p_lightObject->DataArray1[3] = intensity;
 	}
 	
 	
-	float PointLight2D::GetIntensity()
+	float PointLight::GetIntensity()
 	{
 		return p_lightObject->DataArray1[3];
 	}
 	
 	
-	void PointLight2D::SetRange(float range)
+	void PointLight::SetRange(float range)
 	{
 		p_lightObject->DataArray1[4] = range;
 	}
 	
 	
-	float PointLight2D::GetRange()
+	float PointLight::GetRange()
 	{
 		return p_lightObject->DataArray1[4];
 	}

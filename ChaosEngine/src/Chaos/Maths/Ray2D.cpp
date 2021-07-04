@@ -39,13 +39,10 @@ namespace Chaos
 		
 		for (int node = 0; node < level->NodeCount; ++node)
 		{
-			for (int child = 0; child <= level->Nodes[node][0]->ChildCount; ++child)
+			if (level->Nodes[node]->IsEnabled())
 			{
-				if (level->Nodes[node][child]->IsEnabled())
-				{
-					if(Collider* collider = dynamic_cast<Collider*>(level->Nodes[node][child]))
-						quadTree.Insert(collider);
-				}
+				if(Collider* collider = dynamic_cast<Collider*>(level->Nodes[node]))
+					quadTree.Insert(collider);
 			}
 		}
 		

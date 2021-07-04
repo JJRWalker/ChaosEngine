@@ -13,7 +13,7 @@ namespace NodeType
 
 namespace Chaos
 {
-	Node* CreateUserDefinedNode(uint32_t type, bool child);
+	Node* CreateUserDefinedNode(uint32_t type);
 }
 
 #endif //_TYPE_REGISTRY_H

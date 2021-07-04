@@ -23,4 +23,10 @@ namespace Chaos
 		LOGCORE_ERROR("RENDERER: Renderer API not supported");
 		return nullptr;
 	}
+	
+	
+	RendererAPI::API Renderer::GetAPI()
+	{
+		return RendererAPI::GetAPI();
+	}
 }

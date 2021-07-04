@@ -399,7 +399,7 @@ namespace Chaos
 			CreateBlankTexture("Debug_SelectedEnt");
 		
 		
-		ImTextureID id = (ImTextureID)ImGui_ImplVulkan_AddTexture(m_nearestNeighbourSampler, Textures["Debug_SelectedEnt"].ImageView, VK_IMAGE_LAYOUT_UNDEFINED);
+		ImTextureID id = (ImTextureID)ImGui_ImplVulkan_AddTexture(m_nearestNeighbourSampler, Textures["Debug_SelectedEnt"].ImageView, VK_IMAGE_LAYOUT_GENERAL);
 		
 		return (void*)id;
 	}

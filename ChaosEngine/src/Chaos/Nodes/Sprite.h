@@ -24,14 +24,17 @@ namespace Chaos
 	class Sprite : public Node
 	{
 		public:
-		Sprite(bool child = false);
-		Sprite(Vec2 position, bool child = false);
-		Sprite(Vec3 position, bool child = false);
+		Sprite();
+		Sprite(Vec2 position);
+		Sprite(Vec3 position);
 		~Sprite();
 		
 		// Node overrides
 		void OnUpdate(float delta) override;
 		void SetEnabled(bool state) override;
+		
+		virtual Binary SaveToBinary() override;
+		virtual size_t LoadFromBinary(char* data);
 		
 		virtual void OnShowEditorDetails(Texture* editorTexture, void* editorImageHandle);
 		
@@ -58,10 +61,12 @@ namespace Chaos
 	class SubSprite : public Sprite
 	{
 		public:
-		SubSprite(bool child = false);
-		SubSprite(Vec2 position, bool child = false);
-		SubSprite(Vec3 position, bool child = false);
+		SubSprite();
+		SubSprite(Vec2 position);
+		SubSprite(Vec3 position);
 		
+		Binary SaveToBinary() override;
+		size_t LoadFromBinary(char* data);
 		virtual void OnShowEditorDetails(Texture* editorTexture, void* editorImageHandle);
 		
 		void SetCoords(Vec2 coords);
@@ -76,7 +81,7 @@ namespace Chaos
 	class UISprite : public Sprite
 	{
 		public:
-		UISprite(bool child = false);
+		UISprite();
 	};
 }
 

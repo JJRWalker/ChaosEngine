@@ -45,5 +45,6 @@ namespace Chaos
 		private:
 		static Vec2 m_mouseEndFramePosition;
 		static Vec2 m_mouseDelta;
+		static float m_scrollDelta;
 	};
 }

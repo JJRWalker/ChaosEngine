@@ -13,7 +13,7 @@
 namespace Chaos
 {
 	// SPRITE
-	Sprite::Sprite(bool child) : Node(child)
+	Sprite::Sprite()
 	{
 		Name = "Sprite";
 		Type = NodeType::SPRITE;
@@ -25,10 +25,10 @@ namespace Chaos
 	}
 	
 	
-	Sprite::Sprite(Vec2 position, bool child) : Node(child)
+	Sprite::Sprite(Vec2 position)
 	{
 		Name = "Sprite";
-		
+		Type = NodeType::SPRITE;
 		SetPosition(position);
 		
 		p_renderObject = Application::Get().GetRenderer().AddQuad(GetWorldTransform(), Material::Get("textured-default"));
@@ -38,10 +38,10 @@ namespace Chaos
 	}
 	
 	
-	Sprite::Sprite(Vec3 position, bool child) : Node(child)
+	Sprite::Sprite(Vec3 position)
 	{
 		Name = "Sprite";
-		
+		Type = NodeType::SPRITE;
 		SetPosition(position);
 		
 		p_renderObject = Application::Get().GetRenderer().AddQuad(GetWorldTransform(), Material::Get("textured-default"));
@@ -79,6 +79,60 @@ namespace Chaos
 			Application::Get().GetRenderer().AddRenderable(p_renderObject);
 	}
 	
+	
+	
+	Binary Sprite::SaveToBinary()
+	{
+		Binary baseNodeBinary = Node::SaveToBinary();
+		
+		// capacity should also be the number of bytes in the binary
+		size_t finalDataSize = baseNodeBinary.Capacity();
+		
+		std::string texturePathStr = GetTexture()->GetFilePath();
+		
+		size_t texturePathLen = strlen(texturePathStr.c_str()) + 1;
+		Binary texturePathStringLen((void*)&texturePathLen, sizeof(texturePathLen));
+		finalDataSize += sizeof(texturePathLen);
+		
+		Binary texturePath((void*)&texturePathStr[0], texturePathLen);
+		finalDataSize += texturePathLen;
+		
+		Binary data(finalDataSize);
+		data.Write(baseNodeBinary.Data, baseNodeBinary.Capacity());
+		data.Write(texturePathStringLen.Data, texturePathStringLen.Capacity());
+		data.Write(texturePath.Data, texturePath.Capacity());
+		
+		return data;
+	}
+	
+	
+	size_t Sprite::LoadFromBinary(char* data)
+	{
+		size_t location = Node::LoadFromBinary(data);
+		
+		switch (m_nodeVersion)
+		{
+			case NODE_VERSION_0:
+			{
+				size_t texturePathLen;
+				memcpy((void*)&texturePathLen, (void*)&data[location], sizeof(size_t));
+				location += sizeof(size_t);
+				
+				std::string texturePath;
+				texturePath.resize(texturePathLen - 1);
+				memcpy((void*)&texturePath[0], (void*)&data[location], texturePathLen);
+				location += texturePathLen;
+				
+				
+				SetTexture(Texture::Create(texturePath));
+				
+				return location;
+				
+			} break;
+		}
+		
+		return 0;
+	}
 	
 	
 	void Sprite::OnShowEditorDetails(Texture* editorTexture, void* editorImageHandle)
@@ -174,7 +228,7 @@ namespace Chaos
 	
 	
 	// SUB SPRITE
-	SubSprite::SubSprite(bool child) : Sprite(child)
+	SubSprite::SubSprite()
 	{
 		Name = "SubSprite";
 		Type = NodeType::SUB_SPRITE;
@@ -184,7 +238,7 @@ namespace Chaos
 	}
 	
 	
-	SubSprite::SubSprite(Vec2 position, bool child) : Sprite(position, child)
+	SubSprite::SubSprite(Vec2 position)
 	{
 		Name = "SubSprite";
 		
@@ -193,12 +247,64 @@ namespace Chaos
 	}
 	
 	
-	SubSprite::SubSprite(Vec3 position, bool child) : Sprite(position, child)
+	SubSprite::SubSprite(Vec3 position)
 	{
 		Name = "SubSprite";
 		
 		SetMaterial(Material::Get("subsprite-default"));
 		SetTilingFactor(Vec2(1.0f, 1.0f));
+	}
+	
+	
+	Binary SubSprite::SaveToBinary()
+	{
+		Binary baseSpriteBinary = Sprite::SaveToBinary();
+		
+		// capacity should also be the number of bytes in the binary
+		size_t finalDataSize = baseSpriteBinary.Capacity();
+		
+		Vec2 totalCellsVec = GetTotalCells();
+		Binary totalCells((void*)&totalCellsVec, sizeof(float) * 2);
+		finalDataSize += sizeof(float) * 2;
+		
+		Vec2 texCoordsVec = GetCoords();
+		Binary texCoords((void*)&texCoordsVec, sizeof(float) * 2);
+		finalDataSize += sizeof(float) * 2;
+		
+		Binary data(finalDataSize);
+		data.Write(baseSpriteBinary.Data, baseSpriteBinary.Capacity());
+		data.Write(totalCells.Data, totalCells.Capacity());
+		data.Write(texCoords.Data, texCoords.Capacity());
+		
+		return data;
+	}
+	
+	
+	size_t SubSprite::LoadFromBinary(char* data)
+	{
+		size_t location = Sprite::LoadFromBinary(data);
+		
+		switch (m_nodeVersion)
+		{
+			case NODE_VERSION_0:
+			{
+				Vec2 totalCells;
+				memcpy((void*)&totalCells, (void*)&data[location], sizeof(float) * 2);
+				location += sizeof(float) * 2;
+				
+				Vec2 texCoords;
+				memcpy((void*)&texCoords, (void*)&data[location], sizeof(float) * 2);
+				location += sizeof(float) * 2;
+				
+				SetTotalCells(totalCells);
+				SetCoords(texCoords);
+				
+				return location;
+				
+			} break;
+		}
+		
+		return 0;
 	}
 	
 	
@@ -333,7 +439,7 @@ namespace Chaos
 	
 	
 	// UI SPRITE
-	UISprite::UISprite(bool child) : Sprite(child)
+	UISprite::UISprite() 
 	{
 		Name = "UISprite";
 		Type = NodeType::UI_SPRITE;

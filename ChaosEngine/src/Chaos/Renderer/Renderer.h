@@ -47,9 +47,8 @@ namespace Chaos
 		friend class ImGuiLayer;
 		public:
 		
-		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
-		
 		static Renderer* Create(Window* window);
+		static RendererAPI::API GetAPI();
 		
 		virtual void Init() = 0;
 		

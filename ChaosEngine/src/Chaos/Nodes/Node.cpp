@@ -18,36 +18,33 @@
 namespace Chaos
 {
 	// Mainly used for serialization, will return a node of the type given via enum, node type must exist in ENodeType enum in Types.h
-	Node* Node::Create(uint32_t type, bool child)
+	Node* Node::Create(uint32_t type)
 	{
 		switch (type)
 		{
-			case NodeType::NODE: return new Node(child);
-			case NodeType::CAMERA: return new Camera(child);
-			case NodeType::SPRITE: return new Sprite(child);
-			case NodeType::SUB_SPRITE: return new SubSprite(child);
-			case NodeType::ANIMATOR: return new Animator(child);
-			case NodeType::UI_SPRITE: return new UISprite(child);
-			case NodeType::BOX_COLLIDER_2D: return new BoxCollider2D(child);
-			case NodeType::CIRCLE_COLLIDER: return new CircleCollider(child);
-			case NodeType::POINT_LIGHT_2D: return new PointLight2D(child);
-			case NodeType::MESH_RENDERER: return new MeshRenderer(child);
+			case NodeType::NODE: return new Node();
+			case NodeType::CAMERA: return new Camera();
+			case NodeType::SPRITE: return new Sprite();
+			case NodeType::SUB_SPRITE: return new SubSprite();
+			case NodeType::ANIMATOR: return new Animator();
+			case NodeType::UI_SPRITE: return new UISprite();
+			case NodeType::BOX_COLLIDER_2D: return new BoxCollider2D();
+			case NodeType::CIRCLE_COLLIDER: return new CircleCollider();
+			case NodeType::POINT_LIGHT_2D: return new PointLight();
+			case NodeType::MESH_RENDERER: return new MeshRenderer();
 		}
 		
 		// defined in user side GameApp, looks for types defined there
-		return CreateUserDefinedNode(type, child);
+		return CreateUserDefinedNode(type);
 	}
 	
 	
-	Node::Node(bool child)
+	Node::Node()
 	{
-		if (!child)
-		{
-			Level* level = Level::Get();
-			ID = (uint32_t)level->NodeCount;
-			level->Nodes[level->NodeCount][0] = this;
-			level->NodeCount++;
-		}
+		ID = Level::Get()->NodeCount;
+		Level::Get()->Nodes[ID] = this;
+		
+		Level::Get()->NodeCount++;
 	}
 	
 	
@@ -55,51 +52,27 @@ namespace Chaos
 	{
 		Level* level = Level::Get();
 		
-		if (p_parent)
+		if (Parent)
 		{
-			for (int i = SubID; i < p_parent->ChildCount; ++i)
-			{
-				Node* temp = level->Nodes[ID][i];
-				level->Nodes[ID][i] = level->Nodes[ID][i + 1];
-				level->Nodes[ID][i + 1] = temp;
-				
-				--level->Nodes[ID][i]->SubID;
-			}
-			
-			level->Nodes[ID][p_parent->ChildCount] = nullptr;
-			--p_parent->ChildCount;
+			Parent->Children.Remove(this);
 		}
-		else
+		
+		while (Children[0])
 		{
-			while(level->Nodes[ID][1])
-			{
-				delete level->Nodes[ID][1];
-			}
-			
-			for (int node = ID; node < level->NodeCount - 1; ++node)
-			{
-				Node** temp = level->Nodes[node];
-				memcpy((void*)level->Nodes[node], (void*)level->Nodes[node + 1], sizeof(Node*) *+ MAX_CHILD_NODES);
-				memcpy((void*)level->Nodes[node + 1], (void*)temp, sizeof(Node*) * MAX_CHILD_NODES);
-				
-				size_t nodeChildCount = level->Nodes[node][0]->ChildCount;
-				
-				for (size_t child = 0; child <= nodeChildCount; ++child)
-				{
-					--level->Nodes[node][child]->ID;
-				}
-			}
-			
-			size_t lastNodeIndex = level->NodeCount - 1;
-			
-			for (int child = 0; child < MAX_CHILD_NODES; ++child)
-			{
-				level->Nodes[lastNodeIndex][child] = nullptr;
-			}
-			
-			--level->NodeCount;
+			delete Children[0];
 		}
+		
+		for (int i = ID; i < level->NodeCount; ++i)
+		{
+			level->Nodes[i] = level->Nodes[i + 1];
+			if (level->Nodes[i])
+				--level->Nodes[i]->ID;
+		}
+		
+		level->Nodes[level->NodeCount - 1] = nullptr;
+		--level->NodeCount;
 	}
+	
 	
 	
 	void Node::OnStart()
@@ -139,7 +112,7 @@ namespace Chaos
 	}
 	
 	
-	// Really only sets the pending destruction flag to true. Kinda makes it less clear what's going on but reads better in code.
+	// sets destroy flag for it will destroy children on delete
 	void Node::Destroy()
 	{
 		PendingDestruction = true;
@@ -150,9 +123,9 @@ namespace Chaos
 	{
 		memcpy((void*)&m_globalTransform[0], (void*)&Transform[0], sizeof(float) * 16);
 		
-		if (p_parent)
+		if (Parent)
 		{
-			float* parentTransform = p_parent->GetWorldTransform();
+			float* parentTransform = Parent->GetWorldTransform();
 			
 			m_globalTransform[0] *= parentTransform[0];
 			m_globalTransform[1] *= parentTransform[1];
@@ -185,8 +158,8 @@ namespace Chaos
 	Vec2 Node::GetWorldPosition()
 	{
 		Vec2 pos =  Vec2(Transform[12], Transform[13]);
-		if (p_parent)
-			pos = pos + p_parent->GetWorldPosition();
+		if (Parent)
+			pos = pos + Parent->GetWorldPosition();
 		return pos;
 	}
 	
@@ -201,8 +174,8 @@ namespace Chaos
 	void Node::SetWorldPosition(Vec2 position)
 	{
 		Vec2 worldPosition = GetWorldPosition();
-		if (p_parent)
-			position = position + p_parent->GetWorldPosition();
+		if (Parent)
+			position = position + Parent->GetWorldPosition();
 		
 		Transform[12] = position.X;
 		Transform[13] = position.Y;
@@ -219,8 +192,8 @@ namespace Chaos
 	Vec3 Node::GetWorldPosition3D()
 	{
 		Vec3 pos = Vec3(Transform[12], Transform[13], Transform[14]);
-		if (p_parent)
-			pos = pos + p_parent->GetWorldPosition3D();
+		if (Parent)
+			pos = pos + Parent->GetWorldPosition3D();
 		return pos;
 	}
 	
@@ -235,8 +208,8 @@ namespace Chaos
 	
 	void Node::SetWorldPosition(Vec3 position)
 	{
-		if (p_parent)
-			position = position + p_parent->GetWorldPosition3D();
+		if (Parent)
+			position = position + Parent->GetWorldPosition3D();
 		Transform[12] = position.X;
 		Transform[13] = position.Y;
 		Transform[14] = position.Z;
@@ -252,7 +225,7 @@ namespace Chaos
 	float Node::GetWorldDepth()
 	{
 		float depth = Transform[14];
-		if (p_parent)
+		if (Parent)
 			depth += GetWorldDepth();
 		return Transform[14];
 	}
@@ -266,8 +239,8 @@ namespace Chaos
 	
 	void Node::SetWorldDepth(float depth)
 	{
-		if (p_parent)
-			depth += p_parent->GetWorldDepth();
+		if (Parent)
+			depth += Parent->GetWorldDepth();
 		Transform[14] = depth;
 	}
 	
@@ -282,8 +255,8 @@ namespace Chaos
 	float Node::GetRotation()
 	{
 		float theta = atan2(Transform[4], Transform[0]);
-		if (p_parent)
-			theta += p_parent->GetRotation();
+		if (Parent)
+			theta += Parent->GetRotation();
 		return theta;
 	}
 	
@@ -291,8 +264,8 @@ namespace Chaos
 	float Node::GetWorldRotation()
 	{
 		float theta = atan2(Transform[4], Transform[0]);
-		if (p_parent)
-			theta += p_parent->GetRotation();
+		if (Parent)
+			theta += Parent->GetRotation();
 		return theta;
 	}
 	
@@ -319,8 +292,8 @@ namespace Chaos
 		
 		float offset = 0;
 		
-		if (p_parent)
-			offset = p_parent->GetRotation();
+		if (Parent)
+			offset = Parent->GetRotation();
 		
 		rotation += offset;
 		//rotation = rotation - (int)(rotation / PI) * PI;
@@ -364,8 +337,8 @@ namespace Chaos
 		
 		Vec2 scale = Vec2(right.Magnitude(), up.Magnitude());
 		
-		if (p_parent)
-			scale = scale * p_parent->GetScale();
+		if (Parent)
+			scale = scale * Parent->GetScale();
 		
 		return scale;
 	}
@@ -390,8 +363,8 @@ namespace Chaos
 		
 		float rotation = GetRotation();
 		
-		if (p_parent)
-			offset = p_parent->GetScale();
+		if (Parent)
+			offset = Parent->GetScale();
 		
 		Transform[0] = cosf(rotation) * scale.X;
 		Transform[1] = -sinf(rotation) * scale.X;
@@ -410,7 +383,7 @@ namespace Chaos
 		Binary type((void*)&Type, sizeof(Type));
 		finalDataSize += sizeof(Type);
 		
-		size_t nameLen = Name.size() + 1;
+		size_t nameLen = strlen(Name.c_str()) + 1;
 		Binary nameSize((void*)&nameLen, sizeof(size_t));
 		finalDataSize += sizeof(size_t);
 		
@@ -418,12 +391,7 @@ namespace Chaos
 		finalDataSize += nameLen; // char is 1 byte so we can just add the length
 		
 		Binary id((void*)&ID, sizeof(ID));
-		Binary subId((void*)&SubID, sizeof(SubID));
 		finalDataSize += sizeof(ID);
-		finalDataSize += sizeof(SubID);
-		
-		Binary childCount((void*)&ChildCount, sizeof(ChildCount));
-		finalDataSize += sizeof(ChildCount);
 		
 		Binary transform((void*)&Transform, sizeof(Transform));
 		Binary globalTransform((void*)&m_globalTransform, sizeof(m_globalTransform));
@@ -440,8 +408,6 @@ namespace Chaos
 		data.Write(nameSize.Data, nameSize.Capacity());
 		data.Write(name.Data, name.Capacity());
 		data.Write(id.Data, id.Capacity());
-		data.Write(subId.Data, subId.Capacity());
-		data.Write(childCount.Data, childCount.Capacity());
 		data.Write(transform.Data, transform.Capacity());
 		data.Write(globalTransform.Data, globalTransform.Capacity());
 		data.Write(enabled.Data, enabled.Capacity());
@@ -450,7 +416,7 @@ namespace Chaos
 	}
 	
 	
-	void Node::LoadFromBinary(char* data)
+	size_t Node::LoadFromBinary(char* data)
 	{
 		memcpy((void*)&m_nodeVersion, (void*)data, sizeof(uint32_t));
 		size_t location = sizeof(uint32_t);
@@ -466,17 +432,12 @@ namespace Chaos
 				memcpy((void*)&namelen, (void*)&data[location], sizeof(size_t));
 				location += sizeof(size_t);
 				
+				Name.resize(namelen - 1);
 				memcpy((void*)&Name[0], (void*)&data[location], namelen);
 				location += namelen;
 				
 				memcpy((void*)&ID, (void*)&data[location], sizeof(ID));
 				location += sizeof(ID);
-				
-				memcpy((void*)&SubID, (void*)&data[location], sizeof(SubID));
-				location += sizeof(SubID);
-				
-				memcpy((void*)&ChildCount, (void*)&data[location], sizeof(ChildCount));
-				location += sizeof(ChildCount);
 				
 				memcpy((void*)&Transform, (void*)&data[location], sizeof(Transform));
 				location += sizeof(Transform);
@@ -484,10 +445,19 @@ namespace Chaos
 				memcpy((void*)&m_globalTransform, (void*)&data[location], sizeof(m_globalTransform));
 				location += sizeof(m_globalTransform);
 				
-				memcpy((void*)&Enabled, (void*)&data[location], sizeof(Enabled));
+				bool enabled;
+				
+				memcpy((void*)&enabled, (void*)&data[location], sizeof(enabled));
+				location += sizeof(enabled);
+				
+				// need to set enabled here rather than just loading the value into Enabled
+				// certain nodes override this, not calling set enabled causes issues on load
+				SetEnabled(enabled);
 				
 				DebugEnabled = false;
 				PendingDestruction = false;
+				
+				return location;
 			} break;
 			
 			default: 
@@ -495,6 +465,8 @@ namespace Chaos
 				LOGCORE_ERROR("NODE: LoadFromBinary: Loading from version number {0} not supported in this engine version!", m_nodeVersion);
 			} break;
 		}
+		
+		return 0;
 	}
 	
 	
@@ -537,5 +509,41 @@ namespace Chaos
 	
 	void Node::TriggerExit(Collider* self, Collider* other)
 	{
+	}
+	
+	
+	// NOTE: remember to free() when done with the data
+	Node** Node::GetAllChildren(size_t& size, bool recursive)
+	{
+		
+		PROFILED_FUNC();
+		size = 0;
+		Node** returnedNodes = (Node**)malloc(sizeof(Node*) * MAX_NODES);
+		
+		
+		if (recursive)
+		{
+			GetAllChildrenRecursively(size, returnedNodes);
+			return returnedNodes;
+		}
+		
+		for (int child = 0; child < Children.Size(); ++child)
+		{
+			returnedNodes[size] = Children[child];
+			++size;
+		}
+		
+		return returnedNodes;
+	}
+	
+	
+	void Node::GetAllChildrenRecursively(size_t& size, Node** nodesOut)
+	{
+		for (int child = 0; child < Children.Size(); ++child)
+		{
+			nodesOut[size] = Children[child];
+			++size;
+			Children[child]->GetAllChildrenRecursively(size, nodesOut);
+		}
 	}
 }

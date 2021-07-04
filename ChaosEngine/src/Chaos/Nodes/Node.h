@@ -5,6 +5,7 @@
 
 #include "Chaos/DataTypes/Vec2.h"
 #include "Chaos/DataTypes/Vec3.h"
+#include "Chaos/DataTypes/Array.h"
 #include "Chaos/Core/Core.h"
 #include "Chaos/Core/Level.h"
 #include "Chaos/Core/Types.h"
@@ -23,10 +24,10 @@ namespace Chaos
 		friend class Level;
 		
 		public:
-		Node(bool child = false);
+		Node();
 		virtual ~Node();
 		
-		static Node* Node::Create(uint32_t type, bool child); // defined in Game/TypeRegistry.h
+		static Node* Node::Create(uint32_t type);
 		
 		virtual void OnStart();                  // called on start of level
 		virtual void OnUpdate(float delta);      // called every frame
@@ -64,11 +65,9 @@ namespace Chaos
 		virtual void SetScale(Vec2 scale);
 		virtual void SetWorldScale(Vec2 scale);
 		
-		virtual Node* GetParent() {return p_parent;}
-		
 		// for seralization
 		virtual Binary SaveToBinary();
-		virtual void LoadFromBinary(char* data);
+		virtual size_t LoadFromBinary(char* data); // returns location of end of last read
 		size_t GetSize();
 		const char* GetType();
 		
@@ -80,16 +79,19 @@ namespace Chaos
 		virtual void TriggerEnter(Collider* self, Collider* other);
 		virtual void TriggerExit(Collider* self, Collider* other);
 		
+		Node** GetAllChildren(size_t& size, bool recursive = false);
+		
 		template <typename T, typename... Args> T* AddChild(Args... args)
 		{
+			if (!Level::Get())
+				return nullptr;
+			
 			if(std::is_base_of<Node, T>::value)
 			{
-				T* node = new T(args..., true);
-				node->ID = ID;
-				node->SubID = (uint32_t)ChildCount + 1;
-				Level::Get()->Nodes[ID][ChildCount + 1] = node;
-				node->p_parent = this;
-				ChildCount++; // need to increment after else this causes issues trying to access a child that doesn't exist on fixed update
+				T* node = new T(args...);
+				
+				node->Parent = this;
+				Children.Push(node);
 				return node;
 			}
 			else
@@ -104,27 +106,26 @@ namespace Chaos
 		{
 			if (std::is_base_of<Node, T>::value)
 			{
-				ChildCount++;
-				child->ID = ID;
-				child->SubID = ChildCount;
-				Level::Get()->Nodes[ID][ChildCount] = child;
 				child->p_parent = this;
+				Children[ChildCount] = child;
+				++ChildCount;
 			}
 		}
 		
 		
-		template <typename T> T* GetChild()
+		// If verbose is true, the console will log an error if one is not found
+		template <typename T> T* GetChild(bool verbose = true)
 		{
-			Level* level = Level::Get();
-			for (int i = 1; i <= ChildCount; ++i)
+			for (int i = 0; i < Children.Size(); ++i)
 			{
-				T* node = dynamic_cast<T*>(level->Nodes[ID][i]);
+				T* node = dynamic_cast<T*>(Children[i]);
 				if (node)
 				{
 					return node;
 				}
 			}
-			LOGCORE_ERROR("NODE: {0}: Failed to get component on node returning nullptr!", Name);
+			if (verbose)
+				LOGCORE_ERROR("NODE: {0}: Failed to get child by type on node returning nullptr!", Name);
 			return nullptr;
 		}
 		
@@ -136,19 +137,18 @@ namespace Chaos
 				LOGCORE_ERROR("NODE: {0}: Get child index out of range, returning nullptr!", Name);
 				return nullptr;
 			}
-			return Level::Get()->Nodes[ID][index];
+			return Children[index];
 		}
 		
 		
-		template <typename T> T* GetChildren(size_t& size)
+		template <typename T> T** GetChildren(size_t& size)
 		{
-			T* returnedNodes[MAX_CHILD_NODES];
+			T** returnedNodes[MAX_CHILD_NODES];
 			memset(returnedNodes, 0, MAX_CHILD_NODES * sizeof(T*));
 			size_t insert = 0;
-			Level* level = Level::Get();
-			for (int i = 1; i <= ChildCount; ++i)
+			for (int i = 0; i < ChildCount; ++i)
 			{
-				T* node = dynamic_cast<T*>(level->Nodes[ID][i]);
+				T* node = dynamic_cast<T*>(Children[i]);
 				if (node)
 				{
 					returnedNodes[insert] = node;
@@ -158,16 +158,15 @@ namespace Chaos
 			
 			size = insert;
 			
-			return returnedNodes[0];
+			return returnedNodes;
 		}
 		
 		
 		template <typename T> bool HasChild()
 		{
-			Level* level = Level::Get();
-			for (int i = 1; i <= ChildCount; ++i)
+			for (int i = 0; i < Children.Size(); ++i)
 			{
-				T* node = dynamic_cast<T*>(level->Nodes[ID][i]);
+				T* node = dynamic_cast<T*>(Children[i]);
 				if (node)
 				{
 					return true;
@@ -176,15 +175,19 @@ namespace Chaos
 			return false;
 		}
 		
+		private:
+		void GetAllChildrenRecursively(size_t& size, Node** nodesOut);
+		
 		
 		public:
 		std::string Name = "Node";  // available for when there is simply no other way to get a node
 		uint32_t Type = NodeType::NODE;
 		uint32_t ID = 0;  // designates it's index on the level array
-		uint32_t SubID = 0; // if it's a child this sub ID will be it's index in the 2nd dimension of the level array
-		size_t ChildCount = 0;
-		bool DebugEnabled = false;
 		
+		Node* Parent = nullptr;
+		Array<Node*> Children = Array<Node*>(MAX_CHILD_NODES);
+		
+		bool DebugEnabled = false;
 		bool PendingDestruction = false;
 		
 		float Transform[16] = 
@@ -202,14 +205,12 @@ namespace Chaos
 			0, 0, 0, 1}; 
 		
 		protected: 
-		Node* p_parent = nullptr;
-		
 		bool Enabled = true;  // same as can tick, disabled nodes still exist, just don't update in update
 		
 		uint32_t m_nodeVersion = 0;
 	};
 	
-	extern Node* CreateUserDefinedNode(uint32_t type, bool child);
+	extern Node* CreateUserDefinedNode(uint32_t type);
 }
 
 #endif //_NODE_H

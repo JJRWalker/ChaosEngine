@@ -8,11 +8,11 @@
 namespace Chaos
 {
 	struct LightingObjectData;
-	class PointLight2D : public Node
+	class PointLight : public Node
 	{
 		public:
-		PointLight2D(bool child = false);
-		~PointLight2D();
+		PointLight();
+		~PointLight();
 		
 		void OnUpdate(float delta) override;
 		void SetEnabled(bool state) override;

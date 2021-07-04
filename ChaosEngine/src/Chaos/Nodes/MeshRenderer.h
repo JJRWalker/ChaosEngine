@@ -11,7 +11,7 @@ namespace Chaos
 	class MeshRenderer : public Node
 	{
 		public:
-		MeshRenderer(bool child = false);
+		MeshRenderer();
 		
 		void OnUpdate(float delta) override;
 		

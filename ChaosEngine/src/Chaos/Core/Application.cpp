@@ -62,8 +62,6 @@ namespace Chaos
 	
 	void Application::Run()
 	{
-		// NOTE: seemed to cause issues at lower framerates. for now single threaded updates
-		//StartFixedUpdateThread();
 		while (m_running)
 		{
 			PROFILED_FUNC();
@@ -77,10 +75,13 @@ namespace Chaos
 			
 			Level* level = Level::Get();
 			
+			// Perform fixed update steps
+			// NOTE: would do this on a seperate thread but that caused issues at lower frame rates for some reason. So here it lies
 			if (Time::m_timeSinceLastFixedUpdate >= Time::m_fixedDeltaTime)
 			{
 				float stepsToSimulate = Time::m_timeSinceLastFixedUpdate / Time::m_fixedDeltaTime;
-				for(int i = 0; i < (int)stepsToSimulate; ++i)
+				
+				for(int i = 0; i < stepsToSimulate; ++i)
 				{
 					for (Layer* layer : m_layerStack)
 					{
@@ -88,7 +89,7 @@ namespace Chaos
 					}
 					
 					
-					if (level)
+					if (level && m_playing)
 					{
 						level->OnFixedUpdate(Time::m_fixedDeltaTime);
 					}
@@ -105,7 +106,7 @@ namespace Chaos
 			for (Layer* layer : m_layerStack)
 				layer->OnUpdate(Time::m_deltaTime);
 			
-			if (m_renderingImGui)
+			if (RenderImGui)
 			{
 				ImGuiLayer::Begin();
 				for (Layer* layer : m_layerStack)
@@ -115,7 +116,12 @@ namespace Chaos
 			
 			// update the current scene after all the layers have been processed
 			if (level)
-				level->OnUpdate(Time::m_deltaTime);
+			{
+				if (m_playing)
+					level->OnUpdate(Time::m_deltaTime);
+				else
+					level->OnEditorUpdate(Time::m_unscaledDeltaTime);
+			}
 			
 			m_window->OnUpdate();
 			
@@ -126,21 +132,10 @@ namespace Chaos
 			// delete any nodes pending destruction
 			for (int node = 0; node < level->NodeCount; ++node)
 			{
-				if (level->Nodes[node][0]->PendingDestruction)
+				if (level->Nodes[node]->PendingDestruction)
 				{
-					delete level->Nodes[node][0];
+					delete level->Nodes[node];
 					--node;
-				}
-				else
-				{
-					for (int child = 1; child < level->Nodes[node][0]->ChildCount; ++child)
-					{
-						if (level->Nodes[node][child]->PendingDestruction)
-						{
-							delete level->Nodes[node][child];
-							--child;
-						}
-					}
 				}
 			}
 			
@@ -155,53 +150,37 @@ namespace Chaos
 			// clear once finished
 			m_postUpdateSteps.clear();
 		}
-		
-		//while(m_runningFixedUpdate); // wait for last fixed update to finish
 	}
 	
-	//gets whatever level is active and calls the fixed update function on that level at the fixed update delta time interval
-	//NOTE: should only ever be used with a seperate thread, causes the current thread to sleep
-	void Application::FixedRun()
+	
+	void Application::Play()
 	{
-		while (m_running)
-		{
-			m_runningFixedUpdate = true;
-			float fixedDelta = Time::GetFixedDeltaTime();
-			
-			std::chrono::milliseconds sleepTime(static_cast<int>(fixedDelta * 1000));
-			
-			if (m_pauseFixedUpdate)
-			{
-				std::this_thread::sleep_for(sleepTime);
-				continue;
-			}
-			
-			for (Layer* layer : m_layerStack)
-			{
-				layer->OnFixedUpdate(fixedDelta);
-			}
-			
-			
-			if (Level::Get())
-			{
-				Level::Get()->OnFixedUpdate(fixedDelta);
-			}
-			
-			m_runningFixedUpdate = false;
-			std::this_thread::sleep_for(sleepTime);
-		}
+		Level::Save("level-defaultstate-save.lvl");
+		Level::Get()->OnStart();
+		
+		m_playing = true;
 	}
+	
+	
+	void Application::EndPlay()
+	{
+		Level::Get()->OnEnd();
+		m_playing = false;
+		
+		Level::Load("level-defaultstate-save.lvl");
+	}
+	
+	
 	
 	void Application::OnEvent(Event& e)
 	{
-		//LOGCORE_TRACE(e.ToString());
-		
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
 		
 		if (e.GetEventType() == EventType::WindowResize)
 		{
 			m_renderer->OnWindowResized((WindowResizeEvent&)e);
+			Level::Get()->MainCamera->SetAspectRatio(m_window->GetAspectRatio());
 		}
 		
 		for (auto it = m_layerStack.end(); it != m_layerStack.begin();)
@@ -213,21 +192,12 @@ namespace Chaos
 		
 	}
 	
-	void Application::StartFixedUpdateThread()
+	
+	void Application::Close()
 	{
-		m_fixedUpdateThread = std::thread(&Application::FixedRun, this);
-		m_fixedUpdateThread.detach();
+		m_running = false; 
 	}
 	
-	void Application::PauseFixedUpdateThread()
-	{
-		m_pauseFixedUpdate = true;
-	}
-	
-	void Application::ResumeFixedUpdateThread()
-	{
-		m_pauseFixedUpdate = false;
-	}
 	
 	void Application::PushLayer(Layer* layer)
 	{
@@ -235,11 +205,13 @@ namespace Chaos
 		layer->OnAttach();
 	}
 	
+	
 	void Application::PushOverlay(Layer* overlay)
 	{
 		m_layerStack.PushOverlay(overlay);
 		overlay->OnAttach();
 	}
+	
 	
 	void Application::PopOverlay(Layer* overlay)
 	{
@@ -247,6 +219,31 @@ namespace Chaos
 		overlay->OnDetach();
 		delete overlay;
 	}
+	
+	
+	Application& Application::Get() 
+	{
+		return *s_instance; 
+	}
+	
+	
+	Window& Application::GetWindow() 
+	{
+		return *m_window;
+	}
+	
+	
+	Renderer& Application::GetRenderer() 
+	{
+		return *m_renderer;
+	}
+	
+	
+	void Application::AddPostUpdateCallback(std::function<void()> function) 
+	{
+		m_postUpdateSteps.push_back(function);
+	}
+	
 	
 	bool Application::OnWindowClose(WindowCloseEvent& e)
 	{

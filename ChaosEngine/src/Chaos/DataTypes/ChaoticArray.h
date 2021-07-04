@@ -22,11 +22,10 @@ namespace Chaos
 			memset(Data, 0, size * sizeof(T));
 			
 			FreeSlots = (size_t*)malloc(size * sizeof(size_t));
-			//memset(FreeSlots, 0, size * sizeof(int));
 			
 			for (size_t i = 0; i < size; ++i)
 			{
-				FreeSlots[i] = i;
+				FreeSlots[i] = size - i;
 			}
 			
 			m_freeSlotsSize = size;
@@ -50,6 +49,11 @@ namespace Chaos
 			
 			--m_freeSlotsSize;
 			Data[FreeSlots[m_freeSlotsSize]] = value;
+			
+			// should always add one to the end if we aren't inserting at an index lower than the end
+			if (FreeSlots[m_freeSlotsSize] > End)
+				End = FreeSlots[m_freeSlotsSize];
+			
 			return true;
 		}
 		
@@ -63,6 +67,22 @@ namespace Chaos
 					Data[i] = nullptr;
 					FreeSlots[m_freeSlotsSize] = i;
 					++m_freeSlotsSize;
+					
+					// if last in array
+					if (i == End)
+					{
+						while(i >= 0)
+						{
+							--i;
+							if (Data[i] != nullptr)
+							{
+								End = i;
+								return true;
+							}
+						}
+					}
+					
+					End = 0;
 					return true;
 				}
 			}
@@ -81,6 +101,22 @@ namespace Chaos
 			Data[index] = nullptr;
 			FreeSlots[m_freeSlotsSize] = (int)index;
 			++m_freeSlotsSize;
+			
+			// if last in array
+			if (index == End)
+			{
+				while(index >= 0)
+				{
+					--index;
+					if (Data[index] != nullptr)
+					{
+						End = index;
+						return true;
+					}
+				}
+			}
+			
+			End = 0;
 			return true;
 		}
 		
@@ -105,10 +141,8 @@ namespace Chaos
 			{
 				if (Data[i] == value)
 				{
+					Remove(value);
 					free(Data[i]);
-					Data[i] = nullptr;
-					FreeSlots[m_freeSlotsSize] = i;
-					++m_freeSlotsSize;
 					return true;
 				}
 			}
@@ -132,11 +166,32 @@ namespace Chaos
 		}
 		
 		
+		void Clear()
+		{
+			free(Data);
+			free(FreeSlots);
+			
+			Data = (T*)malloc(m_size * sizeof(T));
+			FreeSlots = (size_t*)malloc(m_size * sizeof(size_t));
+			
+			memset((void*)Data, 0, sizeof(Data));
+			
+			for (size_t i = 0; i < m_size; ++i)
+			{
+				FreeSlots[i] = size - i;
+			}
+			
+			
+			m_freeSlotsSize = m_size;
+		}
+		
+		
 		size_t Size() { return m_size; }
 		size_t FreeSlotsSize() { return m_freeSlotsSize; }
 		
 		T* Data = nullptr;
 		size_t* FreeSlots = nullptr;
+		size_t End = 0; // index of the last item in the array, in terms of the highest index
 		
 		private:
 		size_t m_size = 0;

@@ -14,9 +14,11 @@ const float DEBUG_RENDER_ORDER = 1.0f;
 
 namespace Chaos
 {
-	Collider::Collider(bool child) : Node(child), ColliderType(EColliderType::NONE)
+	Collider::Collider() : ColliderType(EColliderType::NONE)
 	{
 		Name = "Collider";
+		
+		memset((void*)Overlaps, 0, sizeof(Overlaps));
 	}
 	
 	
@@ -60,8 +62,6 @@ namespace Chaos
 	
 	void Collider::CheckCollisionExit()
 	{
-		Level* level = Level::Get();
-		Node* root = level->Nodes[ID][0];
 		// colliders leaving
 		for (size_t i = 0; i < OverlapsSize; ++i)
 		{
@@ -89,7 +89,12 @@ namespace Chaos
 	void Collider::InsertOverlap(Collider* collider)
 	{
 		Level* level = Level::Get();
-		Node* root = level->Nodes[ID][0];
+		Node* root = level->Nodes[ID];
+		
+		while (root->Parent)
+		{
+			root = root->Parent;
+		}
 		
 		bool alreadyInOvelaps = false;
 		for (size_t j = 0; j < OverlapsSize; ++j)
@@ -98,68 +103,58 @@ namespace Chaos
 			{
 				alreadyInOvelaps = true;
 				
-				for (size_t j = 0; j < root->ChildCount; ++j)
-				{
-					if (collider->Trigger)
-						level->Nodes[ID][j]->TriggerStay(this, collider);
-					else
-						level->Nodes[ID][j]->ColliderStay(this, collider);
-				}
+				//size_t childCount;
+				//Node** allChildren = root->GetAllChildren(childCount);
+				
+				if (collider->Trigger)
+					root->TriggerStay(this, collider);
+				else
+					root->ColliderStay(this, collider);
+				
+				//for (size_t j = 0; j < childCount; ++j)
+				//{
+				//if (collider->Trigger)
+				//allChildren[j]->TriggerStay(this, collider);
+				//else
+				//allChildren[j]->ColliderStay(this, collider);
+				//}
+				
+				//free(allChildren);
 			}
 		}
 		if (!alreadyInOvelaps)
 		{
-			for (size_t j = 0; j < root->ChildCount; ++j)
+			size_t childCount;
+			Node** allChildren = root->GetAllChildren(childCount, true);
+			
+			if (collider->Trigger)
+				root->TriggerEnter(this, collider);
+			else
+				root->ColliderEnter(this, collider);
+			
+			for (size_t j = 0; j < childCount; ++j)
 			{
 				if (collider->Trigger)
-					level->Nodes[ID][j]->TriggerEnter(this, collider);
+					allChildren[j]->TriggerEnter(this, collider);
 				else
-					level->Nodes[ID][j]->ColliderEnter(this, collider);
+					allChildren[j]->ColliderEnter(this, collider);
 			}
 			Overlaps[OverlapsSize] = collider;
 			++OverlapsSize;
+			
+			free(allChildren);
 		}
 	}
+	
 	
 	
 	// inserts nodes into overlaps, calls enter and stay methods for nodes.
 	void Collider::InsertOverlaps(Collider** colliders, size_t size)
 	{
-		Level* level = Level::Get();
-		Node* root = level->Nodes[ID][0];
-		
-		// determine which nodes were just hit, which have stayed, and which have left
-		// collider stay and enter
-		for (size_t i = 0; i < size; ++i)
+		PROFILED_FUNC();
+		for (int i = 0; i < size; ++i)
 		{
-			bool alreadyInOvelaps = false;
-			for (size_t j = 0; j < OverlapsSize; ++j)
-			{
-				if (colliders[i] == Overlaps[j])
-				{
-					alreadyInOvelaps = true;
-					
-					for (size_t j = 0; j < root->ChildCount; ++j)
-					{
-						if (colliders[i]->Trigger)
-							level->Nodes[ID][j]->TriggerStay(this, colliders[i]);
-						else
-							level->Nodes[ID][j]->ColliderStay(this, colliders[i]);
-					}
-				}
-			}
-			if (!alreadyInOvelaps)
-			{
-				for (size_t j = 0; j < root->ChildCount; ++j)
-				{
-					if (colliders[i]->Trigger)
-						level->Nodes[ID][j]->TriggerEnter(this, colliders[i]);
-					else
-						level->Nodes[ID][j]->ColliderEnter(this, colliders[i]);
-				}
-				Overlaps[OverlapsSize] = colliders[i];
-				++OverlapsSize;
-			}
+			InsertOverlap(colliders[i]);
 		}
 	}
 	
@@ -167,15 +162,31 @@ namespace Chaos
 	void Chaos::Collider::RemoveOverlap(Collider* collider)
 	{
 		Level* level = Level::Get();
-		Node* root = level->Nodes[ID][0];
+		Node* root = level->Nodes[ID];
 		
-		for (size_t j = 0; j < root->ChildCount; ++j)
+		while (root->Parent)
+		{
+			root = root->Parent;
+		}
+		
+		size_t childCount;
+		Node** allChildren = root->GetAllChildren(childCount, true);
+		
+		if (collider->Trigger)
+			root->TriggerExit(this, collider);
+		else
+			root->ColliderExit(this, collider);
+		
+		for (size_t j = 0; j < childCount; ++j)
 		{
 			if (collider->Trigger)
-				level->Nodes[ID][j]->TriggerExit(this, collider);
+				allChildren[j]->TriggerExit(this, collider);
 			else
-				level->Nodes[ID][j]->ColliderExit(this, collider);
+				allChildren[j]->ColliderExit(this, collider);
 		}
+		
+		free(allChildren);
+		
 		
 		for (size_t i = 0; i < OverlapsSize; ++i)
 		{
@@ -226,7 +237,7 @@ namespace Chaos
 	}
 	
 	
-	BoxCollider2D::BoxCollider2D(bool child) : Collider(child)
+	BoxCollider2D::BoxCollider2D()
 	{
 		Name = "BoxCollider2D";
 		ColliderType = EColliderType::BOX2D;
@@ -297,7 +308,7 @@ namespace Chaos
 	}
 	
 	
-	CircleCollider::CircleCollider(bool child) : Collider(child)
+	CircleCollider::CircleCollider()
 	{
 		Name = "CircleCollider";
 		ColliderType = EColliderType::CIRCLE;

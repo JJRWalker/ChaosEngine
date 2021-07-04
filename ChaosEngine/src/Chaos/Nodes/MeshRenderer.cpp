@@ -6,7 +6,7 @@
 #include "Chaos/Renderer/Renderer.h"
 namespace Chaos
 {
-	MeshRenderer::MeshRenderer(bool child) : Node(child)
+	MeshRenderer::MeshRenderer()
 	{
 		Name = "Mesh-Renderer";
 		Type = NodeType::MESH_RENDERER;

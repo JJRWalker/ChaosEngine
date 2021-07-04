@@ -4,6 +4,8 @@
 #include "Application.h"
 #include "Chaos/Nodes/Node.h"
 #include "Chaos/Nodes/Camera.h"
+#include "Chaos/Nodes/Sprite.h"
+#include "Chaos/Nodes/MeshRenderer.h"
 #include "Chaos/Nodes/Colliders.h"
 #include "Chaos/DataTypes/QuadTree.h"
 #include "Chaos/Serialisation/Binary.h"
@@ -20,37 +22,26 @@ namespace Chaos
 	
 	Level::Level()
 	{
-		memset(Nodes, 0, sizeof(Node*) * MAX_NODES * MAX_CHILD_NODES);
+		memset(Nodes, 0, sizeof(Node*) * MAX_NODES);
 	}
 	
 	Level::~Level()
 	{
-		// Deleting a node shuffles the current level node array, so there will always be a [0][0] so long as the level has nodes
-		while (Nodes[0][0])
+		while(Nodes[0])
 		{
-			delete Nodes[0][0];
+			delete Nodes[0];
 		}
 		
 		s_instance = nullptr;
 	}
 	
 	
-	// similar to the Node::Destroy function, simply flags the level for deletion
-	// this is to avoid deleting a level mid update
-	void Level::Destroy()
-	{
-		PendingDestroy = true;
-	}
-	
-	
 	void Level::OnStart()
 	{
+		LOGCORE_INFO("LEVEL STARTED");
 		for (int node = 0; node < NodeCount; ++node)
 		{
-			for (int child = 0; child <= Nodes[node][0]->ChildCount; ++child)
-			{
-				Nodes[node][child]->OnStart(); 
-			}
+			Nodes[node]->OnStart();
 		}
 	}
 	
@@ -68,27 +59,24 @@ namespace Chaos
 		size_t collidableCount = 0;
 		for (int node = 0; node < NodeCount; ++node)
 		{
-			if (!Nodes[node][0]->IsEnabled())
+			if (!Nodes[node]->IsEnabled())
 				continue;
-			for (int child = 0; child <= Nodes[node][0]->ChildCount; ++child)
+			
+			if (Nodes[node]->DebugEnabled) 
+				Nodes[node]->OnDebug();
+			
+			Nodes[node]->OnUpdate(delta);
+			
+			if (Collider* collider = dynamic_cast<Collider*>(Nodes[node]))
 			{
-				if (Nodes[node][child]->IsEnabled())
+				quadTree.Insert(collider);
+				if (collider->UpdateType == EPhysicsUpdateType::PER_FRAME)
 				{
-					Nodes[node][child]->OnUpdate(delta);
-					if (Nodes[node][child]->DebugEnabled) 
-						Nodes[node][child]->OnDebug();
-					Collider* collider = dynamic_cast<Collider*>(Nodes[node][child]);
-					if (collider)
-					{
-						quadTree.Insert(collider);
-						if (collider->UpdateType == EPhysicsUpdateType::PER_FRAME)
-						{
-							colliders[collidableCount] = collider;
-							collidableCount++;
-						}
-					}
+					colliders[collidableCount] = collider;
+					collidableCount++;
 				}
 			}
+			
 		}
 		
 		for (int node = 0; node < collidableCount; ++node)
@@ -109,31 +97,28 @@ namespace Chaos
 	
 	void Level::OnFixedUpdate(float delta)
 	{
+		
 		QuadTree quadTree; // need to reconstruct each loop
 		Collider** colliders = (Collider**) malloc(MAX_NODES * sizeof(Collider*)); // need to allocate this on the heap, too much for stack
 		size_t collidableCount = 0;
 		for (int node = 0; node < NodeCount; ++node)
 		{
-			if (!Nodes[node][0]->IsEnabled())
+			if (!Nodes[node]->IsEnabled())
 				continue;
-			for (int child = 0; child <= Nodes[node][0]->ChildCount; ++child)
+			
+			Nodes[node]->OnFixedUpdate(delta);
+			
+			if (Collider* collider = dynamic_cast<Collider*>(Nodes[node]))
 			{
-				if (Nodes[node][child]->IsEnabled())
+				quadTree.Insert(collider);
+				if (collider->UpdateType == EPhysicsUpdateType::FIXED_STEP)
 				{
-					Nodes[node][child]->OnFixedUpdate(delta);
-					Collider* collider = dynamic_cast<Collider*>(Nodes[node][child]);
-					if (collider)
-					{
-						quadTree.Insert(collider);
-						if (collider->UpdateType == EPhysicsUpdateType::FIXED_STEP)
-						{
-							colliders[collidableCount] = collider;
-							collidableCount++;
-						}
-					}
+					colliders[collidableCount] = collider;
+					collidableCount++;
 				}
 			}
 		}
+		
 		
 		for (int node = 0; node < collidableCount; ++node)
 		{
@@ -150,6 +135,28 @@ namespace Chaos
 		free(colliders);
 	}
 	
+	
+	// Update only renderables, nothing else
+	void Level::OnEditorUpdate(float delta)
+	{
+		for (int node = 0; node < NodeCount; ++node)
+		{
+			if (!Nodes[node]->IsEnabled())
+				continue;
+			
+			if (!(Camera*)Nodes[node]
+				||!(Sprite*)Nodes[node]
+				||!(MeshRenderer*)Nodes[node])
+				continue;
+			
+			if (Nodes[node]->DebugEnabled) 
+				Nodes[node]->OnDebug();
+			
+			Nodes[node]->OnUpdate(delta);
+		}
+	}
+	
+	
 	void Level::Save(const char* filePath)
 	{
 		size_t finalBinarySize = 0;
@@ -159,18 +166,16 @@ namespace Chaos
 		if (!out)
 			LOGCORE_ERROR("SAVE LEVEL: could not create output file!");
 		
+		
 		out.write((char*)&s_instance->NodeCount, sizeof(size_t));
 		
 		for (int node = 0; node < s_instance->NodeCount; ++node)
 		{
-			out.write((char*)&s_instance->Nodes[node][0]->ChildCount, sizeof(size_t));
-			for (int child = 0; child <= s_instance->Nodes[node][0]->ChildCount; ++child)
-			{
-				Binary nodeBinary = s_instance->Nodes[node][child]->SaveToBinary();
-				size_t size = nodeBinary.Capacity();
-				out.write((char*)&size, sizeof(size_t));
-				out.write(nodeBinary.Data, size);
-			}
+			Binary nodeBinary = s_instance->Nodes[node]->SaveToBinary();
+			size_t size = nodeBinary.Capacity();
+			out.write((char*)&size, sizeof(size_t));
+			out.write(nodeBinary.Data, size);
+			
 		}
 		
 		out.close();
@@ -220,38 +225,29 @@ namespace Chaos
 		
 		for (int node = 0; node < nodeCount; ++node)
 		{
-			size_t childCount = 0;
-			memcpy((void*)&childCount, (void*)&rawData[location], sizeof(size_t));
+			size_t nodeSize;
+			memcpy((void*)&nodeSize, (void*)&rawData[location], sizeof(size_t));
 			location += sizeof(size_t);
-			for (int child = 0; child <= childCount; ++child)
-			{
-				size_t nodeSize;
-				memcpy((void*)&nodeSize, (void*)&rawData[location], sizeof(size_t));
-				location += sizeof(size_t);
-				
-				char* nodeData = (char*)malloc(nodeSize);
-				memcpy((void*)nodeData, (void*)&rawData[location], nodeSize);
-				location += nodeSize;
-				
-				uint32_t nodeType;
-				// skip over the version number to get the type
-				memcpy((void*)&nodeType, (void*)&nodeData[sizeof(uint32_t)], sizeof(uint32_t));
-				
-				Node* spawnedNode = Node::Create(nodeType, child);
-				if (child)
-				{
-					buffer->Nodes[node][child] = spawnedNode;
-					buffer->Nodes[node][child]->p_parent = buffer->Nodes[node][0]; 
-				}
-				buffer->Nodes[node][child]->LoadFromBinary(nodeData);
-				
-				free(nodeData);
-			}
+			
+			char* nodeData = (char*)malloc(nodeSize);
+			memcpy((void*)nodeData, (void*)&rawData[location], nodeSize);
+			location += nodeSize;
+			
+			uint32_t nodeType;
+			// skip over the version number to get the type
+			memcpy((void*)&nodeType, (void*)&nodeData[sizeof(uint32_t)], sizeof(uint32_t));
+			
+			Node* spawnedNode = Node::Create(nodeType);
+			spawnedNode->LoadFromBinary(nodeData);
+			
+			free(nodeData);
 		}
 		
 		free(rawData);
 		
+#ifndef CHAOS_EDITOR
 		buffer->OnStart();
+#endif
 	}
 	
 	

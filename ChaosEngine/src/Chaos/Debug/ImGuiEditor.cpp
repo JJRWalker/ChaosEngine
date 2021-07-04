@@ -33,7 +33,14 @@ namespace Chaos
 		
 		Console::AddCommand("demogui", [&](){ m_showDemo ? m_showDemo = false : m_showDemo = true;});
 		
-		Console::AddCommand("clear_level", [&](){ Level::Get()->Destroy(); });
+		Console::AddCommand("play", [&](){ 
+								Application::Get().Play();
+								m_selectedEntities.clear();
+							});
+		Console::AddCommand("end", [&](){ 
+								Application::Get().EndPlay();
+								m_selectedEntities.clear();
+							});
 		
 		m_selectedEntTextureID = Application::Get().GetRenderer().GetImguiEditorPanelTextureID();
 	}
@@ -137,61 +144,35 @@ namespace Chaos
 			{
 				
 				bool nodeClicked = false;
-				Node* node = Level::Get()->Nodes[i][0];
+				Node* node = Level::Get()->Nodes[i];
 				ImGuiTreeNodeFlags nodeFlags = baseFlags;
 				if(IsSelected(node))
 				{
 					nodeFlags |= ImGuiTreeNodeFlags_Selected;
 				}
 				
-				if (node->ChildCount < 1)
+				if (node->Children.Size() < 1)
 				{
 					nodeFlags |= ImGuiTreeNodeFlags_Leaf;
 				}
 				
-				bool openTree = ImGui::TreeNodeEx((void*)(intptr_t)i, nodeFlags, "%s", node->Name.c_str());
-				
-				if (ImGui::IsItemClicked())
-					nodeSelected = i;
-				
-				if (openTree)
+				if (ImGui::TreeNodeEx((void*)(intptr_t)i, nodeFlags, "%s", node->Name.c_str()))
 				{
-					for (int j = 1; j <= Level::Get()->Nodes[i][0]->ChildCount; ++j)
-					{
-						ImGuiTreeNodeFlags childFlags = baseFlags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-						
-						Node* child = Level::Get()->Nodes[i][j];
-						
-						if(IsSelected(child))
-						{
-							childFlags |= ImGuiTreeNodeFlags_Selected;
-						}
-						
-						ImGui::TreeNodeEx((void*)(intptr_t)j, childFlags, "%s", Level::Get()->Nodes[i][j]->Name.c_str());
-						
-						
-						
-						if (ImGui::IsItemClicked())
-						{
-							nodeSelected = i;
-							childSelected = j;
-						}
-						
-					}
-					
 					ImGui::TreePop();
 				}
 				
 				
+				if (ImGui::IsItemClicked())
+					nodeSelected = i;
 				
 				if (nodeSelected != -1)
 				{
-					Node* newSelected = level->Nodes[nodeSelected][childSelected];
+					Node* newSelected = level->Nodes[nodeSelected];
 					if (ImGui::GetIO().KeyCtrl)
 					{
-						for (int child = 0; child <= newSelected->ChildCount; ++child)
+						for (int child = 0; child < newSelected->Children.Size(); ++child)
 						{
-							level->Nodes[nodeSelected][child]->DebugEnabled = true;
+							newSelected->Children[child]->DebugEnabled = true;
 						}
 						m_selectedEntities.push_back(newSelected);         // CTRL+click to toggle
 					}
@@ -210,11 +191,11 @@ namespace Chaos
 						
 						for (int node = selectionStartIndex; node <= selectionEndIndex; ++node)
 						{
-							m_selectedEntities.push_back(level->Nodes[node][0]);
+							m_selectedEntities.push_back(level->Nodes[node]);
 							
-							for (int child = 0; child <= level->Nodes[node][0]->ChildCount; ++child)
+							for (int child = 0; child < level->Nodes[node]->Children.Size(); ++child)
 							{
-								level->Nodes[node][child]->DebugEnabled = true;
+								level->Nodes[node]->Children[child]->DebugEnabled = true;
 							}
 						}
 						
@@ -223,18 +204,18 @@ namespace Chaos
 					{
 						for (Node* selected : m_selectedEntities)
 						{
-							for (int child = 0; child <= selected->ChildCount; ++child)
+							for (int child = 0; child < selected->Children.Size(); ++child)
 							{
-								Level::Get()->Nodes[selected->ID][child]->DebugEnabled = false;
+								selected->Children[child]->DebugEnabled = false;
 							}
 						}
 						m_selectedEntities.clear();
 						
-						level->Nodes[nodeSelected][childSelected]->DebugEnabled = true;
+						newSelected->DebugEnabled = true;
 						
-						for (int child = 0; child <= newSelected->ChildCount; ++child)
+						for (int child = 0; child < newSelected->Children.Size(); ++child)
 						{
-							level->Nodes[nodeSelected][child]->DebugEnabled = true;
+							newSelected->Children[child]->DebugEnabled = true;
 						}
 						
 						m_selectedEntities.push_back(newSelected);	// Click to single-select
@@ -268,11 +249,11 @@ namespace Chaos
 		if (ImGui::Checkbox("", &enabled))
 		{
 			node->SetEnabled(enabled);
-			if (node->ChildCount)
+			if (node->Children.Size())
 			{
-				for (int child = 1; child <= node->ChildCount; ++child)
+				for (int child = 0; child < node->Children.Size(); ++child)
 				{
-					level->Nodes[node->ID][child]->SetEnabled(enabled);
+					level->Nodes[node->ID]->Children[child]->SetEnabled(enabled);
 				}
 			}
 		}
@@ -282,7 +263,7 @@ namespace Chaos
 		
 		ImGui::SameLine();
 		
-		ImGui::Text("\t ID: %d SubID: %d", node->ID, node->SubID); 
+		ImGui::Text("\t ID: %d", node->ID); 
 		
 		ImGui::Text("%s", node->GetType());
 		
@@ -330,7 +311,7 @@ namespace Chaos
 			
 			for (int i = 0; i < Level::Get()->NodeCount; ++i)
 			{
-				Node* node = Level::Get()->Nodes[i][0];
+				Node* node = Level::Get()->Nodes[i];
 				if (node->HasChild<BoxCollider2D>())
 				{
 					BoxCollider2D* collider = node->GetChild<BoxCollider2D>();
@@ -370,7 +351,7 @@ namespace Chaos
 			
 			for (int i = 0; i < Level::Get()->NodeCount; ++i)
 			{
-				Node* node = Level::Get()->Nodes[i][0];
+				Node* node = Level::Get()->Nodes[i];
 				if (node->HasChild<BoxCollider2D>())
 				{
 					BoxCollider2D* collider = node->GetChild<BoxCollider2D>();
@@ -441,7 +422,7 @@ namespace Chaos
 	{
 		for (auto e : m_selectedEntities)
 		{
-			if (e->ID == entity->ID && e->SubID == entity->SubID)
+			if (e->ID == entity->ID)
 				return true;
 		}
 		return false;
