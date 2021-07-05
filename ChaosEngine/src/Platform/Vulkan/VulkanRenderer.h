@@ -7,6 +7,7 @@
 #include "Chaos/Renderer/Renderer.h"
 #include "Chaos/DataTypes/Vec4.h"
 #include "Chaos/DataTypes/ChaoticArray.h"
+#include "Chaos/DataTypes/Array.h"
 
 #include "VulkanMesh.h"
 #include "VulkanMaterial.h"
@@ -60,27 +61,11 @@ namespace Chaos
 	};
 	
 	
-	struct MeshPushConstants
-	{
-		glm::vec4 Data;
-		glm::mat4 RenderMatrix;
-	};
-	
 	struct GPUCameraData
 	{
 		glm::mat4 view;
 		glm::mat4 projection;
 		glm::mat4 viewProj;
-	};
-	
-	
-	struct GPUSceneData
-	{
-		Vec4 FogColour = { 0.2f, 0.2f, 0.2f, 0.1f };
-		Vec4 FogDistances = { 0.1f,  0.5f, 1.0f, 2.0f};
-		Vec4 AmbiantColour = { 0.5f, 0.5f, 0.5f, 0.3f };
-		Vec4 SunlightDirection = { 0.0f, 0.0f, 1.0f, 1.0f };
-		Vec4 SunlightColour = { 1.0f, 1.0f, 1.0f, 0.0f };
 	};
 	
 	
@@ -206,7 +191,7 @@ namespace Chaos
 		DeletionQueue SwapchainDeletionQueue;
 		
 		//TODO OPTIMISATION: Multi thread recording of renderables. Currently has a big overhead here. Divide and conquer!
-		//NOTE: Should be stable frame rate when inserting and removing, but has to itterate over it's max capacity every time.
+		//NOTE: Should be stable frame rate when inserting and removing, but has to itterate over it's max capacity every time. Lights however, need to be in a standard array as we need to push the number of lights in the scene to the shader.
 		ChaoticArray<RenderObject*> Renderables = ChaoticArray<RenderObject*>(MAX_OBJECTS);
 		ChaoticArray<LightingObjectData*> Lights = ChaoticArray<LightingObjectData*>(MAX_LIGHTS);
 		std::unordered_map<std::string, VulkanMaterial> Materials;
@@ -258,8 +243,7 @@ namespace Chaos
 		VkDescriptorPool m_descriptorPool;
 		VkFence m_descriptorFence;
 		
-		GPUSceneData m_sceneParameters;
-		AllocatedBuffer m_sceneParameterBuffer;
+		AllocatedBuffer m_levelParametersBuffer;
 		
 		VkSampler m_nearestNeighbourSampler;
 		

@@ -106,9 +106,8 @@ namespace Chaos
 		{
 			if (std::is_base_of<Node, T>::value)
 			{
-				child->p_parent = this;
-				Children[ChildCount] = child;
-				++ChildCount;
+				child->Parent = this;
+				Children.Push(child);
 			}
 		}
 		

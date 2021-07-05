@@ -10,7 +10,8 @@ namespace FileUtils
 	std::string GetFileName(std::string filePath, bool includeExtension = true);
 	void RemoveExtension(std::string& path);
 	
-	bool OpenFileDialogue(std::string& outFilePath);
+	bool OpenFileDialog(std::string& outFilePath);
+	bool SaveFileDialog(std::string& outFilePath);
 }
 
 #endif //_FILE_UTILS_H

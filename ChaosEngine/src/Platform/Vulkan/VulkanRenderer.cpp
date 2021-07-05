@@ -137,7 +137,7 @@ namespace Chaos
 		transform[10] = 1.0f;
 		transform[15] = 1.0f;
 		
-		RenderObject* line = AddQuad(transform, GetMaterial("textured-default"));
+		RenderObject* line = AddQuad(transform, GetMaterial("textured-unlit"));
 		memcpy((void*)&line->ShaderData.DataArray1, (void*)&colour, sizeof(float) * 4);
 		line->RenderOneTime = true;
 	}
@@ -255,10 +255,14 @@ namespace Chaos
 	
 	void VulkanRenderer::DrawObjects(VkCommandBuffer cmd, ChaoticArray<RenderObject*>& renderObjData, ChaoticArray<LightingObjectData*>& lightingData)
 	{
-		Camera* mainCamera = Level::Get()->MainCamera;
+		Level* level = Level::Get();
 		
-		if (!mainCamera)
+		Camera* mainCamera = level->MainCamera;
+		
+		if (!level || !mainCamera)
 			return;
+		
+		level->GraphicalData.LightingData.X = Lights.UsedSlotsSize(); // set the number of lights in the level data
 		
 		GPUCameraData camData;
 		
@@ -274,15 +278,15 @@ namespace Chaos
 		vmaUnmapMemory(m_allocator, GetCurrentFrame().CameraBuffer.Allocation);
 		
 		char* sceneData;
-		vmaMapMemory(m_allocator, m_sceneParameterBuffer.Allocation, (void**)&sceneData);
+		vmaMapMemory(m_allocator, m_levelParametersBuffer.Allocation, (void**)&sceneData);
 		
 		int frameIndex = FrameNumber % FRAME_OVERLAP;
 		
-		sceneData += PadUniformBufferSize(sizeof(GPUSceneData) * frameIndex);
+		sceneData += PadUniformBufferSize(sizeof(GPULevelData) * frameIndex);
 		
-		memcpy(sceneData, &m_sceneParameters, sizeof(GPUSceneData));
+		memcpy(sceneData, &level->GraphicalData, sizeof(GPULevelData));
 		
-		vmaUnmapMemory(m_allocator, m_sceneParameterBuffer.Allocation);
+		vmaUnmapMemory(m_allocator, m_levelParametersBuffer.Allocation);
 		
 		
 		void* objectData;
@@ -306,6 +310,9 @@ namespace Chaos
 			memcpy((void*)&sobjectSSBO[i], (void*)&obj.ShaderData, sizeof(ShaderObjectData));
 		}
 		
+		// we want lights to be stored sequentially in the array passed to the gpu as we have to pass in the number of lights in the level so we don't draw additional lighting
+		size_t lightInsertIndex = 0;
+		
 		for (int i = 0; i < lightingData.Size(); ++i)
 		{
 			if (!lightingData.Data[i])
@@ -313,7 +320,8 @@ namespace Chaos
 			
 			LightingObjectData& obj = *lightingData.Data[i];
 			
-			memcpy((void*)&sLightSSBO[i], (void*)&obj, sizeof(LightingObjectData));
+			memcpy((void*)&sLightSSBO[lightInsertIndex], (void*)&obj, sizeof(LightingObjectData));
+			++lightInsertIndex;
 		}
 		
 		vmaUnmapMemory(m_allocator, GetCurrentFrame().ObjectBuffer.Allocation);
@@ -335,7 +343,7 @@ namespace Chaos
 				vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, ((VulkanMaterial*)obj.pMaterial)->Pipeline);
 				lastMaterial = obj.pMaterial;
 				
-				uint32_t uniformOffset = (uint32_t)PadUniformBufferSize(sizeof(GPUSceneData) * frameIndex);
+				uint32_t uniformOffset = (uint32_t)PadUniformBufferSize(sizeof(GPULevelData) * frameIndex);
 				
 				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, ((VulkanMaterial*)obj.pMaterial)->PipelineLayout, 0, 1, &GetCurrentFrame().GlobalDescriptor, 1, &uniformOffset);
 				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, ((VulkanMaterial*)obj.pMaterial)->PipelineLayout, 1, 1, &GetCurrentFrame().ObjectDescriptor, 0, nullptr);
@@ -1086,9 +1094,9 @@ namespace Chaos
 		
 		vkCreateDescriptorSetLayout(m_device, &set4Info, nullptr, &m_lightingSetLayout);
 		
-		const size_t sceneParamBufferSize = FRAME_OVERLAP * PadUniformBufferSize(sizeof(GPUSceneData));
+		const size_t sceneParamBufferSize = FRAME_OVERLAP * PadUniformBufferSize(sizeof(GPULevelData));
 		
-		m_sceneParameterBuffer = CreateBuffer(sceneParamBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+		m_levelParametersBuffer = CreateBuffer(sceneParamBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 		
 		for (int i = 0; i < FRAME_OVERLAP; ++i)
 		{
@@ -1132,9 +1140,9 @@ namespace Chaos
 			camInfo.range = sizeof(GPUCameraData);
 			
 			VkDescriptorBufferInfo sceneInfo;
-			sceneInfo.buffer = m_sceneParameterBuffer.Buffer;
+			sceneInfo.buffer = m_levelParametersBuffer.Buffer;
 			sceneInfo.offset = 0;
-			sceneInfo.range = sizeof(GPUSceneData);
+			sceneInfo.range = sizeof(GPULevelData);
 			
 			VkDescriptorBufferInfo objectBufferInfo;
 			objectBufferInfo.buffer = Frames[i].ObjectBuffer.Buffer;
@@ -1163,7 +1171,7 @@ namespace Chaos
 		
 		MainDeletionQueue.push_function([&]()
 										{
-											vmaDestroyBuffer(m_allocator, m_sceneParameterBuffer.Buffer, m_sceneParameterBuffer.Allocation);
+											vmaDestroyBuffer(m_allocator, m_levelParametersBuffer.Buffer, m_levelParametersBuffer.Allocation);
 											vkDestroyDescriptorSetLayout(m_device, m_globalSetLayout, nullptr);
 											vkDestroyDescriptorSetLayout(m_device, m_objectSetLayout, nullptr);
 											vkDestroyDescriptorSetLayout(m_device, m_singleTextureSetLayout, nullptr);
@@ -1321,9 +1329,13 @@ namespace Chaos
 	{
 		Material::Create("ui-default", "Assets/Shaders/spv/ui-default.frag.spv", "Assets/Shaders/spv/ui-default.vert.spv");
 		
-		Material::Create("subsprite-default","Assets/Shaders/spv/textured_atlus_lit.frag.spv", "Assets/Shaders/spv/default.vert.spv");
+		Material::Create("atlus-default","Assets/Shaders/spv/textured_atlus_lit.frag.spv", "Assets/Shaders/spv/default.vert.spv");
+		
+		Material::Create("atlus-unlit","Assets/Shaders/spv/textured_atlus_unlit.frag.spv", "Assets/Shaders/spv/default.vert.spv");
 		
 		Material::Create("textured-default", "Assets/Shaders/spv/textured_lit.frag.spv", "Assets/Shaders/spv/default.vert.spv");
+		
+		Material::Create("textured-unlit", "Assets/Shaders/spv/textured_unlit.frag.spv", "Assets/Shaders/spv/default.vert.spv");
 	}
 	
 	

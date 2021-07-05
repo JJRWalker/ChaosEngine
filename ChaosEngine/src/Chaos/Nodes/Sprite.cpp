@@ -156,7 +156,7 @@ namespace Chaos
 		if (ImGui::Button("Change texture"))
 		{
 			std::string out;
-			if (FileUtils::OpenFileDialogue(out))
+			if (FileUtils::OpenFileDialog(out))
 			{
 				if (out != path)
 				{
@@ -233,7 +233,7 @@ namespace Chaos
 		Name = "SubSprite";
 		Type = NodeType::SUB_SPRITE;
 		
-		SetMaterial(Material::Get("subsprite-default"));
+		SetMaterial(Material::Get("atlus-default"));
 		SetTilingFactor(Vec2(1.0f, 1.0f));
 	}
 	
@@ -242,7 +242,7 @@ namespace Chaos
 	{
 		Name = "SubSprite";
 		
-		SetMaterial(Material::Get("subsprite-default"));
+		SetMaterial(Material::Get("atlus-default"));
 		SetTilingFactor(Vec2(1.0f, 1.0f));
 	}
 	
@@ -251,7 +251,7 @@ namespace Chaos
 	{
 		Name = "SubSprite";
 		
-		SetMaterial(Material::Get("subsprite-default"));
+		SetMaterial(Material::Get("atlus-default"));
 		SetTilingFactor(Vec2(1.0f, 1.0f));
 	}
 	
@@ -340,7 +340,7 @@ namespace Chaos
 		if (ImGui::Button("Change texture"))
 		{
 			std::string out;
-			if (FileUtils::OpenFileDialogue(out))
+			if (FileUtils::OpenFileDialog(out))
 			{
 				if (out != path)
 				{

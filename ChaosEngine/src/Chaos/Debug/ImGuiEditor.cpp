@@ -1,16 +1,18 @@
 #include <chaospch.h>
+#include <Chaos/Core/Application.h>
+#include <Chaos/Core/Time.h>
+#include <Chaos/Renderer/Renderer.h>
 #include <Chaos/Debug/ImGuiEditor.h>
 #include <Chaos/Debug/Console.h>
+#include <Chaos/Debug/Debug.h>
 #include <Chaos/Nodes/Camera.h>
 #include <Chaos/Nodes/Colliders.h>
 #include <Chaos/Nodes/Sprite.h>
-#include <Chaos/Debug/ImGuiFileExplorer.h>
-#include <Chaos/Core/Application.h>
-#include <Chaos/Core/Time.h>
+#include <Chaos/Nodes/Lights.h>
+#include <Chaos/Nodes/MeshRenderer.h>
 #include <Chaos/Input/Input.h>
 #include <Chaos/Maths/Collisions.h>
-#include <Chaos/Renderer/Renderer.h>
-#include <Chaos/Nodes/MeshRenderer.h>
+#include <Chaos/Serialisation/FileUtils.h>
 
 
 namespace Chaos
@@ -64,7 +66,13 @@ namespace Chaos
 			//if an entitiy is selected show the details pannel
 			if (m_selectedEntities.size() > 0)
 			{
+				DrawSelectedWidget();
 				ShowDetails();
+			}
+			
+			if (m_showLevelSettings)
+			{
+				ShowLevelSettings();
 			}
 		}
 	}
@@ -85,7 +93,31 @@ namespace Chaos
 		//ImGui::PopStyleColor();
 		if(ImGui::BeginMenuBar())
 		{
-			if(ImGui::BeginMenu("add.."))
+			if(ImGui::BeginMenu("File.."))
+			{
+				if (ImGui::MenuItem("New"))
+				{
+					Level::Get()->Clear();
+				}
+				if(ImGui::MenuItem("Save.."))
+				{
+					LOGINFO("Save...");
+					std::string filepath;
+					if (FileUtils::SaveFileDialog(filepath))
+						Level::Save(filepath.c_str());
+				}
+				if(ImGui::MenuItem("Load..."))
+				{
+					LOGINFO("Load...");
+					std::string filepath;
+					if (FileUtils::OpenFileDialog(filepath))
+						Level::Load(filepath.c_str());
+					
+					m_selectedEntities.clear();
+				}
+				ImGui::EndMenu();
+			}
+			if(ImGui::BeginMenu("Add.."))
 			{
 				if(ImGui::MenuItem("Node"))
 				{
@@ -111,20 +143,22 @@ namespace Chaos
 				{
 					Node* node = new MeshRenderer();
 				}
+				if(ImGui::MenuItem("Point-Light"))
+				{
+					Node* node = new PointLight();
+				}
 				ImGui::EndMenu();
 			}
-			if(ImGui::Button("save.."))
+			if(ImGui::BeginMenu("Level.."))
 			{
-				LOGINFO("Save...");
-				Level::Save("./test-level.lvl");  //TODO: Pass in path through file dialog
+				if(ImGui::MenuItem("Settings"))
+				{
+					m_showLevelSettings = true;
+				}
+				
+				ImGui::EndMenu();
 			}
-			if(ImGui::Button("load..."))
-			{
-				LOGINFO("Load...");
-				Level::Load("./test-level.lvl");  //TODO: Pass in path through file dialog
-				m_selectedEntities.clear();
-			}
-			if(ImGui::Button("close"))
+			if(ImGui::Button("Close"))
 			{
 				m_showEditor = false;
 				Input::ButtonsEnabled = true;
@@ -142,85 +176,13 @@ namespace Chaos
 			
 			for(int i = 0; i < Level::Get()->NodeCount; ++i)
 			{
-				
 				bool nodeClicked = false;
 				Node* node = Level::Get()->Nodes[i];
-				ImGuiTreeNodeFlags nodeFlags = baseFlags;
-				if(IsSelected(node))
+				
+				if (!node->Parent)
 				{
-					nodeFlags |= ImGuiTreeNodeFlags_Selected;
-				}
-				
-				if (node->Children.Size() < 1)
-				{
-					nodeFlags |= ImGuiTreeNodeFlags_Leaf;
-				}
-				
-				if (ImGui::TreeNodeEx((void*)(intptr_t)i, nodeFlags, "%s", node->Name.c_str()))
-				{
-					ImGui::TreePop();
-				}
-				
-				
-				if (ImGui::IsItemClicked())
-					nodeSelected = i;
-				
-				if (nodeSelected != -1)
-				{
-					Node* newSelected = level->Nodes[nodeSelected];
-					if (ImGui::GetIO().KeyCtrl)
-					{
-						for (int child = 0; child < newSelected->Children.Size(); ++child)
-						{
-							newSelected->Children[child]->DebugEnabled = true;
-						}
-						m_selectedEntities.push_back(newSelected);         // CTRL+click to toggle
-					}
-					else if (ImGui::GetIO().KeyShift)
-					{
-						int selectionStartIndex = m_selectedEntities[m_selectedEntities.size() - 1]->ID;
-						
-						int selectionEndIndex = nodeSelected;
-						
-						if (nodeSelected < selectionStartIndex)
-						{
-							int temp = selectionEndIndex;
-							selectionEndIndex = selectionStartIndex;
-							selectionStartIndex = temp;
-						}
-						
-						for (int node = selectionStartIndex; node <= selectionEndIndex; ++node)
-						{
-							m_selectedEntities.push_back(level->Nodes[node]);
-							
-							for (int child = 0; child < level->Nodes[node]->Children.Size(); ++child)
-							{
-								level->Nodes[node]->Children[child]->DebugEnabled = true;
-							}
-						}
-						
-					}
-					else //if (!(selection_mask & (1 << node_clicked))) // Depending on selection behavior you want, this commented bit preserve selection when clicking on item that is part of the selection
-					{
-						for (Node* selected : m_selectedEntities)
-						{
-							for (int child = 0; child < selected->Children.Size(); ++child)
-							{
-								selected->Children[child]->DebugEnabled = false;
-							}
-						}
-						m_selectedEntities.clear();
-						
-						newSelected->DebugEnabled = true;
-						
-						for (int child = 0; child < newSelected->Children.Size(); ++child)
-						{
-							newSelected->Children[child]->DebugEnabled = true;
-						}
-						
-						m_selectedEntities.push_back(newSelected);	// Click to single-select
-					}
-					
+					if (CreateTreeNode(node, baseFlags))
+						ImGui::TreePop();
 				}
 			}
 			ImGui::EndChild();
@@ -234,8 +196,10 @@ namespace Chaos
 		
 		Level* level = Level::Get();
 		
-		ImGui::SetNextWindowSize(ImVec2(DETAILS_WINDOW_SIZE.X + DETAILS_WINDOW_PADDING.X, DETAILS_WINDOW_SIZE.Y + DETAILS_WINDOW_PADDING.Y));
-		ImGui::SetNextWindowPos(ImVec2(m_editorWindowPos.x + (m_editorWindowSize.x), m_editorWindowPos.y));
+		
+		// first time use: put details window next to level heirarchy window
+		ImGui::SetNextWindowSize(ImVec2(DETAILS_WINDOW_SIZE.X + DETAILS_WINDOW_PADDING.X, DETAILS_WINDOW_SIZE.Y + DETAILS_WINDOW_PADDING.Y), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowPos(ImVec2(m_editorWindowPos.x + (m_editorWindowSize.x), m_editorWindowPos.y), ImGuiCond_FirstUseEver);
 		ImGui::Begin("Details");
 		
 		//generic node data...
@@ -295,6 +259,35 @@ namespace Chaos
 		ImGui::End();
 	}
 	
+	
+	void ImGuiEditor::ShowLevelSettings()
+	{
+		ImGui::SetNextWindowSize(ImVec2(DETAILS_WINDOW_SIZE.X + DETAILS_WINDOW_PADDING.X, DETAILS_WINDOW_SIZE.Y + DETAILS_WINDOW_PADDING.Y), ImGuiCond_FirstUseEver);
+		
+		ImGui::Begin("Level Settings");
+		
+		Level* level = Level::Get();
+		if (!level)
+		{
+			ImGui::End();
+			return;
+		}
+		
+		ImGui::Text("Ambiant lighting");
+		ImGui::ColorEdit3("Ambiant colour", &level->GraphicalData.AmbiantColour.X);
+		ImGui::DragFloat("Ambiant intensity", &level->GraphicalData.AmbiantColour.W);
+		ImGui::Separator();
+		ImGui::Text("Sunlight lighting");
+		ImGui::ColorEdit3("Sunlight colour", &level->GraphicalData.SunlightColour.X);
+		ImGui::DragFloat("Sunlight intensity", &level->GraphicalData.SunlightColour.W);
+		ImGui::DragFloat4("Sunlight direction", &level->GraphicalData.SunlightDirection.X, 0.01f, -1.0f, 1.0f);
+		ImGui::Separator();
+		ImGui::Text("Fog (unused)");
+		ImGui::ColorEdit4("Fog colour", &level->GraphicalData.FogColour.X);
+		ImGui::ColorEdit4("Fog distances", &level->GraphicalData.FogDistances.X);
+		
+		ImGui::End();
+	}
 	
 	
 	void ImGuiEditor::UpdateSelectedEntity()
@@ -385,6 +378,15 @@ namespace Chaos
 	
 	void ImGuiEditor::MoveCamera(float delta)
 	{
+		if (!Level::Get()->MainCamera)
+			return;
+		
+		if (m_selectedEntities.size() && Input::IsKeyPressed(KEY_F))
+		{
+			Level::Get()->MainCamera->SetPosition(m_selectedEntities[m_selectedEntities.size() - 1]->GetWorldPosition());
+		}
+		
+		
 		Vec2 dir = Vec2::Zero();
 		if(Input::IsKeyPressed(KEY_W))
 		{
@@ -418,11 +420,103 @@ namespace Chaos
 	}
 	
 	
-	bool ImGuiEditor::IsSelected(Node* entity)
+	void ImGuiEditor::DrawSelectedWidget()
 	{
-		for (auto e : m_selectedEntities)
+		Vec2 position = m_selectedEntities[m_selectedEntities.size() - 1]->GetWorldPosition();
+		
+		Debug::DrawLine(position, position + Vec2::Up(), Vec4(1.0f, 1.0f, 0.0f, 1.0f));
+		Debug::DrawLine(position, position + Vec2::Right(), Vec4(1.0f, 0.0f, 0.0f, 1.0f));
+	}
+	
+	
+	bool ImGuiEditor::CreateTreeNode(Node* node, ImGuiTreeNodeFlags nodeFlags)
+	{
+		ImGuiTreeNodeFlags flags = nodeFlags;
+		
+		if (IsSelected(node))
 		{
-			if (e->ID == entity->ID)
+			flags |= ImGuiTreeNodeFlags_Selected;
+		}
+		
+		if (!node->Children.Size())
+		{
+			flags |= ImGuiTreeNodeFlags_Leaf;
+			
+			bool open = ImGui::TreeNodeEx((void*)(intptr_t)node->ID, flags, "%s", node->Name.c_str());
+			
+			if (ImGui::IsItemClicked())
+			{
+				OnNodeSelected(node);
+			}
+			return open;
+		}
+		else
+		{
+			bool open = ImGui::TreeNodeEx((void*)(intptr_t)node->ID, flags, "%s", node->Name.c_str());
+			if (open)
+			{
+				if (ImGui::IsItemClicked())
+				{
+					OnNodeSelected(node);
+				}
+				
+				for (int child = 0; child < node->Children.Size(); ++child)
+				{
+					if (CreateTreeNode(node->Children[child], nodeFlags))
+					{
+						ImGui::TreePop();
+					}
+				}
+			}
+			return open;
+		}
+	}
+	
+	
+	void ImGuiEditor::OnNodeSelected(Node* node)
+	{
+		if (ImGui::GetIO().KeyCtrl)
+		{
+			for (int child = 0; child < node->Children.Size(); ++child)
+			{
+				node->Children[child]->DebugEnabled = true;
+			}
+			m_selectedEntities.push_back(node);         // CTRL+click to toggle
+		}
+		
+		else if (ImGui::GetIO().KeyShift)
+		{
+			// TODO: rewrite this
+		}
+		
+		else 
+		{
+			for (Node* selected : m_selectedEntities)
+			{
+				for (int child = 0; child < selected->Children.Size(); ++child)
+				{
+					selected->Children[child]->DebugEnabled = false;
+				}
+			}
+			m_selectedEntities.clear();
+			
+			node->DebugEnabled = true;
+			
+			for (int child = 0; child < node->Children.Size(); ++child)
+			{
+				node->Children[child]->DebugEnabled = true;
+			}
+			
+			m_selectedEntities.push_back(node);	// Click to single-select
+		}
+	}
+	
+	
+	bool ImGuiEditor::IsSelected(Node* node)
+	{
+		for (auto n : m_selectedEntities)
+		{
+			if (n->ID == node->ID)
 				return true;
 		}
 		return false;

@@ -151,7 +151,6 @@ namespace Chaos
 	// inserts nodes into overlaps, calls enter and stay methods for nodes.
 	void Collider::InsertOverlaps(Collider** colliders, size_t size)
 	{
-		PROFILED_FUNC();
 		for (int i = 0; i < size; ++i)
 		{
 			InsertOverlap(colliders[i]);

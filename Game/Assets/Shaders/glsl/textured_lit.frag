@@ -21,6 +21,7 @@ layout(set = 0, binding = 1) uniform  SceneData{
 	vec4 ambientColor;
 	vec4 sunlightDirection; //w for sun power
 	vec4 sunlightColor;
+	vec4 lightingData;
 } sceneData;
 
 layout(set = 2, binding = 0) uniform sampler2D tex1;
@@ -53,22 +54,22 @@ void main()
 	vec3 diffColour = diffuse * lightColour;
 	vec4 result = vec4((ambient + diffColour) * inColor, 1.0f);
 
-		for (int i = 0; i < 100; i++)
+	for (int i = 0; i < sceneData.lightingData.x; i++)
 	{
 		if (lightingBuffer.lights[i].shaderFloatArray1[3][3] < 1.0f) continue;
-		
+
 		LightingData light = lightingBuffer.lights[i];
-		vec3 lightPos = vec3(light.transform[0][3], light.transform[1][3], light.transform[2][3]);
+		vec3 lightPos = vec3(light.transform[3][0], light.transform[3][1], light.transform[3][2]);
 
 		if (inFragPos.z > lightPos.z) continue;
 
 		float dist = distance(inFragPos, lightPos);
-
 		float radius = light.shaderFloatArray1[1][0];
 
 		if (dist > radius) continue;
 
 		float attenuation = clamp(1.0 - dist * dist / (radius * radius), 0.0f, 1.0f);
+
 		attenuation *= attenuation;
 
 		vec3 lightColour = vec3(light.shaderFloatArray1[0][0], light.shaderFloatArray1[0][1], light.shaderFloatArray1[0][2]) * light.shaderFloatArray1[0][3];

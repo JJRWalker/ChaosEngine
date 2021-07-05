@@ -47,9 +47,11 @@ namespace Chaos
 			{
 				if (Data[i] == item)
 				{
-					for (int j = i; j < m_size; ++j)
+					for (int j = i; j < m_size - 1; ++j)
 					{
+						T temp = Data[i];
 						Data[i] = Data[i + 1];
+						Data[i + 1] = temp;
 					}
 					Data[m_size - 1] = nullptr;
 					--m_size;
@@ -68,9 +70,11 @@ namespace Chaos
 				return false;
 			}
 			
-			for (int i = index; i < m_size; ++i)
+			for (int i = index; i < m_size - 1; ++i)
 			{
+				T temp = Data[i];
 				Data[i] = Data[i + 1];
+				Data[i + 1] = temp;
 			}
 			
 			Data[m_size - 1] = nullptr;
@@ -84,6 +88,15 @@ namespace Chaos
 		{
 			Remove(item);
 			delete item;
+			return true;
+		}
+		
+		
+		bool Destroy(int index)
+		{
+			delete Data[index];
+			Data[index] = nullptr;
+			Remove(index);
 			return true;
 		}
 		

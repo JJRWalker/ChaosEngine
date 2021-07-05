@@ -21,6 +21,7 @@ layout(set = 0, binding = 1) uniform  SceneData{
 	vec4 ambientColor;
 	vec4 sunlightDirection; //w for sun power
 	vec4 sunlightColor;
+	vec4 lightingData;
 } sceneData;
 
 struct LightingData
@@ -42,6 +43,30 @@ void main()
 	vec3 lightDir = normalize(sceneData.sunlightDirection.xyz);
 	float diffuse = max(dot(norm, lightDir), 0.0f) * sceneData.sunlightDirection.w;
 	vec3 diffColour = diffuse * lightColour;
-	vec3 result = vec3((ambient + diffColour) * inColor);
-	outFragColor = vec4(result, 1.0f);
+	vec4 result = vec4((ambient + diffColour) * inColor, 1.0f);
+
+	for (int i = 0; i < sceneData.lightingData.x; i++)
+	{
+		if (lightingBuffer.lights[i].shaderFloatArray1[3][3] < 1.0f) continue;
+
+		LightingData light = lightingBuffer.lights[i];
+		vec3 lightPos = vec3(light.transform[3][0], light.transform[3][1], light.transform[3][2]);
+
+		if (inFragPos.z > lightPos.z) continue;
+
+		float dist = distance(inFragPos, lightPos);
+		float radius = light.shaderFloatArray1[1][0];
+
+		if (dist > radius) continue;
+
+		float attenuation = clamp(1.0 - dist * dist / (radius * radius), 0.0f, 1.0f);
+
+		attenuation *= attenuation;
+
+		vec3 lightColour = vec3(light.shaderFloatArray1[0][0], light.shaderFloatArray1[0][1], light.shaderFloatArray1[0][2]) * light.shaderFloatArray1[0][3];
+
+		result += vec4(lightColour.xyz * attenuation, 1.0f);
+	}
+
+	outFragColor = vec4(result);
 }

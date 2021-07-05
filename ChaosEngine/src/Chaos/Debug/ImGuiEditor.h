@@ -23,16 +23,27 @@ namespace Chaos
 		
 		void ShowEditor();
 		void ShowDetails();
+		void ShowLevelSettings();
 		void UpdateSelectedEntity();
 		
 		void MoveCamera(float delta);
+		void DrawSelectedWidget();
 		
 		private:
-		bool IsSelected(Node* entity);
+		bool CreateTreeNode(Node* node, ImGuiTreeNodeFlags nodeFlags);
+		void OnNodeSelected(Node* node);
+		bool IsSelected(Node* node);
 		
 		private:
 		bool m_showDemo = false;
+		
+		// if editor is defined, start the editor in the open state
+#ifdef CHAOS_EDITOR
+		bool m_showEditor = true;
+#else
 		bool m_showEditor = false;
+#endif
+		bool m_showLevelSettings = false;
 		bool m_clicked = false;
 		bool m_dragging = false;
 		

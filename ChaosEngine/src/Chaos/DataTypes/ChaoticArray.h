@@ -186,8 +186,9 @@ namespace Chaos
 		}
 		
 		
-		size_t Size() { return m_size; }
-		size_t FreeSlotsSize() { return m_freeSlotsSize; }
+		inline size_t Size() { return m_size; }
+		inline size_t FreeSlotsSize() { return m_freeSlotsSize; }
+		inline size_t UsedSlotsSize() { return m_size - m_freeSlotsSize; }
 		
 		T* Data = nullptr;
 		size_t* FreeSlots = nullptr;

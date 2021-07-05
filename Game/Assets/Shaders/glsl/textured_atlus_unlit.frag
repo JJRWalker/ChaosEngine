@@ -69,42 +69,10 @@ void main()
 
     vec4 colour = texture(tex1, texCoord) * vec4(engineData[0][0], engineData[0][1], engineData[0][2], engineData[0][3]);
 
-
-	vec3 ambient = sceneData.ambientColor.xyz * sceneData.ambientColor.w;
-	vec3 norm = normalize(inNormal);
-	vec3 sunlightColour = sceneData.sunlightColor.xyz * sceneData.sunlightColor.w;
-	vec3 sunlightDir = normalize(sceneData.sunlightDirection.xyz);
-	float diffuse = max(dot(norm, sunlightDir), 0.0) * sceneData.sunlightDirection.w;
-	vec3 diffColour = diffuse * sunlightColour;
-	vec4 result = vec4((ambient + diffColour) * inColor, 1.0f);
-
-	for (int i = 0; i < sceneData.lightingData.x; i++)
-	{
-		if (lightingBuffer.lights[i].shaderFloatArray1[3][3] < 1.0f) continue;
-
-		LightingData light = lightingBuffer.lights[i];
-		vec3 lightPos = vec3(light.transform[3][0], light.transform[3][1], light.transform[3][2]);
-
-		if (inFragPos.z > lightPos.z) continue;
-
-		float dist = distance(inFragPos, lightPos);
-		float radius = light.shaderFloatArray1[1][0];
-
-		if (dist > radius) continue;
-
-		float attenuation = clamp(1.0 - dist * dist / (radius * radius), 0.0f, 1.0f);
-
-		attenuation *= attenuation;
-
-		vec3 lightColour = vec3(light.shaderFloatArray1[0][0], light.shaderFloatArray1[0][1], light.shaderFloatArray1[0][2]) * light.shaderFloatArray1[0][3];
-
-		result += vec4(lightColour.xyz * attenuation, 1.0f);
-	}
-
 	if (colour.a <= 0.0f)
 	{
 		discard;
 	}
 
-	outFragColor = vec4(colour * result);
+	outFragColor = vec4(colour);
 }

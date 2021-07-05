@@ -97,7 +97,6 @@ namespace Chaos
 	
 	void Level::OnFixedUpdate(float delta)
 	{
-		
 		QuadTree quadTree; // need to reconstruct each loop
 		Collider** colliders = (Collider**) malloc(MAX_NODES * sizeof(Collider*)); // need to allocate this on the heap, too much for stack
 		size_t collidableCount = 0;
@@ -144,9 +143,13 @@ namespace Chaos
 			if (!Nodes[node]->IsEnabled())
 				continue;
 			
-			if (!(Camera*)Nodes[node]
-				||!(Sprite*)Nodes[node]
-				||!(MeshRenderer*)Nodes[node])
+			if (!(Nodes[node]->Type == NodeType::CAMERA 
+				  ||Nodes[node]->Type == NodeType::SPRITE
+				  ||Nodes[node]->Type == NodeType::SUB_SPRITE
+				  ||Nodes[node]->Type == NodeType::UI_SPRITE
+				  ||Nodes[node]->Type == NodeType::MESH_RENDERER
+				  ||Nodes[node]->Type == NodeType::ANIMATOR
+				  ||Nodes[node]->Type == NodeType::POINT_LIGHT))
 				continue;
 			
 			if (Nodes[node]->DebugEnabled) 
@@ -154,6 +157,15 @@ namespace Chaos
 			
 			Nodes[node]->OnUpdate(delta);
 		}
+	}
+	
+	
+	void Level::Clear()
+	{
+		Application::Get().AddPostUpdateCallback([&](){
+													 delete s_instance;
+													 s_instance = nullptr;
+												 });
 	}
 	
 	
@@ -167,15 +179,34 @@ namespace Chaos
 			LOGCORE_ERROR("SAVE LEVEL: could not create output file!");
 		
 		
-		out.write((char*)&s_instance->NodeCount, sizeof(size_t));
+		out.write((char*)&s_instance->GraphicalData, sizeof(GPULevelData));
 		
+		size_t rootCount = 0;
+		
+		// have to get the total number of root nodes first, then save all them
 		for (int node = 0; node < s_instance->NodeCount; ++node)
 		{
-			Binary nodeBinary = s_instance->Nodes[node]->SaveToBinary();
-			size_t size = nodeBinary.Capacity();
-			out.write((char*)&size, sizeof(size_t));
-			out.write(nodeBinary.Data, size);
-			
+			// if they don't have a parent, it means they are a root node.
+			// ignore child nodes as each node will save all it's children
+			if (!s_instance->Nodes[node]->Parent)
+			{
+				++rootCount;
+			}
+		}
+		
+		out.write((char*)&rootCount, sizeof(size_t));
+		
+		// actually save them
+		for (int node = 0; node < s_instance->NodeCount; ++node)
+		{
+			if (!s_instance->Nodes[node]->Parent)
+			{
+				Binary nodeBinary = s_instance->Nodes[node]->SaveToBinary();
+				size_t nodeSize = nodeBinary.Capacity();
+				
+				out.write((char*)&nodeSize, sizeof(size_t));
+				out.write(nodeBinary.Data, nodeBinary.Capacity());
+			}
 		}
 		
 		out.close();
@@ -218,6 +249,10 @@ namespace Chaos
 		
 		s_instance = buffer;
 		
+		memcpy((void*)&buffer->GraphicalData, (void*)&rawData[location], sizeof(GPULevelData));
+		
+		location += sizeof(GPULevelData);
+		
 		size_t nodeCount;
 		
 		memcpy((void*)&nodeCount, (void*)&rawData[location], sizeof(size_t));
@@ -231,7 +266,6 @@ namespace Chaos
 			
 			char* nodeData = (char*)malloc(nodeSize);
 			memcpy((void*)nodeData, (void*)&rawData[location], nodeSize);
-			location += nodeSize;
 			
 			uint32_t nodeType;
 			// skip over the version number to get the type
@@ -239,6 +273,8 @@ namespace Chaos
 			
 			Node* spawnedNode = Node::Create(nodeType);
 			spawnedNode->LoadFromBinary(nodeData);
+			
+			location += nodeSize;
 			
 			free(nodeData);
 		}

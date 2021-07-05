@@ -21,6 +21,7 @@ layout(set = 0, binding = 1) uniform  SceneData{
 	vec4 ambientColor;
 	vec4 sunlightDirection; //w for sun power
 	vec4 sunlightColor;
+	vec4 lightingData;
 } sceneData;
 
 layout(set = 2, binding = 0) uniform sampler2D tex1;
@@ -38,6 +39,6 @@ layout(std140, set = 3, binding = 0) readonly buffer LightingBuffer
 
 void main()
 {	
-    vec4 colour = texture(tex1, inTexCoord);
+    vec4 colour = texture(tex1, inTexCoord) * vec4(inObjData.shaderFloatArray1[0][0], inObjData.shaderFloatArray1[0][1], inObjData.shaderFloatArray1[0][2], inObjData.shaderFloatArray1[0][3]);
 	outFragColor = colour;
 }

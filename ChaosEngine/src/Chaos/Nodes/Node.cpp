@@ -30,7 +30,7 @@ namespace Chaos
 			case NodeType::UI_SPRITE: return new UISprite();
 			case NodeType::BOX_COLLIDER_2D: return new BoxCollider2D();
 			case NodeType::CIRCLE_COLLIDER: return new CircleCollider();
-			case NodeType::POINT_LIGHT_2D: return new PointLight();
+			case NodeType::POINT_LIGHT: return new PointLight();
 			case NodeType::MESH_RENDERER: return new MeshRenderer();
 		}
 		
@@ -401,6 +401,10 @@ namespace Chaos
 		Binary enabled((void*)&Enabled, sizeof(Enabled));
 		finalDataSize += sizeof(Enabled);
 		
+		size_t numberOfChildren = Children.Size();
+		Binary childCount((void*)&numberOfChildren, sizeof(size_t));
+		finalDataSize += sizeof(size_t);
+		
 		// need to copy this data as once the Binary object leaves scope it'll take it with it.
 		Binary data(finalDataSize);
 		data.Write(version.Data, version.Capacity());
@@ -411,15 +415,46 @@ namespace Chaos
 		data.Write(transform.Data, transform.Capacity());
 		data.Write(globalTransform.Data, globalTransform.Capacity());
 		data.Write(enabled.Data, enabled.Capacity());
+		data.Write(childCount.Data, childCount.Capacity());
 		
-		return data;
+		size_t totalChildrenSize = 0;
+		
+		std::vector<Binary> childBinaries;
+		
+		for (size_t child = 0; child < Children.Size(); ++child)
+		{
+			Binary childBinary = Children[child]->SaveToBinary();
+			Binary finalChildBinary(childBinary.Capacity() + sizeof(size_t));
+			
+			size_t childSize = childBinary.Capacity();
+			
+			finalChildBinary.Write((void*)&childSize, sizeof(size_t));
+			finalChildBinary.Write(childBinary.Data, childBinary.Capacity());
+			
+			totalChildrenSize += finalChildBinary.Capacity();
+			childBinaries.push_back(finalChildBinary);
+		}
+		
+		Binary finalBinary(finalDataSize + totalChildrenSize);
+		
+		// write the total number of children so we know how much data to skip when we load
+		finalBinary.Write(data.Data, data.Capacity());
+		
+		for (int i = 0; i < childBinaries.size(); ++i)
+		{
+			finalBinary.Write(childBinaries[i].Data, childBinaries[i].Capacity());
+		}
+		
+		return finalBinary;
 	}
 	
 	
 	size_t Node::LoadFromBinary(char* data)
 	{
-		memcpy((void*)&m_nodeVersion, (void*)data, sizeof(uint32_t));
-		size_t location = sizeof(uint32_t);
+		size_t location = 0;
+		
+		memcpy((void*)&m_nodeVersion, (void*)&data[location], sizeof(uint32_t));
+		location += sizeof(uint32_t);
 		
 		switch (m_nodeVersion)
 		{
@@ -449,6 +484,28 @@ namespace Chaos
 				
 				memcpy((void*)&enabled, (void*)&data[location], sizeof(enabled));
 				location += sizeof(enabled);
+				
+				
+				size_t childCount;
+				memcpy((void*)&childCount, (void*)&data[location], sizeof(size_t));
+				location += sizeof(size_t);
+				
+				for (int i = 0; i < childCount; ++i)
+				{
+					size_t childSize;
+					memcpy((void*)&childSize, (void*)&data[location], sizeof(size_t));
+					location += sizeof(size_t);
+					
+					// memcpy the type without changing location so we know which kind of node to create.
+					uint32_t type;
+					memcpy((void*)&type, (void*)&data[location + sizeof(uint32_t)], sizeof(type));
+					
+					Node* child = Node::Create(type);
+					child->LoadFromBinary(&data[location]);
+					AddChild(child);
+					
+					location += childSize;
+				}
 				
 				// need to set enabled here rather than just loading the value into Enabled
 				// certain nodes override this, not calling set enabled causes issues on load
@@ -515,8 +572,6 @@ namespace Chaos
 	// NOTE: remember to free() when done with the data
 	Node** Node::GetAllChildren(size_t& size, bool recursive)
 	{
-		
-		PROFILED_FUNC();
 		size = 0;
 		Node** returnedNodes = (Node**)malloc(sizeof(Node*) * MAX_NODES);
 		

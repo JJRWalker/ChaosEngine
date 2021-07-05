@@ -48,11 +48,8 @@ namespace Chaos
 		
 		private:
 		bool m_running = true;
-#ifdef CHAOS_EDITOR
-		bool m_playing = false;
-#else
 		bool m_playing = true;
-#endif
+		
 		std::unique_ptr<Window> m_window;
 		std::unique_ptr<Renderer> m_renderer;
 		

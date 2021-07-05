@@ -52,7 +52,15 @@ namespace Chaos
 		PushOverlay(new ImGuiProfiler());
 		
 		//init time
-		Time::Init();		
+		Time::Init();
+		
+		// if we aren't expecting to edit. Start the game right away.
+		// TODO: add a function to load the designated start level here.
+#ifndef CHAOS_EDITOR
+		Play();
+#else
+		Time::SetTimeScale(0.0f);
+#endif
 	}
 	
 	Application::~Application()
@@ -81,11 +89,11 @@ namespace Chaos
 			{
 				float stepsToSimulate = Time::m_timeSinceLastFixedUpdate / Time::m_fixedDeltaTime;
 				
-				for(int i = 0; i < stepsToSimulate; ++i)
+				for(int i = 0; i < (int)stepsToSimulate; ++i)
 				{
 					for (Layer* layer : m_layerStack)
 					{
-						layer->OnFixedUpdate(Time::m_fixedDeltaTime);
+						layer->OnFixedUpdate(Time::m_unscaledFixedDeltaTime);
 					}
 					
 					
@@ -98,13 +106,10 @@ namespace Chaos
 				Time::m_timeSinceLastFixedUpdate = (stepsToSimulate - (int)stepsToSimulate) * Time::m_fixedDeltaTime;
 			}
 			
-			//NOTE: this should be done when changing the resolution
-			//m_mainCamera->SetAspectRatio(m_window->GetAspectRatio());
-			
 			
 			// itterate through layers
 			for (Layer* layer : m_layerStack)
-				layer->OnUpdate(Time::m_deltaTime);
+				layer->OnUpdate(Time::m_unscaledDeltaTime);
 			
 			if (RenderImGui)
 			{

@@ -13,7 +13,7 @@ namespace NodeType
 	const uint32_t UI_SPRITE         = 5;
 	const uint32_t BOX_COLLIDER_2D   = 6;
 	const uint32_t CIRCLE_COLLIDER   = 7;
-	const uint32_t POINT_LIGHT_2D    = 8;
+	const uint32_t POINT_LIGHT       = 8;
 	const uint32_t MESH_RENDERER     = 9;
 }
 

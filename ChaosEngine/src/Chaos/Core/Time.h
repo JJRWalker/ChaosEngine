@@ -28,6 +28,8 @@ namespace Chaos
 		inline static void SetTimeScale(float value) { m_timeScale = value; m_fixedDeltaTime = m_unscaledFixedDeltaTime * value; m_timeSinceLastFixedUpdate = 0.0f;}
 		inline static float GetTimeScale() { return m_timeScale; }
 		inline static void SetFixedDeltaTimestep(float value) { m_fixedDeltaTime = value; }
+		inline static float GetTimeSinceLastFixedUpdate() { return m_timeSinceLastFixedUpdate; }
+		
 		private:
 		static float m_deltaTime;
 		static float m_unscaledDeltaTime;

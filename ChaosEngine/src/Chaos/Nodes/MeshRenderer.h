@@ -12,6 +12,7 @@ namespace Chaos
 	{
 		public:
 		MeshRenderer();
+		~MeshRenderer();
 		
 		void OnUpdate(float delta) override;
 		

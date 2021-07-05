@@ -64,6 +64,65 @@ namespace Chaos
 	}
 	
 	
+	Binary Camera::SaveToBinary()
+	{
+		Binary baseSpriteBinary = Node::SaveToBinary();
+		
+		// capacity should also be the number of bytes in the binary
+		size_t finalDataSize = baseSpriteBinary.Capacity();
+		
+		Binary bounds((void*)&m_bounds.X, sizeof(float) * 4);
+		finalDataSize += sizeof(float) * 4;
+		
+		Binary aspect((void*)&m_aspectRatio, sizeof(float));
+		finalDataSize += sizeof(float);
+		
+		Binary projectionType((void*)&m_projectionType, sizeof(EProjectionType));
+		finalDataSize += sizeof(EProjectionType);
+		
+		Binary backgroundColour((void*)&BackgroundColour, sizeof(float) * 4);
+		finalDataSize += sizeof(float) * 4;
+		
+		Binary data(finalDataSize);
+		data.Write(baseSpriteBinary.Data, baseSpriteBinary.Capacity());
+		data.Write(bounds.Data, bounds.Capacity());
+		data.Write(aspect.Data, aspect.Capacity());
+		data.Write(projectionType.Data, projectionType.Capacity());
+		data.Write(backgroundColour.Data, backgroundColour.Capacity());
+		
+		return data;
+	}
+	
+	
+	size_t Camera::LoadFromBinary(char* data)
+	{
+		size_t location = Node::LoadFromBinary(data);
+		
+		switch (m_nodeVersion)
+		{
+			case NODE_VERSION_0:
+			{
+				memcpy((void*)&m_bounds, (void*)&data[location], sizeof(float) * 4);
+				location += sizeof(float) * 4;
+				
+				memcpy((void*)&m_aspectRatio, (void*)&data[location], sizeof(float));
+				location += sizeof(float);
+				
+				memcpy((void*)&m_projectionType, (void*)&data[location], sizeof(EProjectionType));
+				location += sizeof(EProjectionType);
+				
+				memcpy((void*)&BackgroundColour, (void*)&data[location], sizeof(float) * 4);
+				location += sizeof(float) * 4;
+				
+				return location;
+				
+			} break;
+		}
+		
+		return location;
+	}
+	
+	
 	void Camera::OnShowEditorDetails(Texture* editorTexture, void* editorImageHandle)
 	{
 		int selectedProjectionType = (int)m_projectionType;

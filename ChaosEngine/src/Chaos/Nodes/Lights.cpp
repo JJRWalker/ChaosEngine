@@ -11,7 +11,7 @@ namespace Chaos
 	PointLight::PointLight()
 	{
 		Name = "Point-light";
-		Type = NodeType::POINT_LIGHT_2D;
+		Type = NodeType::POINT_LIGHT;
 		
 		p_lightObject = Application::Get().GetRenderer().AddLight(GetWorldTransform());
 		

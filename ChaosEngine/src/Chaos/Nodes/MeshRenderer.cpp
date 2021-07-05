@@ -25,6 +25,14 @@ namespace Chaos
 		memcpy((void*)&pRenderObject->ShaderData.DataArray1, (void*)&colour, sizeof(float) * 4);
 	}
 	
+	
+	MeshRenderer::~MeshRenderer()
+	{
+		Application::Get().GetRenderer().RemoveRenderable(pRenderObject);
+		delete pRenderObject;
+	}
+	
+	
 	void MeshRenderer::OnUpdate(float delta)
 	{
 		memcpy((void*)&pRenderObject->ShaderData.Transform[0], (void*)&GetWorldTransform()[0], sizeof(float) * 16);
