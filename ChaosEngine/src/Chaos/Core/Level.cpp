@@ -171,6 +171,7 @@ namespace Chaos
 	
 	void Level::Save(const char* filePath)
 	{
+		s_instance = Get();
 		size_t finalBinarySize = 0;
 		
 		std::fstream out(filePath, std::ios::out | std::ios::binary);

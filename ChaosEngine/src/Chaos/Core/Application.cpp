@@ -185,7 +185,8 @@ namespace Chaos
 		if (e.GetEventType() == EventType::WindowResize)
 		{
 			m_renderer->OnWindowResized((WindowResizeEvent&)e);
-			Level::Get()->MainCamera->SetAspectRatio(m_window->GetAspectRatio());
+			if (Level::Get()->MainCamera)
+				Level::Get()->MainCamera->SetAspectRatio(m_window->GetAspectRatio());
 		}
 		
 		for (auto it = m_layerStack.end(); it != m_layerStack.begin();)
