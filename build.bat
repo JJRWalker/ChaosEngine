@@ -11,14 +11,33 @@ set start=%time%
 
 cl -Zi -c ../../Game/game.cpp /I ../../Game/src  /I ../../chaosengine/src /I ../../chaosengine/vendor /I ../../chaosengine/vendor/spdlog/include /I ../../chaosengine/vendor/imgui /I ../../chaosengine/vendor/glfw/include /D "CHAOS_PLATFORM_WINDOWS" /D "CHAOS_RELEASE" /EHsc  /MT /std:c++17
 
+if errorLevel 1 echo GAME BUILD FAILED
+if errorLevel 1 EXIT
+if errorLevel 0 echo GAME BUILD SUCCESSFUL
+
 popd
 
 mkdir "build/bin"
 pushd "build/bin"
 
-link ..\int\game.obj Chaos.lib ..\..\ChaosEngine\vendor\GLFW\glfw.lib ..\..\ChaosEngine\vendor\Vulkan\Lib\vulkan-1.lib ..\..\ChaosEngine\vendor\ImGUI\imgui.lib gdi32.lib shell32.lib msvcrtd.lib /NODEFAULTLIB:LIBCMTD /NODEFAULTLIB:LIBCMT
+link ..\int\game.obj Chaos.lib ..\..\ChaosEngine\vendor\GLFW\glfw.lib ..\..\ChaosEngine\vendor\Vulkan\Lib\vulkan-1.lib ..\..\ChaosEngine\vendor\ImGUI\imgui.lib gdi32.lib shell32.lib msvcrtd.lib ole32.lib /NODEFAULTLIB:LIBCMTD /NODEFAULTLIB:LIBCMT
+
+if errorLevel 1 echo GAME LINKING FAILED
+if errorLevel 1 EXIT
+if errorLevel 0 echo GAME LINKING SUCCESSFUL
 
 popd
+
+:: compile shaders
+cd Game/Assets/Shaders
+
+call compileshaders.bat
+
+if errorLevel 1 echo SHADER COMPILATION FAILED
+if errorLevel 1 EXIT
+if errorLevel 0 echo SHADER COMPILATION SUCCESSFUL
+
+cd ../../..
 
 mkdir "build/bin/Assets"
 
@@ -43,7 +62,4 @@ if 1%ms% lss 100 set ms=0%ms%
 set /a totalsecs = %hours%*3600 + %mins%*60 + %secs%
 echo build took %hours%:%mins%:%secs%.%ms% (%totalsecs%.%ms%s total)
 
-pushd "build/bin"
 
-:: start  game.exe
-popd

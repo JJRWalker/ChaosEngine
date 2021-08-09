@@ -1,34 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Components">
-      <UniqueIdentifier>{6B7DD516-5735-1764-C03C-F0BFAC13B254}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Entities">
-      <UniqueIdentifier>{8AA33B53-7670-965E-9F89-84068BB5CBEC}</UniqueIdentifier>
+    <Filter Include="src">
+      <UniqueIdentifier>{2DAB880B-99B4-887C-2230-9F7C8E38947C}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Components\PlayerController.h">
-      <Filter>Components</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Entities\Player.h">
-      <Filter>Entities</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Components\PlayerAnimatorController.h" />
-    <ClInclude Include="src\AnimationStates\PlayerAnimation_IdleState.h" />
-    <ClInclude Include="src\AnimationStates\PlayerAnimation_RunningState.h" />
+    <ClInclude Include="TypeRegistry.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Components\PlayerController.cpp">
-      <Filter>Components</Filter>
+    <ClCompile Include="TypeRegistry.cpp" />
+    <ClCompile Include="src\GameApp.cpp">
+      <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\Entities\Player.cpp">
-      <Filter>Entities</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GameApp.cpp" />
-    <ClCompile Include="src\Components\PlayerAnimatorController.cpp" />
-    <ClCompile Include="src\AnimationStates\PlayerAnimation_IdleState.cpp" />
-    <ClCompile Include="src\AnimationStates\PlayerAnimation_RunningState.cpp" />
   </ItemGroup>
 </Project>

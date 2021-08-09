@@ -110,8 +110,9 @@ project "Game"
     files
     {
         "%{prj.name}/src/**.h",
-        "%{prj.name}/src/**.cpp"
-
+        "%{prj.name}/src/**.cpp",
+        "%{prj.name}/TypeRegistry.h",
+        "%{prj.name}/TypeRegistry.cpp"
     }
 
     includedirs

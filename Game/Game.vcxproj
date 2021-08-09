@@ -135,6 +135,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="TypeRegistry.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="TypeRegistry.cpp" />
     <ClCompile Include="src\GameApp.cpp" />
   </ItemGroup>
   <ItemGroup>

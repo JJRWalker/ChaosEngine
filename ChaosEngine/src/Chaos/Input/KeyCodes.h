@@ -3,6 +3,9 @@
 
 namespace Chaos
 {
+	const uint16_t KEYCODE_GAMEPAD_OFFSET = 349;
+	const uint16_t KEYCODE_GAMEPAD_AXIS_OFFSET = 364;
+	
 	typedef enum class KeyCode : uint16_t
 	{
 		//mouse codes
@@ -152,7 +155,28 @@ namespace Chaos
 		RightControl = 345,
 		RightAlt = 346,
 		RightSuper = 347,
-		Menu = 348
+		Menu = 348,
+		Gamepad_Button_A = 349,
+		Gamepad_Button_B = 350,
+		Gamepad_Button_X = 351,
+		Gamepad_Button_Y = 352,
+		Gamepad_Button_LeftBumper = 353,
+		Gamepad_Button_RightBumper = 354,
+		Gamepad_Button_Back = 355,
+		Gamepad_Button_Start = 356,
+		Gamepad_Button_Guide = 357,
+		Gamepad_Button_LeftThumb = 358,
+		Gamepad_Button_RightThumb = 359,
+		Gamepad_Button_Dpad_Up = 360,
+		Gamepad_Button_Dpad_Right = 361,
+		Gamepad_Button_Dpad_Down = 362,
+		Gamepad_Button_Dpad_Left = 363,
+		Gamepad_Axis_Left_X = 364,
+		Gamepad_Axis_Left_Y = 365,
+		Gamepad_Axis_Right_X = 366,
+		Gamepad_Axis_Right_Y = 367,
+		Gamepad_Axis_LeftTrigger = 368,
+		Gamepad_Axis_RightTrigger = 369
 	} Key;
 	
 	inline std::ostream& operator<<(std::ostream& os, KeyCode keyCode)
@@ -172,10 +196,10 @@ namespace Chaos
 #define MOUSE_BUTTON_5      ::Chaos::Key::Button5
 #define MOUSE_BUTTON_6      ::Chaos::Key::Button6
 #define MOUSE_BUTTON_7      ::Chaos::Key::Button7
-#define MOUSE_BUTTON_LAST   ::Chaos::Key::ButtonLast
 #define MOUSE_BUTTON_LEFT   ::Chaos::Key::ButtonLeft
 #define MOUSE_BUTTON_RIGHT  ::Chaos::Key::ButtonRight
 #define MOUSE_BUTTON_MIDDLE ::Chaos::Key::ButtonMiddle
+#define MOUSE_BUTTON_LAST   ::Chaos::Key::Button7
 
 //Keycode defines
 // From glfw3.h
@@ -304,3 +328,79 @@ namespace Chaos
 #define KEY_RIGHT_ALT       ::Chaos::Key::RightAlt
 #define KEY_RIGHT_SUPER     ::Chaos::Key::RightSuper
 #define KEY_MENU            ::Chaos::Key::Menu
+
+
+/*! @} */
+
+/*! @defgroup joysticks Joysticks
+ *  @brief Joystick IDs.
+ *
+ *  See [joystick input](@ref joystick) for how these are used.
+ *
+ *  @ingroup input
+ *  @{ */
+#define JOYSTICK_1             0
+#define JOYSTICK_2             1
+#define JOYSTICK_3             2
+#define JOYSTICK_4             3
+#define JOYSTICK_5             4
+#define JOYSTICK_6             5
+#define JOYSTICK_7             6
+#define JOYSTICK_8             7
+#define JOYSTICK_9             8
+#define JOYSTICK_10            9
+#define JOYSTICK_11            10
+#define JOYSTICK_12            11
+#define JOYSTICK_13            12
+#define JOYSTICK_14            13
+#define JOYSTICK_15            14
+#define JOYSTICK_16            15
+#define JOYSTICK_LAST          GLFW_JOYSTICK_16
+/*! @} */
+
+/*! @defgroup gamepad_buttons Gamepad buttons
+ *  @brief Gamepad buttons.
+ *
+ *  See @ref gamepad for how these are used.
+ *
+ *  @ingroup input
+ *  @{ */
+#define GAMEPAD_BUTTON_A               ::Chaos::Key::Gamepad_Button_A
+#define GAMEPAD_BUTTON_B               ::Chaos::Key::Gamepad_Button_B
+#define GAMEPAD_BUTTON_X               ::Chaos::Key::Gamepad_Button_X
+#define GAMEPAD_BUTTON_Y               ::Chaos::Key::Gamepad_Button_Y
+#define GAMEPAD_BUTTON_LEFT_BUMPER     ::Chaos::Key::Gamepad_Button_LeftBumper
+#define GAMEPAD_BUTTON_RIGHT_BUMPER    ::Chaos::Key::Gamepad_Button_RightBumper
+#define GAMEPAD_BUTTON_BACK            ::Chaos::Key::Gamepad_Button_Back
+#define GAMEPAD_BUTTON_START           ::Chaos::Key::Gamepad_Button_Start
+#define GAMEPAD_BUTTON_GUIDE           ::Chaos::Key::Gamepad_Button_Guide
+#define GAMEPAD_BUTTON_LEFT_THUMB      ::Chaos::Key::Gamepad_Button_LeftThumb
+#define GAMEPAD_BUTTON_RIGHT_THUMB     ::Chaos::Key::Gamepad_Button_RightThumb
+#define GAMEPAD_BUTTON_DPAD_UP         ::Chaos::Key::Gamepad_Button_Dpad_Up
+#define GAMEPAD_BUTTON_DPAD_RIGHT      ::Chaos::Key::Gamepad_Button_Dpad_Right
+#define GAMEPAD_BUTTON_DPAD_DOWN       ::Chaos::Key::Gamepad_Button_Dpad_Down
+#define GAMEPAD_BUTTON_DPAD_LEFT       ::Chaos::Key::Gamepad_Button_Dpad_Left
+#define GAMEPAD_BUTTON_LAST            GAMEPAD_BUTTON_DPAD_LEFT
+
+#define GAMEPAD_BUTTON_CROSS       GAMEPAD_BUTTON_A
+#define GAMEPAD_BUTTON_CIRCLE      GAMEPAD_BUTTON_B
+#define GAMEPAD_BUTTON_SQUARE      GAMEPAD_BUTTON_X
+#define GAMEPAD_BUTTON_TRIANGLE    GAMEPAD_BUTTON_Y
+/*! @} */
+
+/*! @defgroup gamepad_axes Gamepad axes
+ *  @brief Gamepad axes.
+ *
+ *  See @ref gamepad for how these are used.
+ *
+ *  @ingroup input
+ *  @{ */
+#define GAMEPAD_AXIS_LEFT_X        ::Chaos::Key::Gamepad_Axis_Left_X
+#define GAMEPAD_AXIS_LEFT_Y        ::Chaos::Key::Gamepad_Axis_Left_Y
+#define GAMEPAD_AXIS_RIGHT_X       ::Chaos::Key::Gamepad_Axis_Right_X
+#define GAMEPAD_AXIS_RIGHT_Y       ::Chaos::Key::Gamepad_Axis_Right_Y
+#define GAMEPAD_AXIS_LEFT_TRIGGER  ::Chaos::Key::Gamepad_Axis_LeftTrigger
+#define GAMEPAD_AXIS_RIGHT_TRIGGER ::Chaos::Key::Gamepad_Axis_RightTrigger
+#define GAMEPAD_AXIS_LAST         GAMEPAD_AXIS_RIGHT_TRIGGER
+
+#define KEYCODE_LAST              GAMEPAD_AXIS_RIGHT_TRIGGER

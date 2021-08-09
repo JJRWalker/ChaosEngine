@@ -10,7 +10,7 @@ namespace Chaos
 		Vec2 aMax = Vec2(aOrigin.X + aBounds.X, aOrigin.Y + aBounds.Y);
 		Vec2 bMin = Vec2(bOrigin.X - bBounds.X, bOrigin.Y - bBounds.Y);
 		Vec2 bMax = Vec2(bOrigin.X + bBounds.X, bOrigin.Y + bBounds.Y);
-
+		
 		return !(aMax.X < bMin.X || aMin.X > bMax.X || aMin.Y > bMax.Y || aMax.Y < bMin.Y);
 	}
 	
@@ -30,15 +30,44 @@ namespace Chaos
 	
 	bool Collisions::LineBoxIntersection(Vec2 lineStart, Vec2 lineEnd, Vec2 boxOrigin, Vec2 boxBounds)
 	{
-		LOGCORE_WARN("WARN: Collisions.cpp LineBoxIntersection is not implemented yet!");
-		return false;
+		Vec2 topLeft = Vec2(boxOrigin.X - boxBounds.X, boxOrigin.Y + boxBounds.Y);
+		Vec2 topRight = Vec2(boxOrigin.X + boxBounds.X, boxOrigin.Y + boxBounds.Y);
+		Vec2 bottomLeft = Vec2(boxOrigin.X - boxBounds.X, boxOrigin.Y - boxBounds.Y);
+		Vec2 bottomRight = Vec2(boxOrigin.X + boxBounds.X, boxOrigin.Y - boxBounds.Y);
+		
+		float lineCross = lineEnd.X * lineStart.Y - lineStart.X * lineEnd.Y;
+		float yDist = lineEnd.Y - lineStart.Y;
+		float xDist = lineStart.X - lineEnd.X;
+		
+		float topLeftSide = yDist * topLeft.X + xDist * topLeft.Y + lineCross;
+		float topRightSide = yDist * topRight.X + xDist * topRight.Y + lineCross;
+		float bottomLeftSide = yDist * bottomLeft.X + xDist * bottomLeft.Y + lineCross;
+		float bottomRightSide = yDist * bottomRight.X + xDist * bottomRight.Y + lineCross;
+		
+		if ((topLeftSide < 0 && topRightSide < 0 && bottomLeftSide < 0 && bottomRightSide < 0) 
+			||(topLeftSide > 0 && topRightSide > 0 && bottomLeftSide > 0 && bottomRightSide > 0))
+			return false;
+		
+		
+		return true;
 	}
 	
 	
 	bool Collisions::LineCircleIntersection(Vec2 lineStart, Vec2 lineEnd, Vec2 circleOrigin, float radius)
 	{
-		LOGCORE_WARN("WARN: Collisions.cpp LineCircleIntersection is not implemented yet!");
-		return false;
+		Vec2 lineVec = (lineEnd - lineStart);
+		Vec2 basisVector = (lineEnd - lineStart).Normalised();
+		
+		Vec2 lineStartToCircle = circleOrigin - lineStart;
+		
+		float linePercent = (lineStartToCircle / basisVector).Magnitude() / lineVec.Magnitude();
+		
+		if (linePercent < 0.f || linePercent > 1.0f)
+			return false;
+		
+		Vec2 projectedPoint = lineStart + lineVec * linePercent;
+		
+		return (circleOrigin - projectedPoint).Magnitude() <= radius;
 	}
 	
 	
@@ -48,11 +77,11 @@ namespace Chaos
 		// gets the closest point inside the box and then checks if it's further away than the radius
 		float closestX = std::clamp(circleOrigin.X, boxOrigin.X - boxBounds.X, boxOrigin.X + boxBounds.X);
 		float closestY = std::clamp(circleOrigin.Y, boxOrigin.Y - boxBounds.Y, boxOrigin.Y + boxBounds.Y);
-
+		
 		Vec2 distance = Vec2(circleOrigin.X - closestX, circleOrigin.Y - closestY);
-
+		
 		float distSq = (distance.X * distance.X) + (distance.Y * distance.Y);
-
+		
 		return distSq < (radius* radius);
 	}
 	

@@ -7,21 +7,61 @@
 // debug
 #include "Chaos/Core/Application.h"
 #include "Chaos/Renderer/Renderer.h"
+#include "Chaos/Debug/ImGuiLayer.h"
 
-const float DEBUG_LINE_WEIGHT = 0.02f;
+const float DEBUG_LINE_WEIGHT = 0.025f;
+const float DEBUG_RENDER_ORDER = 1.0f;
 
 namespace Chaos
 {
-	Collider::Collider(bool child) : Node(child), Type(ColliderType::NONE)
+	Collider::Collider() : ColliderType(EColliderType::NONE)
 	{
 		Name = "Collider";
+		
+		memset((void*)Overlaps, 0, sizeof(Overlaps));
+	}
+	
+	
+	Collider::~Collider()
+	{
+		for (int i = 0; i < OverlapsSize; ++i)
+		{
+			Overlaps[i]->RemoveOverlap(this);
+		}
+	}
+	
+	
+	void Collider::OnShowEditorDetails(Texture* editorTexture, void* editorImageHandle)
+	{
+		int objectMask = 0;
+		int collisionMask = 0;
+		
+		const char* updateTypeOptions[] = { "Per Frame", "Fixed Step" };
+		int selectedUpdateType = (int)UpdateType;
+		
+		if (ImGui::DragInt("Object Mask", &(int)ObjectMask))
+		{
+			
+		}
+		
+		if (ImGui::DragInt("Collsion Mask", &(int)CollisionMask))
+		{
+		}
+		
+		
+		if (ImGui::Combo("Update Type", &selectedUpdateType, updateTypeOptions, IM_ARRAYSIZE(updateTypeOptions)))
+		{
+			UpdateType = (EPhysicsUpdateType)selectedUpdateType;
+		}
+		
+		ImGui::Checkbox("Trigger", &Trigger);
+		
+		ImGui::Separator();
 	}
 	
 	
 	void Collider::CheckCollisionExit()
 	{
-		Level* level = Level::Get();
-		Node* root = level->Nodes[ID][0];
 		// colliders leaving
 		for (size_t i = 0; i < OverlapsSize; ++i)
 		{
@@ -38,14 +78,6 @@ namespace Chaos
 			
 			if (!foundHitNodeInOverlaps)
 			{
-				for (size_t j = 0; j < root->ChildCount; ++j)
-				{
-					if (Overlaps[i]->Trigger)
-						level->Nodes[ID][j]->TriggerExit(this, Overlaps[i]);
-					else
-						level->Nodes[ID][j]->ColliderExit(this, Overlaps[i]);
-				}
-				
 				RemoveOverlap(Overlaps[i]);
 				--i;
 			}
@@ -54,10 +86,15 @@ namespace Chaos
 	
 	
 	// inserts single node into overlaps, calls enter and stay methods for nodes.
-	void Chaos::Collider::InsertOverlap(Collider* collider)
+	void Collider::InsertOverlap(Collider* collider)
 	{
 		Level* level = Level::Get();
-		Node* root = level->Nodes[ID][0];
+		Node* root = level->Nodes[ID];
+		
+		while (root->Parent)
+		{
+			root = root->Parent;
+		}
 		
 		bool alreadyInOvelaps = false;
 		for (size_t j = 0; j < OverlapsSize; ++j)
@@ -66,74 +103,90 @@ namespace Chaos
 			{
 				alreadyInOvelaps = true;
 				
-				for (size_t j = 0; j < root->ChildCount; ++j)
-				{
-					if (collider->Trigger)
-						level->Nodes[ID][j]->TriggerStay(this, collider);
-					else
-						level->Nodes[ID][j]->ColliderStay(this, collider);
-				}
+				//size_t childCount;
+				//Node** allChildren = root->GetAllChildren(childCount);
+				
+				if (collider->Trigger)
+					root->TriggerStay(this, collider);
+				else
+					root->ColliderStay(this, collider);
+				
+				//for (size_t j = 0; j < childCount; ++j)
+				//{
+				//if (collider->Trigger)
+				//allChildren[j]->TriggerStay(this, collider);
+				//else
+				//allChildren[j]->ColliderStay(this, collider);
+				//}
+				
+				//free(allChildren);
 			}
 		}
 		if (!alreadyInOvelaps)
 		{
-			for (size_t j = 0; j < root->ChildCount; ++j)
+			size_t childCount;
+			Node** allChildren = root->GetAllChildren(childCount, true);
+			
+			if (collider->Trigger)
+				root->TriggerEnter(this, collider);
+			else
+				root->ColliderEnter(this, collider);
+			
+			for (size_t j = 0; j < childCount; ++j)
 			{
 				if (collider->Trigger)
-					level->Nodes[ID][j]->TriggerEnter(this, collider);
+					allChildren[j]->TriggerEnter(this, collider);
 				else
-					level->Nodes[ID][j]->ColliderEnter(this, collider);
+					allChildren[j]->ColliderEnter(this, collider);
 			}
 			Overlaps[OverlapsSize] = collider;
 			++OverlapsSize;
+			
+			free(allChildren);
 		}
 	}
+	
 	
 	
 	// inserts nodes into overlaps, calls enter and stay methods for nodes.
 	void Collider::InsertOverlaps(Collider** colliders, size_t size)
 	{
-		Level* level = Level::Get();
-		Node* root = level->Nodes[ID][0];
-		
-		// determine which nodes were just hit, which have stayed, and which have left
-		// collider stay and enter
-		for (size_t i = 0; i < size; ++i)
+		for (int i = 0; i < size; ++i)
 		{
-			bool alreadyInOvelaps = false;
-			for (size_t j = 0; j < OverlapsSize; ++j)
-			{
-				if (colliders[i] == Overlaps[j])
-				{
-					alreadyInOvelaps = true;
-					
-					for (size_t j = 0; j < root->ChildCount; ++j)
-					{
-						if (colliders[i]->Trigger)
-							level->Nodes[ID][j]->TriggerStay(this, colliders[i]);
-						else
-							level->Nodes[ID][j]->ColliderStay(this, colliders[i]);
-					}
-				}
-			}
-			if (!alreadyInOvelaps)
-			{
-				for (size_t j = 0; j < root->ChildCount; ++j)
-				{
-					if (colliders[i]->Trigger)
-						level->Nodes[ID][j]->TriggerEnter(this, colliders[i]);
-					else
-						level->Nodes[ID][j]->ColliderEnter(this, colliders[i]);
-				}
-				Overlaps[OverlapsSize] = colliders[i];
-				++OverlapsSize;
-			}
+			InsertOverlap(colliders[i]);
 		}
 	}
 	
 	
 	void Chaos::Collider::RemoveOverlap(Collider* collider)
 	{
+		Level* level = Level::Get();
+		Node* root = level->Nodes[ID];
+		
+		while (root->Parent)
+		{
+			root = root->Parent;
+		}
+		
+		size_t childCount;
+		Node** allChildren = root->GetAllChildren(childCount, true);
+		
+		if (collider->Trigger)
+			root->TriggerExit(this, collider);
+		else
+			root->ColliderExit(this, collider);
+		
+		for (size_t j = 0; j < childCount; ++j)
+		{
+			if (collider->Trigger)
+				allChildren[j]->TriggerExit(this, collider);
+			else
+				allChildren[j]->ColliderExit(this, collider);
+		}
+		
+		free(allChildren);
+		
+		
 		for (size_t i = 0; i < OverlapsSize; ++i)
 		{
 			if (Overlaps[i] == collider)
@@ -174,36 +227,45 @@ namespace Chaos
 		
 		OverlapsSize = 0;
 	}
-
-
+	
+	
 	void Chaos::Collider::InsertHitNode(Collider* collider)
 	{
 		m_hitNodes[m_hitNodesSize] = collider;
 		++m_hitNodesSize;
 	}
-
 	
-	BoxCollider2D::BoxCollider2D(bool child) : Collider(child)
+	
+	BoxCollider2D::BoxCollider2D()
 	{
 		Name = "BoxCollider2D";
-		Type = ColliderType::BOX2D;
+		ColliderType = EColliderType::BOX2D;
+		Type = NodeType::BOX_COLLIDER_2D;
 	}
 	
-	void BoxCollider2D::Debug()
+	
+	void BoxCollider2D::OnShowEditorDetails(Texture* editorTexture, void* editorImageHandle)
+	{
+		Collider::OnShowEditorDetails(editorTexture, editorImageHandle);
+		ImGui::DragFloat2("Bounds", &Bounds.X, 0.01f);
+	}
+	
+	
+	void BoxCollider2D::OnDebug()
 	{
 		Renderer& renderer = Application::Get().GetRenderer();
 		
-		Vec2 pos = GetPosition();
+		Vec2 pos = GetWorldPosition();
 		
 		Vec2 topLeft = Vec2(pos.X - Bounds.X, pos.Y + Bounds.Y);
 		Vec2 topRight = Vec2(pos.X + Bounds.X , pos.Y + Bounds.Y );
 		Vec2 bottomRight = Vec2(pos.X + Bounds.X , pos.Y - Bounds.Y );
 		Vec2 bottomLeft = Vec2(pos.X - Bounds.X , pos.Y - Bounds.Y );
 		
-		renderer.DrawLine(topLeft, topRight, Vec4(0.0f, 1.0f, 0.0f, 0.8f), DEBUG_LINE_WEIGHT, 1000.f);
-		renderer.DrawLine(topRight, bottomRight, Vec4(0.0f, 1.0f, 0.0f, 0.8f), DEBUG_LINE_WEIGHT, 1000.f);
-		renderer.DrawLine(bottomRight, bottomLeft, Vec4(0.0f, 1.0f, 0.0f, 0.8f), DEBUG_LINE_WEIGHT, 1000.f);
-		renderer.DrawLine(bottomLeft, topLeft, Vec4(0.0f, 1.0f, 0.0f, 0.8f), DEBUG_LINE_WEIGHT, 1000.f);
+		renderer.DrawLine(topLeft, topRight, Vec4(0.0f, 1.0f, 0.0f, 0.8f), DEBUG_LINE_WEIGHT, DEBUG_RENDER_ORDER);
+		renderer.DrawLine(topRight, bottomRight, Vec4(0.0f, 1.0f, 0.0f, 0.8f), DEBUG_LINE_WEIGHT, DEBUG_RENDER_ORDER);
+		renderer.DrawLine(bottomRight, bottomLeft, Vec4(0.0f, 1.0f, 0.0f, 0.8f), DEBUG_LINE_WEIGHT, DEBUG_RENDER_ORDER);
+		renderer.DrawLine(bottomLeft, topLeft, Vec4(0.0f, 1.0f, 0.0f, 0.8f), DEBUG_LINE_WEIGHT, DEBUG_RENDER_ORDER);
 	}
 	
 	
@@ -222,7 +284,7 @@ namespace Chaos
 		
 		Collider** nodesInRange = (Collider**)malloc(MAX_COLLIDER_OVERLAPS * sizeof(Collider*));
 		size_t nodesInRangesize = 0;
-		tree->QueryRange(GetPosition(), Bounds, nodesInRange, nodesInRangesize);
+		tree->QueryRange(GetWorldPosition(), Bounds, nodesInRange, nodesInRangesize);
 		
 		for (size_t i = 0; i < nodesInRangesize; ++i)
 		{
@@ -245,18 +307,27 @@ namespace Chaos
 	}
 	
 	
-	CircleCollider::CircleCollider(bool child) : Collider(child)
+	CircleCollider::CircleCollider()
 	{
 		Name = "CircleCollider";
-		Type = ColliderType::CIRCLE;
+		ColliderType = EColliderType::CIRCLE;
+		Type = NodeType::CIRCLE_COLLIDER;
 	}
 	
-	void CircleCollider::Debug()
+	
+	void CircleCollider::OnShowEditorDetails(Texture* editorTexture, void* editorImageHandle)
+	{
+		Collider::OnShowEditorDetails(editorTexture, editorImageHandle);
+		ImGui::DragFloat("Radius", &Radius, 0.01f);
+	}
+	
+	
+	void CircleCollider::OnDebug()
 	{
 		// not really optimal, but these are only for debugging so it shouldn't matter too much
 		Renderer& renderer = Application::Get().GetRenderer();
 		
-		Vec2 pos = GetPosition();
+		Vec2 pos = GetWorldPosition();
 		int steps = 60;
 		
 		float stepIncrement = (2 * PI) / steps;
@@ -266,7 +337,7 @@ namespace Chaos
 			Vec2 start = Vec2(pos.X + Radius * cos(i * stepIncrement), pos.Y + Radius * sin(i * stepIncrement));
 			Vec2 end = Vec2(pos.X + Radius * cos((i + 1) * stepIncrement), pos.Y + Radius * sin((i + 1) * stepIncrement));
 			
-			renderer.DrawLine(start, end, Vec4(0.3f, 1.0f, 0.3f, 0.8f), DEBUG_LINE_WEIGHT, 1000.f);
+			renderer.DrawLine(start, end, Vec4(0.3f, 1.0f, 0.3f, 0.8f), DEBUG_LINE_WEIGHT, DEBUG_RENDER_ORDER);
 		}
 	}
 	
@@ -286,7 +357,7 @@ namespace Chaos
 		
 		Collider** nodesInRange = (Collider**)malloc(MAX_COLLIDER_OVERLAPS * sizeof(Collider*));
 		size_t nodesInRangesize = 0;
-		tree->QueryRadius(GetPosition(), Radius, nodesInRange, nodesInRangesize);
+		tree->QueryRadius(GetWorldPosition(), Radius, nodesInRange, nodesInRangesize);
 		
 		for (size_t i = 0; i < nodesInRangesize; ++i)
 		{
@@ -298,7 +369,7 @@ namespace Chaos
 		}
 		
 		InsertOverlaps(m_hitNodes, m_hitNodesSize);
-
+		
 		for (size_t i = 0; i < m_hitNodesSize; ++i)
 		{
 			m_hitNodes[i]->InsertOverlap(this);

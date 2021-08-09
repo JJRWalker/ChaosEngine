@@ -1,46 +1,60 @@
-#pragma once
+/* date = April 22nd 2021 8:45 am */
+
+#ifndef _VULKAN_TEXTURE_H
+#define _VULKAN_TEXTURE_H
+
 #include "Chaos/Renderer/Texture.h"
-#include "Vulkan/Include/vulkan/vulkan.h"
+#include "VulkanTypes.h"
 
 namespace Chaos
 {
 	class VulkanRenderer;
 	class VulkanTexture : public Texture
 	{
-		
 		public:
 		VulkanTexture();
+		// use to create the defualt blank texture (should be done once)
+		VulkanTexture(VulkanRenderer* owningRenderer);
+		// assumes the current renderer on the application object is the owning one
 		VulkanTexture(std::string filePath);
+		VulkanTexture(VulkanRenderer* owningRenderer, std::string filePath);
 		
-		virtual ~VulkanTexture() { Unload(); }
+		VulkanTexture(VulkanTexture& copy);
+		VulkanTexture(VulkanTexture&& moved) noexcept;
 		
-		//Must explicitly unload textures, note if renderer doesn't exist on load or unload, it will fail to be dealocated or alocated
-		virtual void Load (char* filePath) override;
-		virtual void Load (std::string filePath) override;
-		virtual void Unload() override;
+		VulkanTexture operator=(VulkanTexture&& moved) noexcept;
+		
+		
+		void Load(std::string filePath) override;
 		void LoadBlank();
+		void Unload() override;
 		
-		virtual std::string GetFilePath() const override {return m_filePath;}
+		std::string GetFilePath() const override;
 		
-		virtual uint32_t GetWidth() const override { return m_width; }
-		virtual uint32_t GetHeight() const override { return m_height; }
-		virtual uint32_t GetSize() const override { return m_size; }
+		uint32_t GetWidth() const override;
+		uint32_t GetHeight() const override;
+		uint32_t GetSize() const override;
 		
-		VkImage& GetImage() { return m_image; }
-		VkDeviceMemory& GetImageMemory() { return m_imageMemory; }
-		VkImageView& GetImageView() { return m_imageView; }
+		private:
+		void CreateImage(AllocatedBuffer& stagingBuffer, VkExtent3D imageExtent, VkFormat imageFormat);
 		
-		private: 
+		public:
+		AllocatedImage Image;
+		VkImageView ImageView;
+		VkDescriptorSet TextureSet = VK_NULL_HANDLE;
+		bool LoadProtection = false;
+		
+		private:
+		//only have getters that return value for the following, we don't want these to be changed outside of Load()
 		std::string m_filePath;
 		uint32_t m_width = 0;
 		uint32_t m_height = 0;
-		uint32_t m_size;
-		VkImage m_image;
-		VkDeviceMemory m_imageMemory;
-		VkImageView m_imageView;
-		//reference to the renderer we created the texture on
-		VulkanRenderer& m_renderer;
-		//has this texture been loaded to
-		bool m_loaded = false; 
+		uint32_t m_size = 0;
+		
+		VulkanRenderer* p_owningRenderer = nullptr;
+		
+		bool m_loaded = false;
 	};
 }
+
+#endif //_VULKAN_TEXTURE_H

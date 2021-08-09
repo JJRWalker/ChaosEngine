@@ -21,6 +21,7 @@ namespace Chaos
 			m_consoleKeyReleased = false;
 			
 			m_showConsole ? m_showConsole = false : m_showConsole = true;
+			m_showConsole ? Input::ButtonsEnabled = false : Input::ButtonsEnabled = true;
 			
 			m_resetFocus = true;
 		}
@@ -31,12 +32,11 @@ namespace Chaos
 		
 		if (m_showConsole)
 		{
-			
 			ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus;
 			
 			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.01f, 0.01f, 0.01f, 0.5f));
 			ImGui::SetNextWindowPos(ImVec2(0,0));
-			ImGui::SetNextWindowSize(ImVec2(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight() / 3));
+			ImGui::SetNextWindowSize(ImVec2((float)Application::Get().GetWindow().GetWidth(), (float)Application::Get().GetWindow().GetHeight() / 3));
 			ImGui::Begin("Console", NULL, window_flags);
 			ImGui::PopStyleColor();
 			
@@ -72,24 +72,26 @@ namespace Chaos
 				Console::ClearHistory();
 			}
 			
-			bool show = true;
-			
-			//ImGui::ShowDemoWindow(&show);
-			
 			ImGui::End();
 		}
 		
 	}
 	
-	//Currently just returns 0, text input reuqired a callback function but we don't really need that complex a system
+	//Currently just returns 0, text input required a callback function but we don't really need that complex a system
 	int ImGuiConsole::ConsoleEditTextCallbackStub(ImGuiInputTextCallbackData* data)
 	{
-		//ImGuiConsole* console = (ImGuiConsole*)data->UserData;
-		return 0;
+		ImGuiConsole* console = (ImGuiConsole*)data->UserData;
+		return console->ConsoleTextEditCallback(data);
 	}
 	
 	int ImGuiConsole::ConsoleTextEditCallback(ImGuiInputTextCallbackData* data)
 	{
+		if (data->EventFlag | ImGuiKey_UpArrow)
+		{
+			data->DeleteChars(0, data->BufTextLen);
+			m_historySelection = (m_historySelection - 1) % Console::ConsoleHistory.size();
+			data->InsertChars(0, Console::ConsoleHistory[m_historySelection]);
+		}
 		return 0;
 	}
 	

@@ -1,27 +1,106 @@
 #include "chaospch.h"
 #include "VulkanTexture.h"
-#include "Platform/Vulkan/VulkanRenderer.h"
+#include "VulkanRenderer.h"
+#include "VulkanInitalizers.h"
+
 #include "Chaos/Core/Application.h"
+#include "Chaos/Serialisation/FileUtils.h"
+#define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 #include <filesystem>
 
+const uint32_t BLANK_PIXEL_VALUE = 0xffffffff;
+
 namespace Chaos
 {
-	//Defualt constructor, create a texture containing 1 pixel of white, doesn't call load as we don't want to trigger warnings as blank texture was probably intended
-	VulkanTexture::VulkanTexture() :  m_renderer(dynamic_cast<VulkanRenderer&>(Application::Get().GetRenderer()))
+	VulkanTexture::VulkanTexture()
 	{
+		p_owningRenderer = (VulkanRenderer*)&Application::Get().GetRenderer();
 		LoadBlank();
 	}
 	
-	//Constructor Calls load function
-	VulkanTexture::VulkanTexture(std::string filePath) : m_filePath(filePath), m_renderer(dynamic_cast<VulkanRenderer&>(Application::Get().GetRenderer()))
+	
+	VulkanTexture::VulkanTexture(VulkanRenderer* owningRenderer)
 	{
+		p_owningRenderer = owningRenderer;
+		LoadBlank();
+	}
+	
+	
+	VulkanTexture::VulkanTexture(std::string filePath)
+	{
+		Name = FileUtils::GetFileName(filePath, false);
+		p_owningRenderer = (VulkanRenderer*)&Application::Get().GetRenderer();
 		Load(filePath);
 	}
 	
-	//tries to load the texture specified, if a texture is already loaded, it will call unload first
-	void VulkanTexture::Load(char* filePath)
+	
+	VulkanTexture::VulkanTexture(VulkanRenderer* owningRenderer, std::string filePath)
 	{
+		Name = FileUtils::GetFileName(filePath, false);
+		p_owningRenderer = owningRenderer;
+		Load(filePath);
+	}
+	
+	
+	VulkanTexture::VulkanTexture(VulkanTexture& copy)
+	{
+		Image = copy.Image;
+		ImageView = copy.ImageView;
+		LoadProtection = copy.LoadProtection;
+		
+		m_filePath = copy.m_filePath;
+		m_width = copy.m_width;
+		m_height = copy.m_height;
+		m_size = copy.m_size;
+		p_owningRenderer = copy.p_owningRenderer;
+		m_loaded = copy.m_loaded;
+	}
+	
+	
+	VulkanTexture::VulkanTexture(VulkanTexture&& moved) noexcept
+	{
+		Image = moved.Image;
+		ImageView = moved.ImageView;
+		LoadProtection = moved.LoadProtection;
+		
+		m_filePath = moved.m_filePath;
+		m_width = moved.m_width;
+		m_height = moved.m_height;
+		m_size = moved.m_size;
+		p_owningRenderer = moved.p_owningRenderer;
+		m_loaded = moved.m_loaded;
+	}
+	
+	
+	VulkanTexture VulkanTexture::operator=(VulkanTexture&& moved) noexcept
+	{
+		Name = moved.Name;
+		Image = moved.Image;
+		ImageView = moved.ImageView;
+		TextureSet = moved.TextureSet;
+		LoadProtection = moved.LoadProtection;
+		
+		m_filePath = moved.m_filePath;
+		m_width = moved.m_width;
+		m_height = moved.m_height;
+		m_size = moved.m_size;
+		p_owningRenderer = moved.p_owningRenderer;
+		m_loaded = moved.m_loaded;
+		
+		return *this;
+	}
+	
+	
+	//tries to load the texture specified, if a texture is already loaded, it will call unload first
+	void VulkanTexture::Load(std::string filePath)
+	{
+		if (LoadProtection)
+		{
+			LOGCORE_WARN("TEXTURE: trying to load into a load protected texture, are you trying to load into the blank texture?");
+			return;
+		}
+		
 		//if the file doesn't exist, either maintain the current texture or load a blank if the texture hasn't been loaded yet
 		if (!std::filesystem::exists(filePath))
 		{
@@ -34,187 +113,237 @@ namespace Chaos
 			LOGCORE_WARN("TEXTURE: could not open file '{0}' maintaining current texture", filePath);
 			return;
 		}
-		Unload();
-		
-		
+		if (m_loaded)
+			Unload();
 		//if exists then set new file path and load from there
 		m_filePath = filePath;
 		
-		void* pixelData;
 		int texWidth, texHeight, texChannels;
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingBufferMemory;
 		
 		//loading in pixed data and setting width and height params based on the width and height returned from the load function
 		stbi_uc* pixels = stbi_load(m_filePath.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+		if (!pixels)
+		{
+			LOGCORE_WARN("TEXTURE: failed to load texture {0}", filePath);
+		}
+		
 		m_size = texWidth * texHeight * 4;
 		m_width = texWidth;
 		m_height = texHeight;
 		
-		//allocating memory for the pixel data to be transfered into the image
-		pixelData = malloc(static_cast<size_t>(m_size));
+		VkFormat imageFormat = VK_FORMAT_R8G8B8A8_SRGB;
 		
-		//if we didn't have any pixels somehow, then this is a big problem at this stage, log error!
-		if (!pixels) {
-			LOGCORE_ERROR("TEXTURE: failed to load texture image!");
-		}
+		AllocatedBuffer stagingBuffer = p_owningRenderer->CreateBuffer(m_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 		
-		//copy pixel data from the image loaded into the void pointer 
+		// copy memory into staging buffer
+		void* pixelData;
+		vmaMapMemory(p_owningRenderer->m_allocator, stagingBuffer.Allocation, &pixelData);
+		
 		memcpy(pixelData, pixels, static_cast<size_t>(m_size));
 		
+		vmaUnmapMemory(p_owningRenderer->m_allocator, stagingBuffer.Allocation);
 		
-		//Setting up buffers and device sizes for transfer
-		VkDeviceSize imageSize = m_size;
+		VkExtent3D imageExtent;
+		imageExtent.width = static_cast<uint32_t>(texWidth);
+		imageExtent.height = static_cast<uint32_t>(texHeight);
+		imageExtent.depth = 1;
 		
-		m_renderer.CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+		// create image with staging buffer
+		CreateImage(stagingBuffer, imageExtent, imageFormat);
 		
-		//copying pixel data into vulkan mapped memory
-		void* data;
-		vkMapMemory(m_renderer.m_device, stagingBufferMemory, 0, imageSize, 0, &data);
-		memcpy(data, pixelData, static_cast<size_t>(imageSize));
-		vkUnmapMemory(m_renderer.m_device, stagingBufferMemory);
+		VkDescriptorSetAllocateInfo allocInfo = {};
+		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.pNext = nullptr;
+		allocInfo.descriptorPool = p_owningRenderer->m_descriptorPool;
+		allocInfo.descriptorSetCount = 1;
+		allocInfo.pSetLayouts = &p_owningRenderer->m_singleTextureSetLayout;
 		
-		//initialise the image and image memory
-		m_renderer.CreateImage(m_width, m_height, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_image, m_imageMemory);
 		
-		//transition and copy image to a presentable format
-		m_renderer.TransitionImageLayout(m_image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		m_renderer.CopyBufferToImage(stagingBuffer, m_image, static_cast<uint32_t>(m_width), static_cast<uint32_t>(m_height));
-		m_renderer.TransitionImageLayout(m_image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		VkResult result = vkAllocateDescriptorSets(p_owningRenderer->m_device, &allocInfo, &TextureSet);
 		
-		m_imageView = m_renderer.CreateImageView(m_image, VK_FORMAT_R8G8B8A8_SRGB);
+		if (result != VK_SUCCESS)
+		{
+			LOGCORE_ERROR("VULKAN: TEXTURE: Cannot allocate descriptor: {0}", result);
+		}
 		
-		//clean up
-		vkDestroyBuffer(m_renderer.m_device, stagingBuffer, nullptr);
-		vkFreeMemory(m_renderer.m_device, stagingBufferMemory, nullptr);
+		VkDescriptorImageInfo imageBufferInfo;
+		imageBufferInfo.sampler = p_owningRenderer->m_nearestNeighbourSampler;
+		imageBufferInfo.imageView = ImageView;
+		imageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		
-		free(pixelData);
+		VkWriteDescriptorSet textureSet = VkInit::WriteDescriptorImage(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, TextureSet, &imageBufferInfo, 0);
+		
+		vkUpdateDescriptorSets(p_owningRenderer->m_device, 1, &textureSet, 0, nullptr);
+		
+		delete pixels;
 		
 		m_loaded = true;
 	}
 	
-	void VulkanTexture::Load(std::string filePath)
-	{
-		//if the file doesn't exist, either maintain the current texture or load a blank if the texture hasn't been loaded yet
-		if (!std::filesystem::exists(filePath))
-		{
-			if (!m_loaded)
-			{
-				LOGCORE_WARN("TEXTURE: could not open file '{0}' Loading blank", filePath);
-				LoadBlank();
-				return;
-			}
-			LOGCORE_WARN("TEXTURE: could not open file '{0}' maintaining current texture", filePath);
-			return;
-		}
-		Unload();
-		
-		
-		//if exists then set new file path and load from there
-		m_filePath = filePath;
-		
-		void* pixelData;
-		int texWidth, texHeight, texChannels;
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingBufferMemory;
-		
-		//loading in pixed data and setting width and height params based on the width and height returned from the load function
-		stbi_uc* pixels = stbi_load(m_filePath.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-		m_size = texWidth * texHeight * 4;
-		m_width = texWidth;
-		m_height = texHeight;
-		
-		//allocating memory for the pixel data to be transfered into the image
-		pixelData = malloc(static_cast<size_t>(m_size));
-		
-		//if we didn't have any pixels somehow, then this is a big problem at this stage, log error!
-		if (!pixels) {
-			LOGCORE_ERROR("TEXTURE: failed to load texture image!");
-		}
-		
-		//copy pixel data from the image loaded into the void pointer 
-		memcpy(pixelData, pixels, static_cast<size_t>(m_size));
-		
-		
-		//Setting up buffers and device sizes for transfer
-		VkDeviceSize imageSize = m_size;
-		
-		m_renderer.CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
-		
-		//copying pixel data into vulkan mapped memory
-		void* data;
-		vkMapMemory(m_renderer.m_device, stagingBufferMemory, 0, imageSize, 0, &data);
-		memcpy(data, pixelData, static_cast<size_t>(imageSize));
-		vkUnmapMemory(m_renderer.m_device, stagingBufferMemory);
-		
-		//initialise the image and image memory
-		m_renderer.CreateImage(m_width, m_height, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_image, m_imageMemory);
-		
-		//transition and copy image to a presentable format
-		m_renderer.TransitionImageLayout(m_image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		m_renderer.CopyBufferToImage(stagingBuffer, m_image, static_cast<uint32_t>(m_width), static_cast<uint32_t>(m_height));
-		m_renderer.TransitionImageLayout(m_image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-		
-		m_imageView = m_renderer.CreateImageView(m_image, VK_FORMAT_R8G8B8A8_SRGB);
-		
-		//clean up
-		vkDestroyBuffer(m_renderer.m_device, stagingBuffer, nullptr);
-		vkFreeMemory(m_renderer.m_device, stagingBufferMemory, nullptr);
-		
-		free(pixelData);
-		
-		m_loaded = true;
-	}
-	void VulkanTexture::Unload()
-	{
-		if (m_loaded)
-		{
-			vkDestroyImageView(m_renderer.m_device, m_imageView, nullptr);
-			vkDestroyImage(m_renderer.m_device, m_image, nullptr);
-			vkFreeMemory(m_renderer.m_device, m_imageMemory, nullptr);
-		}
-		m_loaded = false;
-	}
 	
 	void VulkanTexture::LoadBlank()
 	{
-		void* pixelData;
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingBufferMemory;
+		if (m_loaded)
+			Unload();
 		
+		Name = "blank";
 		m_filePath = "";
-		//0xffffffff (1 pixel of white image data) 
-		uint32_t blankPixelData = 0xffffffff;
+		
 		m_size = 4;
 		m_width = 1;
 		m_height = 1;
-		pixelData = malloc(static_cast<size_t>(m_size));
-		memcpy(pixelData, &blankPixelData, m_size);
 		
-		VkDeviceSize imageSize = m_size;
+		VkFormat imageFormat = VK_FORMAT_R8G8B8A8_SRGB;
 		
-		m_renderer.CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+		AllocatedBuffer stagingBuffer = p_owningRenderer->CreateBuffer(m_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 		
-		void* data;
-		vkMapMemory(m_renderer.m_device, stagingBufferMemory, 0, imageSize, 0, &data);
-		memcpy(data, pixelData, static_cast<size_t>(imageSize));
-		vkUnmapMemory(m_renderer.m_device, stagingBufferMemory);
+		void* pixelData;
+		vmaMapMemory(p_owningRenderer->m_allocator, stagingBuffer.Allocation, &pixelData);
+		
+		memcpy(pixelData, &BLANK_PIXEL_VALUE, static_cast<size_t>(m_size));
+		
+		vmaUnmapMemory(p_owningRenderer->m_allocator, stagingBuffer.Allocation);
+		
+		VkExtent3D imageExtent;
+		imageExtent.width = static_cast<uint32_t>(m_width);
+		imageExtent.height = static_cast<uint32_t>(m_height);
+		imageExtent.depth = 1;
+		
+		CreateImage(stagingBuffer, imageExtent, imageFormat);
+		
+		VkDescriptorSetAllocateInfo allocInfo = {};
+		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.pNext = nullptr;
+		allocInfo.descriptorPool = p_owningRenderer->m_descriptorPool;
+		allocInfo.descriptorSetCount = 1;
+		allocInfo.pSetLayouts = &p_owningRenderer->m_singleTextureSetLayout;
 		
 		
-		m_renderer.CreateImage(m_width, m_height, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_image, m_imageMemory);
+		VkResult result = vkAllocateDescriptorSets(p_owningRenderer->m_device, &allocInfo, &TextureSet);
 		
-		m_renderer.TransitionImageLayout(m_image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		m_renderer.CopyBufferToImage(stagingBuffer, m_image, static_cast<uint32_t>(m_width), static_cast<uint32_t>(m_height));
-		m_renderer.TransitionImageLayout(m_image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		if (result != VK_SUCCESS)
+		{
+			LOGCORE_ERROR("VULKAN: TEXTURE (BLANK): Cannot allocate descriptor: {0}", result);
+		}
 		
-		vkDestroyBuffer(m_renderer.m_device, stagingBuffer, nullptr);
-		vkFreeMemory(m_renderer.m_device, stagingBufferMemory, nullptr);
+		VkDescriptorImageInfo imageBufferInfo;
+		imageBufferInfo.sampler = p_owningRenderer->m_nearestNeighbourSampler;
+		imageBufferInfo.imageView = ImageView;
+		imageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		
-		m_imageView = m_renderer.CreateImageView(m_image, VK_FORMAT_R8G8B8A8_SRGB);
+		VkWriteDescriptorSet textureSet = VkInit::WriteDescriptorImage(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, TextureSet, &imageBufferInfo, 0);
 		
-		free(pixelData);
+		vkUpdateDescriptorSets(p_owningRenderer->m_device, 1, &textureSet, 0, nullptr);
 		
 		m_loaded = true;
 	}
 	
+	
+	void VulkanTexture::Unload()
+	{
+		m_size = 0;
+		m_width = 0;
+		m_height = 0;
+		vmaDestroyImage(p_owningRenderer->m_allocator, Image.Image, Image.Allocation);
+		vkDestroyImageView(p_owningRenderer->m_device, ImageView, nullptr);
+		vkFreeDescriptorSets(p_owningRenderer->m_device, p_owningRenderer->m_descriptorPool, 1, &TextureSet);
+		
+		m_loaded = false;
+	}
+	
+	
+	std::string VulkanTexture::GetFilePath() const
+	{
+		return m_filePath;
+	}
+	
+	
+	uint32_t VulkanTexture::GetWidth() const
+	{
+		return m_width;
+	}
+	
+	
+	uint32_t VulkanTexture::GetHeight() const
+	{
+		return m_height;
+	}
+	
+	
+	uint32_t VulkanTexture::GetSize() const
+	{
+		return m_size;
+	}
+	
+	
+	void VulkanTexture::CreateImage(AllocatedBuffer& stagingBuffer, VkExtent3D imageExtent, VkFormat imageFormat)
+	{
+		VkImageCreateInfo dimageInfo = VkInit::ImageCreateInfo(imageFormat, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, imageExtent);
+		
+		AllocatedImage newImage;
+		
+		VmaAllocationCreateInfo dimgAllocInfo = {};
+		dimgAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+		
+		vmaCreateImage(p_owningRenderer->m_allocator, &dimageInfo, &dimgAllocInfo, &newImage.Image, &newImage.Allocation, nullptr);
+		
+		p_owningRenderer->ImmediateSubmit([&](VkCommandBuffer cmd)
+										  {
+											  VkImageSubresourceRange range;
+											  range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+											  range.baseMipLevel = 0;
+											  range.levelCount = 1;
+											  range.baseArrayLayer = 0;
+											  range.layerCount = 1;
+											  
+											  VkImageMemoryBarrier imageBarrierToTransfer = {};
+											  imageBarrierToTransfer.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+											  
+											  imageBarrierToTransfer.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+											  imageBarrierToTransfer.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+											  imageBarrierToTransfer.image = newImage.Image;
+											  imageBarrierToTransfer.subresourceRange = range;
+											  
+											  imageBarrierToTransfer.srcAccessMask = 0;
+											  imageBarrierToTransfer.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+											  
+											  vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageBarrierToTransfer);
+											  
+											  VkBufferImageCopy copyRegion = {};
+											  copyRegion.bufferOffset = 0;
+											  copyRegion.bufferRowLength = 0;
+											  copyRegion.bufferImageHeight = 0;
+											  
+											  copyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+											  copyRegion.imageSubresource.mipLevel = 0;
+											  copyRegion.imageSubresource.baseArrayLayer = 0;
+											  copyRegion.imageSubresource.layerCount = 1;
+											  copyRegion.imageExtent = imageExtent;
+											  
+											  vkCmdCopyBufferToImage(cmd, stagingBuffer.Buffer, newImage.Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
+											  
+											  VkImageMemoryBarrier imageBarrierToReadable = imageBarrierToTransfer;
+											  imageBarrierToReadable.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+											  imageBarrierToReadable.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+											  
+											  imageBarrierToReadable.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+											  imageBarrierToReadable.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+											  
+											  vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageBarrierToReadable);
+										  });
+		
+		
+		vmaDestroyBuffer(p_owningRenderer->m_allocator, stagingBuffer.Buffer, stagingBuffer.Allocation);
+		
+		Image = newImage;
+		
+		VkImageViewCreateInfo imageInfo = VkInit::ImageViewCreateInfo(VK_FORMAT_R8G8B8A8_SRGB, Image.Image, VK_IMAGE_ASPECT_COLOR_BIT);
+		vkCreateImageView(p_owningRenderer->m_device, &imageInfo, nullptr, &ImageView);
+		
+		p_owningRenderer->MainDeletionQueue.push_function([&]()
+														  {
+															  if (m_loaded)
+																  Unload();
+														  });
+	}
 }

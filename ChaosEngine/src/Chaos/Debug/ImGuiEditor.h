@@ -8,6 +8,9 @@
 
 namespace Chaos
 {
+	const Vec2 DETAILS_WINDOW_SIZE = Vec2(300,400);
+	const Vec2 DETAILS_WINDOW_PADDING = Vec2(50,80);
+	
 	class Node;
 	class EditorCameraController;
 	
@@ -20,21 +23,35 @@ namespace Chaos
 		
 		void ShowEditor();
 		void ShowDetails();
+		void ShowLevelSettings();
 		void UpdateSelectedEntity();
 		
-		private:
-		bool IsSelected(Node* entity);
+		void MoveCamera(float delta);
+		void DrawSelectedWidget();
 		
 		private:
+		bool CreateTreeNode(Node* node, ImGuiTreeNodeFlags nodeFlags);
+		void OnNodeSelected(Node* node);
+		bool IsSelected(Node* node);
+		
+		private:
+		bool m_showDemo = false;
+		
+		// if editor is defined, start the editor in the open state
+#ifdef CHAOS_EDITOR
+		bool m_showEditor = true;
+#else
 		bool m_showEditor = false;
+#endif
+		bool m_showLevelSettings = false;
 		bool m_clicked = false;
 		bool m_dragging = false;
 		
+		float m_timeScaleBeforePause = 1.0f;
+		float m_cameraSpeed = 10.0f;
+		
 		char* m_filePathInput = "";
 		std::string m_filePath = "";
-		
-		const Vec2 DETAILS_WINDOW_SIZE = Vec2(300,400);
-		const Vec2 DETAILS_WINDOW_PADDING = Vec2(50,80);
 		
 		Vec2 m_draggingEntPositionOffset = Vec2::Zero();
 		std::vector<Node*> m_selectedEntities;
@@ -42,7 +59,7 @@ namespace Chaos
 		ImVec2 m_editorWindowPos;
 		ImVec2 m_editorWindowSize;
 		
-		Ref<Texture> m_selectedEntTexture = Texture::Create("");
+		Texture* m_selectedEntTexture = Texture::CreateBlank("Debug_SelectedEnt");
 		ImTextureID m_selectedEntTextureID;
 	};
 }

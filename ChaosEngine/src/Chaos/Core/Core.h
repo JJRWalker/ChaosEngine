@@ -26,6 +26,8 @@
 
 #define HASBIT(x, y) (x & y)
 
+#define CLAMP(n, min, max) (n <= min ? min : n <= max ? n : max)
+
 namespace Chaos
 {
 	const int MAX_NODES = 100000;

@@ -27,8 +27,6 @@ namespace Chaos
 			
 			float duration = (end - start) * 0.001f;
 			
-			//LOGCORE_TRACE("{0}: {1}ms", mName, duration);	//TO BE CHANGED TO CALLBACK FUNC TO BE TAKEN IN BY CONSTRUCTOR
-			
 			std::unordered_map<const char*, float>::iterator it = s_times.find(mName);
 			
 			if (it == s_times.end())

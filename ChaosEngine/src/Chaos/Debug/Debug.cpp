@@ -4,7 +4,7 @@
 #include "Chaos/Core/Application.h"
 #include "Chaos/Renderer/Renderer.h"
 
-const float DEBUG_RENDER_DEPTH = 1000.f;
+const float DEBUG_RENDER_DEPTH = 1.0f;
 
 namespace Chaos
 {

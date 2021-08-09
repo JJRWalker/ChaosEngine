@@ -18,19 +18,8 @@ namespace Chaos
 		virtual void OnUpdate(float deltaTime) override {};
 		virtual void OnImGuiUpdate() override;
 		
-		void Begin();
-		void End();
-		private:
-		void VulkanInit();
-		
-		private:
-		VkDescriptorPool m_descriptorPool;
-		VkDescriptorSetLayout m_descriptorSetLayout;
-		VkRenderPass m_renderpass;
-		VkCommandPool m_commandPool;
-		std::vector<VkCommandBuffer> m_commandBuffers;
-		std::vector<VkFramebuffer> m_frameBuffers;
-		VkClearValue m_clear;
+		static void Begin();
+		static void End();
 		
 		static bool s_ImGuiInited;
 	};

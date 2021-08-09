@@ -33,7 +33,10 @@ namespace Chaos
 		bool Insert(Collider* node);
 		Collider* QueryRange(Vec2 centre, Vec2 bounds, Collider* foundNodes[MAX_NODES], size_t& insert);
 		Collider* QueryRadius(Vec2 centre, float radius, Collider* foundNodes[MAX_NODES], size_t& insert);
-
+		Collider* QueryLine(Vec2 start, Vec2 end, Collider* foundNodes[MAX_NODES], size_t& insert);
+		
+		size_t Size();
+		
 		void Debug();
 		
 		private:

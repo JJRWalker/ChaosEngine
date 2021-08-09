@@ -15,6 +15,7 @@ namespace Chaos
 		
 		virtual void OnImGuiUpdate() override;
 		
+		int m_historySelection = 0;
 		private:
 		static int ConsoleEditTextCallbackStub(ImGuiInputTextCallbackData* data);
 		int ConsoleTextEditCallback(ImGuiInputTextCallbackData* data);
@@ -24,7 +25,7 @@ namespace Chaos
 		bool m_consoleKeyReleased = true;
 		bool m_autoScroll = true;
 		bool m_resetFocus = true;
-		
+
 		char m_inputBuffer[256];
 	};
 }

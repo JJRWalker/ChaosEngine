@@ -1,322 +1,272 @@
-#pragma once
+/* date = April 22nd 2021 8:39 am */
+
+#ifndef _VULKAN_RENDERER_H
+#define _VULKAN_RENDERER_H
+
+#include "VulkanTypes.h"
 #include "Chaos/Renderer/Renderer.h"
-#include <Vulkan/Include/vulkan/vulkan.h>
+#include "Chaos/DataTypes/Vec4.h"
+#include "Chaos/DataTypes/ChaoticArray.h"
+#include "Chaos/DataTypes/Array.h"
 
-//Ideally I'd like to avoid including GLM here but I don't have a mat4 data type that has the functionality of GLM's
-#define GLM_FORCE_RADIANS
-#include <GLM/glm/glm.hpp>
-#include <array>
+#include "VulkanMesh.h"
+#include "VulkanMaterial.h"
+#include "VulkanTexture.h"
 
-#include "Chaos/DataTypes/Vec3.h"
+#include <functional>
+#include <deque>
+#include <unordered_map>
+
+#include "glm.hpp"
+#include "GLM/glm/gtx/transform.hpp"
 
 namespace Chaos
 {
-	class VulkanTexture;
-	class Vec2;
-	class Vec4;
-	
-	struct Quad
+	class Window;
+	class Camera;
+	struct DeletionQueue
 	{
-		Vec3 Position = {0,0,0};
-		Vec2 Scale = {1,1};
-		Vec2 Rotation = {0, 0};
-		Vec4 Colour = {1,1,1,1};
-		Ref<Texture> tex;
-		Ref<SubTexture> subTex;
-		float tilingFactor = 1;
-		float Transform[4][4];
+		std::deque<std::function<void()>> Deletors;
 		
-		//we sort quads based on their z position. This z position works as a render queue position
-		bool operator < (const Quad& other) const
+		void push_function(std::function<void()>&& function)
 		{
-			return Position.Z < other.Position.Z;
-		}
-	};
-	
-	struct VulkanVertex {
-		Vec3 pos;
-		Vec4 color;
-		Vec2 texCoord;
-		float texIndex;
-		
-		static VkVertexInputBindingDescription GetBindingDescriptions() {
-			VkVertexInputBindingDescription bindingDescription = {};
-			bindingDescription.binding = 0;
-			bindingDescription.stride = sizeof(VulkanVertex);
-			bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-			
-			return bindingDescription;
+			Deletors.push_back(function);
 		}
 		
-		static std::array<VkVertexInputAttributeDescription, 4> GetAttributeDescriptions() {
-			std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions = {};
-			
-			attributeDescriptions[0].binding = 0;
-			attributeDescriptions[0].location = 0;
-			attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-			attributeDescriptions[0].offset = offsetof(VulkanVertex, pos);
-			
-			attributeDescriptions[1].binding = 0;
-			attributeDescriptions[1].location = 1;
-			attributeDescriptions[1].format = VK_FORMAT_R32G32B32A32_SFLOAT;
-			attributeDescriptions[1].offset = offsetof(VulkanVertex, color);
-			
-			attributeDescriptions[2].binding = 0;
-			attributeDescriptions[2].location = 2;
-			attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-			attributeDescriptions[2].offset = offsetof(VulkanVertex, texCoord);
-			
-			attributeDescriptions[3].binding = 0;
-			attributeDescriptions[3].location = 3;
-			attributeDescriptions[3].format = VK_FORMAT_R32_SFLOAT;
-			attributeDescriptions[3].offset = offsetof(VulkanVertex, texIndex);
-			
-			
-			
-			return attributeDescriptions;
-		}
-	};
-	
-	enum class BufferType {	Static, Dynamic};
-	
-	struct Buffer
-	{
-		VkBuffer VertexBuffer;
-		VkDeviceMemory VertexBufferMemory;
-		VkBuffer IndexBuffer;
-		VkDeviceMemory IndexBufferMemory;
-		uint64_t VertexCount = 0;
-		uint64_t IndexCount = 0;
-		uint16_t HighestInd = 0;
-		BufferType Type;
-		std::vector<Ref<VulkanTexture>> TexturesToBind;
-		size_t DescriptorIndex = 0;
-		size_t TexturesLoaded = 0;
-	};
-	
-	struct UniformBufferObject {
-		alignas(16) glm::mat4 model;
-		alignas(16) glm::mat4 view;
-		alignas(16) glm::mat4 proj;
-	};
-	
-	struct QueueFamilyIndices {
-		
-		std::optional<uint32_t> graphicsFamily;
-		std::optional<uint32_t> presentFamily;
-		
-		bool isComplete()
+		void flush()
 		{
-			return graphicsFamily.has_value() && presentFamily.has_value();
+			for (auto it = Deletors.rbegin(); it != Deletors.rend(); ++it)
+			{
+				(*it)();
+			}
+			Deletors.clear();
 		}
 	};
 	
-	struct SwapChainSupportDetails
+	class PipelineBuilder
 	{
-		VkSurfaceCapabilitiesKHR Capabilities;
-		std::vector<VkSurfaceFormatKHR> Formats;
-		std::vector<VkPresentModeKHR> PresentModes;
+		public:
+		VkPipeline BuildPipeline(VkDevice device, VkRenderPass pass);
+		
+		std::vector<VkPipelineShaderStageCreateInfo> ShaderStages;
+		VkPipelineVertexInputStateCreateInfo VertexInputInfo;
+		VkPipelineInputAssemblyStateCreateInfo InputAssembly;
+		VkViewport Viewport;
+		VkRect2D Scissor;
+		VkPipelineRasterizationStateCreateInfo Rasterizer;
+		VkPipelineColorBlendAttachmentState ColourBlendAttachment;
+		VkPipelineMultisampleStateCreateInfo Multisampling;
+		VkPipelineLayout PipelineLayout;
+		VkPipelineDepthStencilStateCreateInfo DepthStencil;
 	};
+	
+	
+	struct GPUCameraData
+	{
+		glm::mat4 view;
+		glm::mat4 projection;
+		glm::mat4 viewProj;
+	};
+	
+	
+	struct FrameData
+	{
+		VkSemaphore PresentSemaphore, RenderSemaphore;
+		VkFence RenderFence;
+		
+		VkCommandPool CommandPool;
+		VkCommandBuffer MainCommandBuffer;
+		
+		AllocatedBuffer CameraBuffer;
+		AllocatedBuffer LightingBuffer;
+		VkDescriptorSet LightingDescriptor;
+		AllocatedBuffer ObjectBuffer;
+		VkDescriptorSet ObjectDescriptor;
+		
+		VkDescriptorSet GlobalDescriptor;
+	};
+	
+	
+	struct VulkanUploadContext
+	{
+		VkFence UploadFence;
+		VkCommandPool CommandPool;
+	};
+	
+	
+	constexpr unsigned int FRAME_OVERLAP = 2;
+	const unsigned int MAX_OBJECTS = 100000;
+	const unsigned int MAX_LIGHTS = 100;
+	const size_t MAX_DESCRIPTOR_SETS = 1000;
 	
 	class VulkanRenderer : public Renderer
 	{
-		friend class ImGuiLayer;
 		friend class VulkanTexture;
+		friend class VulkanMaterial;
+		friend class ImGuiEditor;
 		
 		public:
-		VulkanRenderer();
+		VulkanRenderer(Window* window);
 		~VulkanRenderer();
 		
-		virtual void DrawQuad(Vec3& position, Vec2& scale, Ref<Texture> texture) override;
-		virtual void DrawQuad(Vec3& position, Vec2& scale, Vec4& colour, Ref<Texture> texture) override;
-		virtual void DrawQuad(Vec3& position, Vec2& scale, Vec4& colour, Ref<Texture> texture, float tilingFactor) override;
-		virtual void DrawQuad(Vec3& position, Vec2& scale, Ref<Texture> texture, float tilingFactor) override;
-		virtual void DrawQuad(Vec3& position, Vec2& scale, Ref<SubTexture> subTexture) override;
-		//with rotation
-		virtual void DrawQuad(Vec3& position, Vec2& scale, Vec2& rotation, Ref<Texture> texture) override;
-		virtual void DrawQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<Texture> texture) override;
-		virtual void DrawQuad(float transform[4][4], Vec4& colour, Ref<Texture> texture);
-		virtual void DrawQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<Texture> texture, float tilingFactor) override;
-		virtual void DrawQuad(Vec3& position, Vec2& scale, Vec2& rotation, Ref<SubTexture> subTexture) override;
-		virtual void DrawQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<SubTexture> subTtexture) override;
+		// Renderer interface
+		RenderObject* AddQuad(float transform[16], Material* mat) override;
+		RenderObject* AddRenderable(RenderObject* toAdd) override;
+		void RemoveRenderable(RenderObject* toRemove) override;
 		
-		virtual void DrawLine(Vec2& startPoint, Vec2& endPoint, Vec4& colour, float weight, float renderOrder) override;
+		LightingObjectData* AddLight(float transform[16]) override;
+		void RemoveLight(LightingObjectData* light) override;
 		
-		//ui
-		virtual void DrawScreenSpaceQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<Texture> texture, float tilingFactor) override;
-		virtual void DrawScreenSpaceQuad(Vec3& position, Vec2& scale, Vec2& rotation, Vec4& colour, Ref<SubTexture> subTexture) override; 
+		void DrawLine(Vec2& startPoint, Vec2& endPoint, Vec4& colour, float weight, float renderOrder) override;
 		
-		virtual void DrawFrame() override;
-		virtual bool OnWindowResized(WindowResizeEvent& e) override { m_framebufferResized = true; return true; }//currently just flags the buffer as dirty
-		virtual bool HasTexture(char* filePath, Ref<Texture> outTexture) override;
-		virtual bool HasTexture(std::string filePath, Ref<Texture> outTexture) override;//Takes in a file path and a texture, returns true and sets the ref of inputted texture if one exists
-		virtual RenderData& GetDebugInfo() override { return m_debugInfo; }
+		void DrawFrame();
+		bool OnWindowResized(WindowResizeEvent& e) {  return false; };
+		bool HasTexture(char* filePath, Ref<Texture> outTexture) { return false; };
+		bool HasTexture(std::string name, Texture** outTexture = nullptr);
+		bool HasTexture(std::string name, VulkanTexture** outTexture = nullptr);
 		
-		VkSampler& GetTexSampler() { return m_textureSampler; }
-		std::vector<VkImageView>& GetRenderedFrames() { return m_renderedFrameViews; }
-		size_t GetCurrentFrame() { return m_currentFrame; }
+		void InitImgui() override;
 		
-		//VULKAN TEMP
+		void SetVSync(bool state) override;
+		bool GetVSync() override;
+		
+		void* GetImguiEditorPanelTextureID() override;
+		
+		void UploadMesh(VulkanMesh& mesh);
+		void UploadMaterial(VulkanMaterial& mat);
+		void UploadTexture(VulkanTexture& tex);
+		
+		void DrawObjects(VkCommandBuffer cmd, ChaoticArray<RenderObject*>& renderObjData, ChaoticArray<LightingObjectData*>& lightingData);
+		
+		void Init() override;
+		void Cleanup();
+		
+		AllocatedBuffer CreateBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
+		
+		VulkanTexture* CreateTexture(std::string filepath);
+		// use to get a pointer to the blank texture, do not use to initialise a new tex to blank
+		VulkanTexture* GetBlankTexture();
+		VulkanTexture* CreateBlankTexture(std::string name);
+		
+		VulkanMaterial* CreateMaterial(std::string name, std::string fragShaderPath, std::string vertShaderPath);
+		void InitDefaultMaterials();
+		
 		private:
-		//constants
-		const int MAX_FRAMES_IN_FLIGHT = 2;
-		const int MAX_OBJECTS_PER_DRAW = 10000;
-		const int MAX_TEXTURES_PER_DRAW = 31;
-		
-		//Funcs
-		VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
-		void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT mDebugMessenger, const VkAllocationCallbacks* pAllocator);
-		
-		void AddQuadToRenderQueue(Quad quad);
-		
 		void InitVulkan();
-		void CreateInstance();
-		void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
-		void SetupDebugMessenger();
-		void CreateSurface();
-		void PickPhysicalDevice();
-		void CreateLogicalDevice();
-		void CreateSwapChain();
-		void CreateImageViews();
-		void CreateRenderPass();
-		void CreateDescriptorSetLayout();
-		void CreateGraphicsPipeline();
-		void CreateFrameBuffers();
-		void CreateCommandPool();
-		void CreateTextureSampler();
-		void CreateIndexedBuffer(std::vector<VulkanVertex> vertices, std::vector<uint16_t> indices, BufferType type, size_t insertIndex);
-		void CreateBuffersAndClearResources(size_t insertIndex);
-		void CreateUniformBuffers();
-		void CreateDescriptorPool();
-		void CreateDescriptorSet();
-		void CreateCommandBuffers();
-		void CreateSyncObjects();
+		void InitSwapchain();
+		void InitDefaultRenderPass();
+		void InitFrameBuffers();
+		void InitCommands();
+		void InitSyncStructures();
+		void InitDescriptors();
+		void InitDefaultPipeline();
+		void InitSamplers();
 		
-		void CleanUpSwapchain();
+		VulkanMaterial& RecreateMaterial(VulkanMaterial& mat);
+		void RecreateMaterials();
+		
+		void CleanupSwapchain();
 		void RecreateSwapchain();
 		
-		void UpdateUniformBuffers();
+		bool LoadShaderModule(const char* filePath, VkShaderModule* outShaderModule);
 		
-		//Helper functions
-		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
-		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
-		bool IsDeviceSuitable(VkPhysicalDevice device);
-		bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
-		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags props);
-		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
-		void SortQuads();
+		void LoadDefaultMeshes();
 		
-		//VALIDATION
-		std::vector<const char*> GetRequiredExtensions();
-		bool CheckValidationLayerSupport();
-		static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
+		void ImmediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function);
 		
-		//SHADER LOADING
-		static std::vector<char> readFile(const std::string& filename);
-		VkShaderModule CreateShaderModule(const std::vector<char>& code);
+		VulkanMaterial* GetMaterial(const std::string& name);
+		VulkanMesh* GetMesh(const std::string& name);
 		
-		//IMAGE
-		void CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
-		VkImageView CreateImageView(VkImage image, VkFormat format);
-		void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+		FrameData& GetCurrentFrame();
 		
-		//BUFFER 
-		void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-		void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+		size_t PadUniformBufferSize(size_t originalSize);
 		
-		//COMMANDS
-		VkCommandBuffer  BeginSingleTimeCommands();
-		void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
+		public:
+		bool IsInitialized = false;
+		int FrameNumber = 0;
 		
-		//IMGUI
-		void SetImGuiCommandBuffer(std::vector<VkCommandBuffer> mCommandBuffers) { m_imGuiCommandBuffers = mCommandBuffers; }
-		void SetImGuiCommandPool(VkCommandPool* pool) { m_imGuiCommandPool = pool; }
-		void SetImGuiFramebuffer(std::vector<VkFramebuffer>* buffer) { m_imGuiFrameBuffer = buffer; }
+		Window* pWindow;
+		VkExtent2D WindowExtent;
+		DeletionQueue MainDeletionQueue;
+		DeletionQueue SwapchainDeletionQueue;
 		
-		//Variables
-		std::vector<Quad> m_quads;
-		std::vector<VulkanVertex> m_vertices;
-		std::vector<uint16_t> m_indices;
+		//TODO OPTIMISATION: Multi thread recording of renderables. Currently has a big overhead here. Divide and conquer!
+		//NOTE: Should be stable frame rate when inserting and removing, but has to itterate over it's max capacity every time. Lights however, need to be in a standard array as we need to push the number of lights in the scene to the shader.
+		ChaoticArray<RenderObject*> Renderables = ChaoticArray<RenderObject*>(MAX_OBJECTS);
+		ChaoticArray<LightingObjectData*> Lights = ChaoticArray<LightingObjectData*>(MAX_LIGHTS);
+		std::unordered_map<std::string, VulkanMaterial> Materials;
+		std::unordered_map<std::string, VulkanMesh> Meshes;
+		std::unordered_map<std::string, VulkanTexture> Textures;
 		
-		Vec4 m_clearColour = { 0.0f, 0.0f, 0.03f, 1.0f };
-
-		std::vector<Ref<VulkanTexture>> m_texturesToBind;
-		int m_renderCount = 0;
-		uint16_t m_indOffset = 0;
+		VulkanUploadContext UploadContext;
 		
-		VkSampler m_textureSampler;
+		FrameData Frames[FRAME_OVERLAP];
 		
-		bool m_framebufferResized = false;
-		bool m_renderingGUI = false;
-		size_t m_currentFrame = 0;
+		private:
+		bool m_vsync = false;
+		VkPresentModeKHR m_presentMode = VK_PRESENT_MODE_MAILBOX_KHR;
+		
+		VmaAllocator m_allocator;
 		
 		VkInstance m_instance;
 		VkDebugUtilsMessengerEXT m_debugMessenger;
-		VkSurfaceKHR m_surface;
-		
-		VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
+		VkPhysicalDevice m_physicalDevice;
 		VkDevice m_device;
 		
+		VkPhysicalDeviceProperties m_physicalDeviceProperties;
+		
 		VkQueue m_graphicsQueue;
-		VkQueue m_presentQueue;
+		uint32_t m_graphicsQueueFamily;
 		
-		VkRenderPass m_renderpass;
-		VkDescriptorSetLayout m_descriptorSetLayout;
-		VkPipelineLayout m_pipelineLayout;
-		
-		VkPipeline m_graphicsPipeline;
-		
-		std::mutex m_commandPoolMutex;
 		VkCommandPool m_commandPool;
-		VkCommandPool* m_imGuiCommandPool = VK_NULL_HANDLE;
-		std::vector<VkCommandBuffer> m_commandBuffers;
-		std::vector<VkCommandBuffer> m_imGuiCommandBuffers;
+		VkCommandBuffer m_mainCommandBuffer;
 		
-		std::vector<VkFramebuffer>* m_imGuiFrameBuffer;
+		VkRenderPass m_renderPass;
 		
-		std::vector<Buffer> m_buffers;
-		
-		VkDescriptorPool m_descriptorPool;
-		std::vector<VkDescriptorSet> m_descriptorSets;
-		
-		std::vector<VkBuffer> m_uniformBuffers;
-		std::vector<VkDeviceMemory> m_uniformBuffersMemory;
-		
-		bool m_waitingOnFences = true;
-		std::vector<VkFence> m_imagesInFlight;
-		std::vector<VkFence> m_inFlightFences;
-		std::vector<VkSemaphore>m_imageAvailableSemaphores;
-		std::vector<VkSemaphore>m_renderFinishedSemaphores;
-		
+		VkSurfaceKHR m_surface;
 		VkSwapchainKHR m_swapchain;
-		std::vector<VkImageView> m_swapchainImageViews;
-		std::vector<VkFramebuffer> m_swapchainframebuffers;
-		std::vector<VkImage> m_swapchainImages;
-		uint32_t m_imageIndex = 0;
 		VkFormat m_swapchainImageFormat;
-		VkExtent2D m_swapchainExtent;
 		
-		//for viewport
-		std::vector<VkImage> m_renderedFrames;
-		std::vector<VkDeviceMemory> m_renderedFramesMemory;
-		std::vector<VkImageView> m_renderedFrameViews;
-		std::vector<VkFramebuffer> m_renderedFrameBuffers;
-		VkRenderPass m_renderedRenderPass;
+		std::vector<VkFramebuffer> m_framebuffers;
+		std::vector<VkImage> m_swapchainImages;
+		std::vector<VkImageView> m_swapchainImageViews;
 		
-		const std::vector<const char*> m_validationLayers = { "VK_LAYER_KHRONOS_validation" };
-		const std::vector<const char*> m_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+		VkImageView m_depthImageView;
+		AllocatedImage m_depthImage;
 		
-		const glm::vec4 QUAD_VERTEX_POSITIONS[4] = { glm::vec4(-0.5f, -0.5f, 0.0f, 1.0f) ,
-			glm::vec4(0.5f, -0.5f, 0.0f, 1.0f),
-			glm::vec4(0.5f, 0.5f, 0.0f, 1.0f),
-			glm::vec4(-0.5f, 0.5f, 0.0f, 1.0f) };
+		VkFormat m_depthFormat;
 		
-		const uint16_t QUAD_INDICES[6] = { 0,1,2,2,3,0 };
+		VkDescriptorSetLayout m_globalSetLayout;
+		VkDescriptorSetLayout m_objectSetLayout;
+		VkDescriptorSetLayout m_lightingSetLayout;
+		VkDescriptorSetLayout m_singleTextureSetLayout;
+		VkDescriptorPool m_descriptorPool;
+		VkFence m_descriptorFence;
 		
-		//DEBUG VARS
-		RenderData m_debugInfo;
+		AllocatedBuffer m_levelParametersBuffer;
+		
+		VkSampler m_nearestNeighbourSampler;
+		
+		const Vec3 QUAD_VERTEX_POSITIONS[6] = 
+		{
+			{-0.5f, -0.5f, 0.0f},
+			{0.5f, -0.5f, 0.0f},
+			{0.5f, 0.5f, 0.0f},
+			{0.5f, 0.5f, 0.0f},
+			{-0.5f, 0.5f, 0.0f},
+			{-0.5f, -0.5f, 0.0f}
+		};
+		
+		const Vec2 QUAD_UV_POSITIONS[6] = 
+		{
+			{0.0f, 1.0f},
+			{1.0f, 1.0f},
+			{1.0f, 0.0f},
+			{1.0f, 0.0f},
+			{0.0f, 0.0f},
+			{0.0f, 1.0f},
+		};
 	};
 }
+
+#endif //_VULKAN_RENDERER_H

@@ -10,7 +10,6 @@ namespace Chaos
 		public:
 		virtual ~Texture() = default;
 		
-		virtual void Load(char* filePath) = 0;
 		virtual void Load(std::string filePath) = 0;
 		virtual void Unload() = 0;
 		
@@ -20,10 +19,11 @@ namespace Chaos
 		virtual uint32_t GetHeight() const = 0;
 		virtual uint32_t GetSize() const = 0;
 		
-		static Ref<Texture> Create(std::string filePath);
-		static Ref<Texture> Create();
-		static Ref<Texture> GetBlank();
-		private:
-		static Ref<Texture> s_blankTexture;
+		static Texture* Create(std::string filePath);
+		static Texture* CreateBlank(std::string name);
+		static Texture* GetBlank();
+		
+		public:
+		std::string Name = "blank";
 	};
 }

@@ -1,5 +1,6 @@
 #include "chaospch.h"
 #include <Chaos/Input/InputManager.h>
+#include <Chaos/Input/Input.h>
 #include <Chaos/Events/KeyEvent.h>
 #include <Chaos/Events/MouseEvent.h>
 #include <Chaos/Serialisation/TextFileReader.h>
@@ -19,122 +20,64 @@ namespace Chaos
 		
 	}
 	
-	//On an event if it is a desired input event, then set the values for that button if it is found.
-	
-	//This seems kinda silly but it's better than doing all this every frame regardless, and doing this on the input class didn't allow for features like "ButtonDown"
-	void InputManager::OnEvent(Event& event)
-	{
-		//MOUSE INPUTS
-		if (event.GetEventType() == EventType::MouseButtonPressed || event.GetEventType() == EventType::MouseButtonReleased)
-		{
-			MouseButtonEvent* mouseEvent = dynamic_cast<MouseButtonEvent*>(&event);
-			
-			std::map<std::string, Button>::iterator it;
-			
-			//iterate over the button map to search for the button code from the event
-			for (it = m_buttonMap.begin(); it != m_buttonMap.end(); it++)
-			{
-				bool positive = false;
-				bool negative = false;
-				bool found = false;
-				
-				for(int i = 0; i < it->second.PositiveInsertIndex; ++ i)
-				{
-					if (it->second.PositiveInput[i] == (KeyCode)mouseEvent->GetMouseButton())
-					{
-						found = true;
-						if (event.GetEventType() == EventType::MouseButtonPressed)
-						{
-							positive = true;
-						}
-					}
-				}
-				
-				for(int i = 0; i < it->second.NegativeInsertIndex; ++ i)
-				{
-					if (it->second.NegativeInput[i] == (KeyCode)mouseEvent->GetMouseButton())
-					{
-						found = true;
-						if (event.GetEventType() == EventType::MouseButtonPressed)
-						{
-							negative = true;
-						}
-					}
-				}
-				
-				//only modify the values if the event code matches (it was found)
-				if (found)
-				{
-					if (positive)
-						it->second.Value = 1.0f;
-					if (negative)
-						it->second.Value = -1.0f;
-					if (positive == negative)
-						it->second.Value = 0.0f;
-				}
-			}
-			
-		}
-		//KEY INPUTS
-		//do the same for key inputs
-		else if (event.GetEventType() == EventType::KeyPressed ||
-				 event.GetEventType() == EventType::KeyReleased)
-		{
-			KeyEvent* keyEvent = dynamic_cast<KeyEvent*>(&event);
-			
-			std::map<std::string, Button>::iterator it;
-			
-			for (it = m_buttonMap.begin(); it != m_buttonMap.end(); it++)
-			{
-				bool positive = false;
-				bool negative = false;
-				bool found = false;
-				
-				for(int i = 0; i < it->second.PositiveInsertIndex; ++ i)
-				{
-					if (it->second.PositiveInput[i] == (KeyCode)keyEvent->GetKeyCode())
-					{
-						found = true;
-						if (event.GetEventType() == EventType::KeyPressed)
-						{
-							positive = true;
-						}
-					}
-				}
-				
-				for(int i = 0; i < it->second.NegativeInsertIndex; ++ i)
-				{
-					if (it->second.NegativeInput[i] == (KeyCode)keyEvent->GetKeyCode())
-					{
-						found = true;
-						if (event.GetEventType() == EventType::KeyPressed)
-						{
-							negative = true;
-						}
-					}
-				}
-				
-				if(found)
-				{
-					if (positive)
-						it->second.Value = 1.0f;
-					if (negative)
-						it->second.Value = -1.0f;
-					if (positive == negative)
-						it->second.Value = 0.0f;
-				}
-			}
-		}
-		//TODO: add controller inputs here when controller support is added. Need to set up some events for controller inputs before that.
-	}
 	
 	//sets the Pressed and Released variables depending on if the button's value changed this frame. Called from Application.cpp during the layer stack iteration 
 	void InputManager::OnUpdate(float deltaTime)
 	{
+		// UPDATE BASED ON KEY EVENTS
 		std::map<std::string, Button>::iterator it;
+		
+		// update controller values while we're itterating
+		// NOTE: cannot be updated using events, glfw does not support controller events
 		
 		for (it = m_buttonMap.begin(); it != m_buttonMap.end(); it++)
 		{
+			it->second.ControllerValue = 0.0f;
+			it->second.KeyValue = 0.0f;
+			
+			for (int i = 0; i < it->second.PositiveInsertIndex; ++i)
+			{
+				if (IsGamepadButton(it->second.PositiveInput[i]))
+				{
+					it->second.ControllerValue += (float)Input::IsGamepadButtonPressed(it->second.PositiveInput[i]);
+				}
+				
+				else if (IsGamepadAxis(it->second.PositiveInput[i]))
+				{
+					it->second.ControllerValue += Input::GetGamepadAxis(it->second.PositiveInput[i]);
+				}
+				else if (IsMouseClick(it->second.PositiveInput[i]))
+				{
+					it->second.KeyValue += Input::IsMouseButtonPressed(it->second.PositiveInput[i]);
+				}
+				else
+				{
+					it->second.KeyValue += Input::IsKeyPressed(it->second.PositiveInput[i]);
+				}
+			}
+			
+			for (int i = 0; i < it->second.NegativeInsertIndex; ++i)
+			{
+				if (IsGamepadButton(it->second.NegativeInput[i]))
+				{
+					it->second.ControllerValue -= (float)Input::IsGamepadButtonPressed(it->second.NegativeInput[i]);
+				}
+				
+				else if (IsGamepadAxis(it->second.NegativeInput[i]))
+				{
+					it->second.ControllerValue -= Input::GetGamepadAxis(it->second.NegativeInput[i]);
+				}
+				else if (IsMouseClick(it->second.PositiveInput[i]))
+				{
+					it->second.KeyValue -= Input::IsMouseButtonPressed(it->second.NegativeInput[i]);
+				}
+				else
+				{
+					it->second.KeyValue -= Input::IsKeyPressed(it->second.NegativeInput[i]);
+				}
+			}
+			it->second.Value = CLAMP(it->second.KeyValue + it->second.ControllerValue, -1.0f, 1.0f);
+			
 			if(it->second.Value != it->second.ValueLastFrame)
 			{
 				if (abs(it->second.Value) < abs(it->second.ValueLastFrame))
@@ -150,21 +93,22 @@ namespace Chaos
 			
 			it->second.ValueLastFrame = it->second.Value;
 		}
+		
 	}
 	
 	//Opens a specified file and reads inputs based on an operator, name of button and then a string key value
 	/*E.g
-+horisontal KEY_D
--horisontal KEY_A
-
-above will essentially set up an axis for the button horisontal that will return either -1, 0 or 1 depending on the button pressed
-*/
+	+horizontal KEY_D
+	-horizontal KEY_A
+	
+	above will essentially set up an axis for the button horisontal that will return either -1, 0 or 1 depending on the button pressed
+	*/
 	void InputManager::LoadInputs(const char* filePath)
 	{
 		//get our raw string map of button name to string keycode
-		std::map<std::string, std::string> rawInputMap = TextFileReader::GetKeyValuePairs(filePath);
+		std::vector<std::pair<std::string, std::string>> rawInputMap = TextFileReader::GetKeyValuePairs(filePath);
 		
-		std::map<std::string, std::string>::iterator it;
+		std::vector<std::pair<std::string, std::string>>::iterator it;
 		
 		//itterate over the pairs found with the text file reader
 		for ( it = rawInputMap.begin(); it != rawInputMap.end(); it++)
@@ -269,10 +213,32 @@ above will essentially set up an axis for the button horisontal that will return
 		
 		for (testIt = m_buttonMap.begin(); testIt != m_buttonMap.end(); testIt++)
 		{
-			LOGCORE_INFO("{0}: +: {1} -: {2}", testIt->first, testIt->second.PositiveInput[0], testIt->second.NegativeInput[0]);
+			for (int i = 0; i < testIt->second.PositiveInsertIndex; ++i)
+			{
+				LOGCORE_INFO("{0}: +: {1} -: {2}", testIt->first, testIt->second.PositiveInput[i], testIt->second.NegativeInput[0]);
+			}
 		}
 		
 	}
+	
+	
+	bool InputManager::IsGamepadButton(KeyCode keycode)
+	{
+		return (uint16_t)keycode >= (uint16_t)GAMEPAD_BUTTON_A && (uint16_t)keycode <= (uint16_t)GAMEPAD_BUTTON_LAST;
+	}
+	
+	
+	bool InputManager::IsGamepadAxis(KeyCode keycode)
+	{
+		return (uint16_t)keycode >= (uint16_t)GAMEPAD_AXIS_LEFT_X  && (uint16_t)keycode <= (uint16_t)GAMEPAD_AXIS_LAST;
+	}
+	
+	
+	bool InputManager::IsMouseClick(KeyCode keycode)
+	{
+		return (uint16_t)keycode <= (uint16_t)MOUSE_BUTTON_LAST;
+	}
+	
 	
 	InputManager* InputManager::Get()
 	{

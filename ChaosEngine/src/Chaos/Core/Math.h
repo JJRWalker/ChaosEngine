@@ -13,5 +13,10 @@ namespace Chaos
 		//static inline const float PI = 3.14159265358979323846f;
 		static inline const float RAD_TO_DEGREES = 180 / PI;
 		static inline const float DEGREES_TO_RADS = PI / 180;
+		
+		static inline float Lerp(float a, float b, float t)
+		{
+			return a + t * (b - a);
+		}
 	};
 }

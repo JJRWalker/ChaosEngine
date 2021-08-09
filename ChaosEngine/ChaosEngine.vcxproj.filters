@@ -96,8 +96,14 @@
     <ClInclude Include="src\Chaos\Core\Time.h">
       <Filter>src\Chaos\Core</Filter>
     </ClInclude>
+    <ClInclude Include="src\Chaos\Core\Types.h">
+      <Filter>src\Chaos\Core</Filter>
+    </ClInclude>
     <ClInclude Include="src\Chaos\Core\Window.h">
       <Filter>src\Chaos\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\DataTypes\ChaoticArray.h">
+      <Filter>src\Chaos\DataTypes</Filter>
     </ClInclude>
     <ClInclude Include="src\Chaos\DataTypes\QuadTree.h">
       <Filter>src\Chaos\DataTypes</Filter>
@@ -130,6 +136,9 @@
       <Filter>src\Chaos\Debug</Filter>
     </ClInclude>
     <ClInclude Include="src\Chaos\Debug\ImGuiLayer.h">
+      <Filter>src\Chaos\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Debug\ImGuiProfiler.h">
       <Filter>src\Chaos\Debug</Filter>
     </ClInclude>
     <ClInclude Include="src\Chaos\Debug\Timer.h">
@@ -165,6 +174,9 @@
     <ClInclude Include="src\Chaos\Maths\Collisions.h">
       <Filter>src\Chaos\Maths</Filter>
     </ClInclude>
+    <ClInclude Include="src\Chaos\Maths\Ray2D.h">
+      <Filter>src\Chaos\Maths</Filter>
+    </ClInclude>
     <ClInclude Include="src\Chaos\Nodes\Animator.h">
       <Filter>src\Chaos\Nodes</Filter>
     </ClInclude>
@@ -174,7 +186,10 @@
     <ClInclude Include="src\Chaos\Nodes\Colliders.h">
       <Filter>src\Chaos\Nodes</Filter>
     </ClInclude>
-    <ClInclude Include="src\Chaos\Nodes\EditorCameraController.h">
+    <ClInclude Include="src\Chaos\Nodes\Lights.h">
+      <Filter>src\Chaos\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Nodes\MeshRenderer.h">
       <Filter>src\Chaos\Nodes</Filter>
     </ClInclude>
     <ClInclude Include="src\Chaos\Nodes\Node.h">
@@ -183,28 +198,46 @@
     <ClInclude Include="src\Chaos\Nodes\Sprite.h">
       <Filter>src\Chaos\Nodes</Filter>
     </ClInclude>
+    <ClInclude Include="src\Chaos\Renderer\Material.h">
+      <Filter>src\Chaos\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Renderer\Mesh.h">
+      <Filter>src\Chaos\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src\Chaos\Renderer\Renderer.h">
       <Filter>src\Chaos\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Chaos\Renderer\RendererAPI.h">
       <Filter>src\Chaos\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\Chaos\Renderer\SubTexture.h">
-      <Filter>src\Chaos\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="src\Chaos\Renderer\Texture.h">
       <Filter>src\Chaos\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Serialisation\Binary.h">
+      <Filter>src\Chaos\Serialisation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chaos\Serialisation\FileUtils.h">
+      <Filter>src\Chaos\Serialisation</Filter>
     </ClInclude>
     <ClInclude Include="src\Chaos\Serialisation\TextFileReader.h">
       <Filter>src\Chaos\Serialisation</Filter>
     </ClInclude>
+    <ClInclude Include="src\Platform\Vulkan\VulkanInitalizers.h">
+      <Filter>src\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\Vulkan\VulkanMaterial.h">
+      <Filter>src\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\Vulkan\VulkanMesh.h">
+      <Filter>src\Platform\Vulkan</Filter>
+    </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\VulkanRenderer.h">
       <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="src\Platform\Vulkan\VulkanSubTexture.h">
+    <ClInclude Include="src\Platform\Vulkan\VulkanTexture.h">
       <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="src\Platform\Vulkan\VulkanTexture.h">
+    <ClInclude Include="src\Platform\Vulkan\VulkanTypes.h">
       <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h">
@@ -1370,6 +1403,9 @@
     <ClCompile Include="src\Chaos\Core\Time.cpp">
       <Filter>src\Chaos\Core</Filter>
     </ClCompile>
+    <ClCompile Include="src\Chaos\DataTypes\ChaoticArray.cpp">
+      <Filter>src\Chaos\DataTypes</Filter>
+    </ClCompile>
     <ClCompile Include="src\Chaos\DataTypes\QuadTree.cpp">
       <Filter>src\Chaos\DataTypes</Filter>
     </ClCompile>
@@ -1397,6 +1433,9 @@
     <ClCompile Include="src\Chaos\Debug\ImGuiLayer.cpp">
       <Filter>src\Chaos\Debug</Filter>
     </ClCompile>
+    <ClCompile Include="src\Chaos\Debug\ImGuiProfiler.cpp">
+      <Filter>src\Chaos\Debug</Filter>
+    </ClCompile>
     <ClCompile Include="src\Chaos\Debug\Timer.cpp">
       <Filter>src\Chaos\Debug</Filter>
     </ClCompile>
@@ -1404,6 +1443,9 @@
       <Filter>src\Chaos\Input</Filter>
     </ClCompile>
     <ClCompile Include="src\Chaos\Maths\Collisions.cpp">
+      <Filter>src\Chaos\Maths</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Chaos\Maths\Ray2D.cpp">
       <Filter>src\Chaos\Maths</Filter>
     </ClCompile>
     <ClCompile Include="src\Chaos\Nodes\Animator.cpp">
@@ -1415,7 +1457,10 @@
     <ClCompile Include="src\Chaos\Nodes\Colliders.cpp">
       <Filter>src\Chaos\Nodes</Filter>
     </ClCompile>
-    <ClCompile Include="src\Chaos\Nodes\EditorCameraController.cpp">
+    <ClCompile Include="src\Chaos\Nodes\Lights.cpp">
+      <Filter>src\Chaos\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Chaos\Nodes\MeshRenderer.cpp">
       <Filter>src\Chaos\Nodes</Filter>
     </ClCompile>
     <ClCompile Include="src\Chaos\Nodes\Node.cpp">
@@ -1424,29 +1469,47 @@
     <ClCompile Include="src\Chaos\Nodes\Sprite.cpp">
       <Filter>src\Chaos\Nodes</Filter>
     </ClCompile>
+    <ClCompile Include="src\Chaos\Renderer\Material.cpp">
+      <Filter>src\Chaos\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Chaos\Renderer\Mesh.cpp">
+      <Filter>src\Chaos\Renderer</Filter>
+    </ClCompile>
     <ClCompile Include="src\Chaos\Renderer\Renderer.cpp">
       <Filter>src\Chaos\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Chaos\Renderer\RendererAPI.cpp">
       <Filter>src\Chaos\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\Chaos\Renderer\SubTexture.cpp">
-      <Filter>src\Chaos\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="src\Chaos\Renderer\Texture.cpp">
       <Filter>src\Chaos\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Chaos\Serialisation\Binary.cpp">
+      <Filter>src\Chaos\Serialisation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Chaos\Serialisation\FileUtils.cpp">
+      <Filter>src\Chaos\Serialisation</Filter>
     </ClCompile>
     <ClCompile Include="src\Chaos\Serialisation\TextFileReader.cpp">
       <Filter>src\Chaos\Serialisation</Filter>
     </ClCompile>
-    <ClCompile Include="src\Platform\Vulkan\VulkanRenderer.cpp">
+    <ClCompile Include="src\Platform\Vulkan\VulkanInitalizers.cpp">
       <Filter>src\Platform\Vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="src\Platform\Vulkan\VulkanSubTexture.cpp">
+    <ClCompile Include="src\Platform\Vulkan\VulkanMaterial.cpp">
+      <Filter>src\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\Vulkan\VulkanMesh.cpp">
+      <Filter>src\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\Vulkan\VulkanRenderer.cpp">
       <Filter>src\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\VulkanTexture.cpp">
       <Filter>src\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\Windows\WindowsFileUtils.cpp">
+      <Filter>src\Platform\Windows</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
       <Filter>src\Platform\Windows</Filter>

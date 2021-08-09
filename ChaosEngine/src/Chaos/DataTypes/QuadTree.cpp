@@ -6,7 +6,7 @@
 
 //#ifdef CHAOS_DEBUG
 #include "Chaos/Core/Application.h"
-#include "Chaos/Renderer/Renderer.h"
+#include "Chaos/Debug/Debug.h"
 //#endif
 
 namespace Chaos
@@ -14,7 +14,7 @@ namespace Chaos
 	QuadTree::QuadTree(Vec2 origin, Vec2 bounds) : m_origin(origin), m_bounds(bounds)
 	{
 	}
-
+	
 	QuadTree::~QuadTree()
 	{
 		// if one is valid, all are valid 
@@ -29,7 +29,7 @@ namespace Chaos
 	
 	bool QuadTree::Insert(Collider* node)
 	{
-		if (!Collisions::PointInRectangle(node->GetPosition(),m_origin, m_bounds))
+		if (!Collisions::PointInRectangle(node->GetWorldPosition(),m_origin, m_bounds))
 			return false;
 		
 		if (m_size < QUAD_TREE_CAPACITY)
@@ -56,26 +56,26 @@ namespace Chaos
 			return false;
 		for (int i = 0; i < m_size; ++i)
 		{
-			switch (m_nodes[i]->Type)
+			switch (m_nodes[i]->ColliderType)
 			{
-				case ColliderType::BOX2D:
+				case EColliderType::BOX2D:
 				{
 					BoxCollider2D* collider = dynamic_cast<BoxCollider2D*>(m_nodes[i]);
 					if(collider)
 					{
-						if (Collisions::BoxBoxIntersection(centre, bounds, collider->GetPosition(), collider->Bounds))
+						if (Collisions::BoxBoxIntersection(centre, bounds, collider->GetWorldPosition(), collider->Bounds))
 						{
 							foundNodes[insert] = collider;
 							++insert;
 						}
 					}
 				}break;
-				case ColliderType::CIRCLE:
+				case EColliderType::CIRCLE:
 				{
 					CircleCollider* collider = dynamic_cast<CircleCollider*>(m_nodes[i]);
 					if (collider)
 					{
-						if (Collisions::CircleBoxIntersection(collider->GetPosition(), collider->Radius, centre, bounds))
+						if (Collisions::CircleBoxIntersection(collider->GetWorldPosition(), collider->Radius, centre, bounds))
 						{
 							foundNodes[insert] = collider;
 							++insert;
@@ -103,26 +103,26 @@ namespace Chaos
 			return false;
 		for (int i = 0; i < m_size; ++i)
 		{
-			switch (m_nodes[i]->Type)
+			switch (m_nodes[i]->ColliderType)
 			{
-				case ColliderType::BOX2D:
+				case EColliderType::BOX2D:
 				{
 					BoxCollider2D* collider = dynamic_cast<BoxCollider2D*>(m_nodes[i]);
 					if (collider)
 					{
-						if (Collisions::CircleBoxIntersection(centre, radius, collider->GetPosition(), collider->Bounds))
+						if (Collisions::CircleBoxIntersection(centre, radius, collider->GetWorldPosition(), collider->Bounds))
 						{
 							foundNodes[insert] = collider;
 							++insert;
 						}
 					}
 				}break;
-				case ColliderType::CIRCLE:
+				case EColliderType::CIRCLE:
 				{
 					CircleCollider* collider = dynamic_cast<CircleCollider*>(m_nodes[i]);
 					if (collider)
 					{
-						if (Collisions::CircleCircleIntersection(collider->GetPosition(), collider->Radius, centre, radius))
+						if (Collisions::CircleCircleIntersection(collider->GetWorldPosition(), collider->Radius, centre, radius))
 						{
 							foundNodes[insert] = collider;
 							++insert;
@@ -142,27 +142,69 @@ namespace Chaos
 		
 		return foundNodes[0];
 	}
-
-
+	
+	
+	Collider* QuadTree::QueryLine(Vec2 start, Vec2 end, Collider* foundNodes[MAX_NODES], size_t& insert)
+	{
+		//TODO EFFICENCY: find way to discriminate based on line intersection.
+		//if (!Collisions::BoxBoxIntersection(centre, bounds, m_origin, m_bounds))
+		//return false;
+		
+		for (int i = 0; i < m_size; ++i)
+		{
+			switch (m_nodes[i]->ColliderType)
+			{
+				case EColliderType::BOX2D:
+				{
+					BoxCollider2D* collider = dynamic_cast<BoxCollider2D*>(m_nodes[i]);
+					if (collider)
+					{
+						if (Collisions::LineBoxIntersection(start, end, collider->GetWorldPosition(), collider->Bounds))
+						{
+							foundNodes[insert] = collider;
+							++insert;
+						}
+					}
+				}break;
+				case EColliderType::CIRCLE:
+				{
+					CircleCollider* collider = dynamic_cast<CircleCollider*>(m_nodes[i]);
+					if (collider)
+					{
+						if (Collisions::LineCircleIntersection(start, end, collider->GetWorldPosition(), collider->Radius))
+						{
+							foundNodes[insert] = collider;
+							++insert;
+						}
+					}
+				}break;
+			}
+		}
+		
+		if (m_divided)
+		{
+			m_children.NorthWest->QueryLine(start, end, foundNodes, insert);
+			m_children.NorthEast->QueryLine(start, end, foundNodes, insert);
+			m_children.SouthWest->QueryLine(start, end, foundNodes, insert);
+			m_children.SouthEast->QueryLine(start, end, foundNodes, insert);
+		}
+		
+		return foundNodes[0];
+	}
+	
+	
 	void QuadTree::Debug()
 	{
-		Renderer& renderer = Application::Get().GetRenderer();
-
 		Vec2 bottomLeft = Vec2(m_origin.X - m_bounds.X, m_origin.Y - m_bounds.Y);
 		Vec2 bottomRight = Vec2(m_origin.X + m_bounds.X, m_origin.Y - m_bounds.Y);
 		Vec2 topLeft = Vec2(m_origin.X - m_bounds.X, m_origin.Y + m_bounds.Y);
 		Vec2 topRight = Vec2(m_origin.X + m_bounds.X, m_origin.Y + m_bounds.Y);
-
-		renderer.DrawLine(bottomLeft, bottomRight, Vec4(1.0f, 0.1f, 1.0f, 1.0f), 0.1f, 1000);
-		renderer.DrawLine(bottomRight, topRight, Vec4(1.0f, 0.1f, 1.0f, 1.0f), 0.1f, 1000);
-		renderer.DrawLine(topRight, topLeft, Vec4(1.0f, 0.1f, 1.0f, 1.0f), 0.1f, 1000);
-		renderer.DrawLine(topLeft, bottomLeft, Vec4(1.0f, 0.1f, 1.0f, 1.0f), 0.1f, 1000);
-
-		for (size_t i = 0; i < m_size; ++i)
-		{
-			renderer.DrawQuad(m_nodes[i]->GetPosition3D(), Vec2(0.2, 0.2), Vec2::Zero(), Vec4(1.0f, 0.4f, 0.4f, 0.5f), Texture::GetBlank());
-		}
-
+		
+		Debug::DrawLine(bottomLeft, bottomRight, Vec4(1.0f, 0.1f, 1.0f, 1.0f), 0.1f);
+		Debug::DrawLine(bottomRight, topRight, Vec4(1.0f, 0.1f, 1.0f, 1.0f), 0.1f);
+		Debug::DrawLine(topRight, topLeft, Vec4(1.0f, 0.1f, 1.0f, 1.0f), 0.1f);
+		Debug::DrawLine(topLeft, bottomLeft, Vec4(1.0f, 0.1f, 1.0f, 1.0f), 0.1f);
+		
 		if (m_divided)
 		{
 			m_children.NorthWest->Debug();
@@ -170,6 +212,21 @@ namespace Chaos
 			m_children.SouthWest->Debug();
 			m_children.SouthEast->Debug();
 		}
+	}
+	
+	
+	size_t QuadTree::Size()
+	{
+		size_t size = QUAD_TREE_CAPACITY;
+		if (m_divided)
+		{
+			size += m_children.NorthWest->Size();
+			size += m_children.NorthEast->Size();
+			size += m_children.SouthWest->Size();
+			size += m_children.SouthEast->Size();
+		}
+		
+		return size;
 	}
 	
 	
